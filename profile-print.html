@@ -122,7 +122,7 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
 .grid4{display:grid;grid-template-columns:1fr 1fr;gap:5mm}
 
-/* 核心成员 */
+/* 项目咨询师 */
 .mem{display:grid;grid-template-columns:1fr 1fr;gap:7mm;margin-top:10mm}
 .mem .card{border:1px solid var(--line);background:var(--white);padding:8mm 7mm;display:flex;gap:5.5mm}
 .mem img{width:30mm;height:30mm;border-radius:50%;object-fit:cover;flex:none;border:1.2px solid rgba(201,154,46,.5)}
@@ -134,6 +134,24 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
 .mem ul{list-style:none}
 .mem li{font-size:8.6pt;color:var(--muted);line-height:1.75;padding-left:3.6mm;position:relative}
 .mem li::before{content:"";position:absolute;left:0;top:1.6mm;width:1.4mm;height:1.4mm;border-radius:50%;background:rgba(201,154,46,.65)}
+.mem-lead{margin-top:4.5mm;font-size:8.8pt;color:var(--muted);line-height:1.8;max-width:168mm}
+
+/* 咨询师价值 */
+.cvl{background:var(--paper-2)}
+.cvl .lead2{margin-top:4.5mm;font-size:9pt;color:var(--muted);line-height:1.85;max-width:162mm}
+.cvl .lead2 strong{color:var(--ink)}
+.cvgrid{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-top:7.5mm}
+.cvgrid .c{border:1px solid var(--line);background:var(--white);padding:5mm 5.5mm}
+.cvgrid i{display:block;font-family:var(--serif);font-style:italic;font-size:9.5pt;color:var(--amber-deep)}
+.cvgrid h3{font-family:var(--serif-cn);font-size:11.5pt;color:var(--ink);margin:2mm 0 1.8mm}
+.cvgrid p{font-size:8.4pt;color:var(--muted);line-height:1.7}
+.cvcta{
+  margin-top:8mm;border:1px dashed rgba(183,138,34,.6);background:rgba(240,194,75,.13);
+  padding:5mm 6mm;display:flex;justify-content:space-between;align-items:center;gap:6mm;
+}
+.cvcta b{font-family:var(--serif-cn);font-size:11pt;color:var(--indigo-900);display:block;line-height:1.5}
+.cvcta span{font-size:8.2pt;color:var(--muted)}
+.cvcta em{font-style:normal;font-family:var(--mono);font-size:7.4pt;letter-spacing:.1em;color:var(--amber-deep);white-space:nowrap;flex:none}
 
 /* 服务体系 */
 .svc{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-top:7mm}
@@ -278,11 +296,12 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
   </div>
 </section>
 
-<!-- ============ P3 核心成员 ============ -->
+<!-- ============ P3 项目咨询师 ============ -->
 <section class="page">
   <div class="pad">
-    <div class="lab">02 · 核心成员 CORE TEAM</div>
+    <div class="lab">02 · 项目咨询师 PROJECT CONSULTANTS</div>
     <h2 class="st">一线打过仗的人，<br>才懂怎么<em>陪跑</em></h2>
+    <p class="mem-lead">平台交付给你的，是真正在业务里拿过结果的判断，而不是 PPT 上的框架。每一位项目咨询师，都按项目制进入你的团队，和你一起对结果负责。</p>
     <div class="mem">
       <div class="card">
         <img src="assets/team-yang.jpg" alt="杨景宇">
@@ -321,10 +340,35 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
   </div>
 </section>
 
-<!-- ============ P4 服务体系 ============ -->
+<!-- ============ P4 咨询师价值 ============ -->
+<section class="page cvl">
+  <div class="pad">
+    <div class="lab">03 · 咨询师价值 FOR CONSULTANTS</div>
+    <h2 class="st">让专业的人，<br>只做<em>专业的事</em></h2>
+    <p class="lead2">Consultant Club 不只是一个咨询品牌，更是一个<strong>咨询师的协作平台</strong>。获客、售前、工具、结算这些消耗心力的事，平台接过去；咨询师要做的，是把交付做到自己认可的水准。</p>
+    <div class="cvgrid">
+      <div class="c"><i>01</i><h3>持续的项目来源</h3><p>平台负责获客、售前与商务谈判，按你的专业领域与档期匹配项目，不必再自己跑市场。</p></div>
+      <div class="c"><i>02</i><h3>AI 工具与智能体</h3><p>共享平台自研的 AI 工具、行业智能体模板与知识库，调研、分析、方案生成的效率成倍提升。</p></div>
+      <div class="c"><i>03</i><h3>方法论与交付标准</h3><p>诊断框架、方案结构、交付 SOP 与复盘机制齐备，跨行业接手也能快速进入状态。</p></div>
+      <div class="c"><i>04</i><h3>平台品牌与信用背书</h3><p>以 Consultant Club 平台身份进场，配合案例库与退费承诺，大幅降低客户的决策门槛。</p></div>
+      <div class="c"><i>05</i><h3>透明的分佣与结算</h3><p>分成规则在签约前约定清楚，回款节点明确、结算及时，不模糊、不拖欠。</p></div>
+      <div class="c"><i>06</i><h3>同行社群与专业成长</h3><p>跨领域顾问协同作战、案例复盘、内部方法分享，和一群真正做过事的人长期同行。</p></div>
+    </div>
+    <div class="cvcta">
+      <div>
+        <b>如果你在战略、组织、人力、营销、财税、AI 应用任一领域有实战履历</b>
+        <span>我们想认识你——先聊一次，不谈签约。</span>
+      </div>
+      <em>APPLY AS CONSULTANT</em>
+    </div>
+    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 03</span></div>
+  </div>
+</section>
+
+<!-- ============ P5 服务体系 ============ -->
 <section class="page">
   <div class="pad">
-    <div class="lab">03 · 服务体系 SERVICE SYSTEM</div>
+    <div class="lab">04 · 服务体系 SERVICE SYSTEM</div>
     <h2 class="st">从诊断到落地，<br>一套<em>闭环</em>打法</h2>
     <div class="svc">
       <div class="card" data-no="01">
@@ -366,16 +410,16 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
         </ol>
       </div>
     </div>
-    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 03</span></div>
+    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 04</span></div>
   </div>
 </section>
 
-<!-- ============ P5 AI 咨询 ============ -->
+<!-- ============ P6 AI 咨询 ============ -->
 <section class="page ai dark">
   <div class="pad">
     <div class="ai-head">
       <div>
-        <div class="lab">04 · AI 咨询 AI ADVISORY</div>
+        <div class="lab">05 · AI 咨询 AI ADVISORY</div>
         <h2 class="st">拥有 AI，<br>不等于<em>用好</em> AI</h2>
       </div>
       <p>大多数企业的问题不是"没有 AI"，而是 AI 停留在聊天框里、停在个别人手里。我们帮助企业<strong>把 AI 嵌入关键业务流程</strong>，打造既能提效、又能演化的<strong>「智能生命系统」</strong>。</p>
@@ -389,14 +433,14 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
     <div class="ai-flow">
       <span>诊断流程断点</span><span>选定关键场景</span><span><b>定制智能体</b></span><span>嵌入业务流程</span><span><b>对赌落地陪跑</b></span>
     </div>
-    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 04</span></div>
+    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 05</span></div>
   </div>
 </section>
 
-<!-- ============ P6 咨询项目（一） ============ -->
+<!-- ============ P7 咨询项目（一） ============ -->
 <section class="page">
   <div class="pad">
-    <div class="lab">05 · 咨询项目 SELECTED CASES</div>
+    <div class="lab">06 · 咨询项目 SELECTED CASES</div>
     <h2 class="st">结果，是咨询唯一的<em>发言权</em></h2>
     <div class="case">
       <div class="c">
@@ -454,14 +498,14 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
         <div class="m"><b>5000万→5亿</b><span>营业额 10 倍增长</span></div>
       </div>
     </div>
-    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 05</span></div>
+    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 06</span></div>
   </div>
 </section>
 
-<!-- ============ P7 咨询项目（二） ============ -->
+<!-- ============ P8 咨询项目（二） ============ -->
 <section class="page">
   <div class="pad">
-    <div class="lab">05 · 咨询项目 SELECTED CASES（续）</div>
+    <div class="lab">06 · 咨询项目 SELECTED CASES（续）</div>
     <h2 class="st">陪跑，陪到<em>结果</em>发生</h2>
     <div class="case">
       <div class="c">
@@ -514,14 +558,14 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
       </div>
     </div>
     <p class="note">* 以上为部分代表项目，数据来源于项目验收与客户回访。更多同类行业案例，欢迎预约交流。</p>
-    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 06</span></div>
+    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 07</span></div>
   </div>
 </section>
 
-<!-- ============ P8 管理诊断 ============ -->
+<!-- ============ P9 管理诊断 ============ -->
 <section class="page">
   <div class="pad">
-    <div class="lab">06 · 管理诊断 MANAGEMENT DIAGNOSIS</div>
+    <div class="lab">07 · 管理诊断 MANAGEMENT DIAGNOSIS</div>
     <blockquote class="dq">"如果我有一个小时解决问题，<br>我会用 <em>55 分钟</em>找出真问题。"<cite>—— 阿尔伯特 · 爱因斯坦</cite></blockquote>
     <div class="dgrid">
       <div class="dcol">
@@ -538,14 +582,14 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
       </div>
     </div>
     <p class="dcta">找到真问题，才是<em>改变的开始</em>。</p>
-    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 07</span></div>
+    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 08</span></div>
   </div>
 </section>
 
-<!-- ============ P9 商务合作 ============ -->
+<!-- ============ P10 商务合作 ============ -->
 <section class="page ai dark">
   <div class="pad">
-    <div class="lab">07 · 商务合作 BUSINESS COOPERATION</div>
+    <div class="lab">08 · 商务合作 BUSINESS COOPERATION</div>
     <h2 class="st">下一步，从一次<em>诊断</em>开始</h2>
     <div class="cwrap">
       <div>
@@ -566,17 +610,16 @@ h2.st em{font-style:normal;color:var(--amber-deep)}
       <div class="ccard">
         <h3>24 小时内响应，欢迎深度交流</h3>
         <p class="sub">告知您的行业、团队规模与当前最困扰的问题，我们将为您匹配顾问。</p>
-        <div class="crow"><small>MAIL 邮箱</small><b>gwzixun@163.com</b></div>
         <div class="crow"><small>WECHAT 微信</small><b>XJ159365</b></div>
         <div class="crow"><small>TEL 咨询热线</small><b>159 6714 3596</b></div>
         <div class="cresp"><i></i>工作日 24 小时内响应 · 首次沟通不收费</div>
       </div>
     </div>
-    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 08</span></div>
+    <div class="pfoot"><span class="lg"><i class="dot"></i><i class="dot o"></i>CONSULTANT CLUB</span><span>公司简介 · 09</span></div>
   </div>
 </section>
 
-<!-- ============ P10 封底 ============ -->
+<!-- ============ P11 封底 ============ -->
 <section class="page back">
   <div class="pad" style="justify-content:center">
     <div class="lab">CONSULTANT CLUB</div>

@@ -237,9 +237,10 @@ section{position:relative}
 .mission-cell b i{font-style:normal;color:var(--amber-deep);font-family:var(--mono);font-size:12px;margin-right:8px}
 .mission-cell p{font-size:14px;color:var(--muted)}
 
-/* ============ 核心成员 ============ */
+/* ============ 项目咨询师 ============ */
 .team{background:var(--indigo-950);color:#fdfdfb}
 .team .sec-title{color:#fff}
+.team-lead{margin-top:20px;max-width:40em;font-size:clamp(14.5px,1.4vw,16.5px);color:rgba(253,253,251,.7)}
 .team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:clamp(36px,5vw,60px)}
 .member{
   border:1px solid var(--line-light);background:rgba(253,253,251,.035);
@@ -261,6 +262,29 @@ section{position:relative}
 .member ul{list-style:none;display:grid;gap:7px}
 .member li{font-size:13.5px;color:rgba(253,253,251,.72);padding-left:16px;position:relative}
 .member li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:6px;border-radius:50%;background:rgba(240,194,75,.6)}
+
+/* ============ 咨询师价值 ============ */
+.cvalue{background:var(--paper-2)}
+.cvalue-head{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(30px,5vw,80px);align-items:end}
+.cvalue-head p{font-size:clamp(15px,1.5vw,17.5px);color:var(--muted);max-width:32em}
+.cvalue-head p strong{color:var(--ink);font-weight:700}
+.cgrid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:clamp(40px,5vw,64px);
+  background:var(--line);border:1px solid var(--line);
+}
+.ccard{background:var(--paper);padding:30px 28px;transition:background .35s var(--ease)}
+.ccard:hover{background:var(--white)}
+.ccard i{display:block;font-family:var(--serif);font-style:italic;font-size:15px;font-weight:600;color:var(--amber-deep)}
+.ccard h3{font-family:var(--serif-cn);font-size:19px;font-weight:700;color:var(--ink);margin:12px 0 9px}
+.ccard p{font-size:13.5px;color:var(--muted)}
+.ccta{
+  margin-top:clamp(30px,4vw,44px);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;
+  border:1px dashed rgba(201,154,46,.55);background:rgba(240,194,75,.09);padding:24px 30px;
+}
+.ccta b{display:block;font-family:var(--serif-cn);font-size:clamp(16px,1.8vw,20px);font-weight:700;color:var(--indigo-900)}
+.ccta span{font-size:13.5px;color:var(--muted)}
+.btn-dark{background:var(--indigo-900);color:#fdfdfb;flex:none}
+.btn-dark:hover{background:var(--ink);transform:translateY(-2px);box-shadow:0 10px 28px rgba(24,25,56,.24)}
 
 /* ============ 服务体系 ============ */
 .svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:26px;margin-top:clamp(36px,5vw,60px)}
@@ -451,8 +475,9 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
   .team-grid{grid-template-columns:repeat(2,1fr)}
   .ai-grid{grid-template-columns:repeat(2,1fr)}
   .cases-grid{grid-template-columns:repeat(2,1fr)}
+  .cgrid{grid-template-columns:repeat(2,1fr)}
 }
-@media (max-width:860px){
+@media (max-width:1060px){
   .nav-links{
     position:fixed;inset:72px 0 auto 0;flex-direction:column;align-items:stretch;gap:0;
     background:rgba(20,21,58,.97);backdrop-filter:blur(16px);padding:12px 20px 24px;
@@ -465,7 +490,9 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
   .nav-burger.x span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav-burger.x span:nth-child(2){opacity:0}
   .nav-burger.x span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-  .about-grid,.ai-head,.diag-grid,.contact-grid{grid-template-columns:1fr}
+}
+@media (max-width:860px){
+  .about-grid,.ai-head,.diag-grid,.contact-grid,.cvalue-head{grid-template-columns:1fr}
   .svc-grid{grid-template-columns:1fr}
   .hero-stats{grid-template-columns:repeat(2,1fr)}
   .mission-strip{grid-template-columns:1fr}
@@ -476,6 +503,7 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
   .team-grid{grid-template-columns:1fr}
   .ai-grid{grid-template-columns:1fr}
   .cases-grid{grid-template-columns:1fr}
+  .cgrid{grid-template-columns:1fr}
   .modes{grid-template-columns:1fr}
   .hero-stat{padding:16px 18px}
 }
@@ -496,7 +524,8 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
     <nav aria-label="主导航">
       <ul class="nav-links" id="navLinks">
         <li><a href="#about">关于我们</a></li>
-        <li><a href="#team">核心成员</a></li>
+        <li><a href="#team">项目咨询师</a></li>
+        <li><a href="#consultants">咨询师价值</a></li>
         <li><a href="#services">服务体系</a></li>
         <li><a href="#ai">AI 咨询</a></li>
         <li><a href="#cases">咨询项目</a></li>
@@ -580,12 +609,13 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
   </div>
 </section>
 
-<!-- ================= 核心成员 ================= -->
+<!-- ================= 项目咨询师 ================= -->
 <section class="sec team grain" id="team">
   <div class="wrap">
     <div class="reveal">
-      <div class="sec-label">02 · 核心成员 CORE TEAM</div>
+      <div class="sec-label">02 · 项目咨询师 PROJECT CONSULTANTS</div>
       <h2 class="sec-title">一线打过仗的人，<br>才懂怎么<em>陪跑</em></h2>
+      <p class="team-lead">平台交付给你的，是真正在业务里拿过结果的判断，而不是 PPT 上的框架。每一位项目咨询师，都按项目制进入你的团队，和你一起对结果负责。</p>
     </div>
     <div class="team-grid">
       <article class="member reveal">
@@ -632,11 +662,65 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
   </div>
 </section>
 
+<!-- ================= 咨询师价值 ================= -->
+<section class="sec cvalue" id="consultants">
+  <div class="wrap">
+    <div class="cvalue-head">
+      <div class="reveal">
+        <div class="sec-label">03 · 咨询师价值 FOR CONSULTANTS</div>
+        <h2 class="sec-title">让专业的人，<br>只做<em>专业的事</em></h2>
+      </div>
+      <div class="reveal">
+        <p>Consultant Club 不只是一个咨询品牌，更是一个<strong>咨询师的协作平台</strong>。获客、售前、工具、结算这些消耗心力的事，平台接过去；咨询师要做的，是把交付做到自己认可的水准。</p>
+      </div>
+    </div>
+    <div class="cgrid">
+      <article class="ccard reveal">
+        <i>01</i>
+        <h3>持续的项目来源</h3>
+        <p>平台负责获客、售前与商务谈判，按你的专业领域与档期匹配项目，不必再自己跑市场。</p>
+      </article>
+      <article class="ccard reveal">
+        <i>02</i>
+        <h3>AI 工具与智能体</h3>
+        <p>共享平台自研的 AI 工具、行业智能体模板与知识库，调研、分析、方案生成的效率成倍提升。</p>
+      </article>
+      <article class="ccard reveal">
+        <i>03</i>
+        <h3>方法论与交付标准</h3>
+        <p>诊断框架、方案结构、交付 SOP 与复盘机制齐备，跨行业接手也能快速进入状态。</p>
+      </article>
+      <article class="ccard reveal">
+        <i>04</i>
+        <h3>平台品牌与信用背书</h3>
+        <p>以 Consultant Club 平台身份进场，配合案例库与退费承诺，大幅降低客户的决策门槛。</p>
+      </article>
+      <article class="ccard reveal">
+        <i>05</i>
+        <h3>透明的分佣与结算</h3>
+        <p>分成规则在签约前约定清楚，回款节点明确、结算及时，不模糊、不拖欠。</p>
+      </article>
+      <article class="ccard reveal">
+        <i>06</i>
+        <h3>同行社群与专业成长</h3>
+        <p>跨领域顾问协同作战、案例复盘、内部方法分享，和一群真正做过事的人长期同行。</p>
+      </article>
+    </div>
+    <div class="ccta reveal">
+      <div>
+        <b>如果你在战略、组织、人力、营销、财税、AI 应用任一领域有实战履历</b>
+        <span>我们想认识你——先聊一次，不谈签约。</span>
+      </div>
+      <a class="btn btn-dark" href="#contact">申请成为项目咨询师</a>
+    </div>
+  </div>
+</section>
+
 <!-- ================= 服务体系 ================= -->
 <section class="sec" id="services">
   <div class="wrap">
     <div class="reveal">
-      <div class="sec-label">03 · 服务体系 SERVICE SYSTEM</div>
+      <div class="sec-label">04 · 服务体系 SERVICE SYSTEM</div>
       <h2 class="sec-title">从诊断到落地，<br>一套<em>闭环</em>打法</h2>
     </div>
     <div class="svc-grid">
@@ -687,7 +771,7 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
   <div class="wrap">
     <div class="ai-head reveal">
       <div>
-        <div class="sec-label">04 · AI 咨询 AI ADVISORY</div>
+        <div class="sec-label">05 · AI 咨询 AI ADVISORY</div>
         <h2 class="sec-title">拥有 AI，<br>不等于<em>用好</em> AI</h2>
       </div>
       <p>大多数企业的问题不是"没有 AI"，而是 AI 停留在聊天框里、停在个别人手里。我们帮助企业<strong>把 AI 嵌入关键业务流程</strong>，打造既能提效、又能演化的<strong>「智能生命系统」</strong>。</p>
@@ -729,7 +813,7 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
   <div class="wrap">
     <div class="cases-head reveal">
       <div>
-        <div class="sec-label">05 · 咨询项目 SELECTED CASES</div>
+        <div class="sec-label">06 · 咨询项目 SELECTED CASES</div>
         <h2 class="sec-title">结果，是咨询唯一的<em>发言权</em></h2>
       </div>
       <div class="cases-stats">
@@ -859,7 +943,7 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
 <section class="sec diag" id="diagnosis">
   <div class="wrap">
     <div class="reveal">
-      <div class="sec-label">06 · 管理诊断 MANAGEMENT DIAGNOSIS</div>
+      <div class="sec-label">07 · 管理诊断 MANAGEMENT DIAGNOSIS</div>
       <blockquote class="diag-quote">"如果我有一个小时解决问题，<br>我会用 <em>55 分钟</em>找出真问题。"<cite>—— 阿尔伯特 · 爱因斯坦</cite></blockquote>
     </div>
     <div class="diag-grid">
@@ -915,7 +999,7 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
 <section class="sec contact grain" id="contact">
   <div class="wrap">
     <div class="reveal">
-      <div class="sec-label">07 · 商务合作 CONTACT</div>
+      <div class="sec-label">08 · 商务合作 CONTACT</div>
       <h2 class="sec-title">下一步，从一次<em>诊断</em>开始</h2>
     </div>
     <div class="contact-grid">
@@ -940,10 +1024,6 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
       <div class="contact-card reveal">
         <h3>24 小时内响应，欢迎深度交流</h3>
         <p class="sub">告知您的行业、团队规模与当前最困扰的问题，我们将为您匹配顾问。</p>
-        <div class="c-row">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="2" y="3" width="18" height="16" rx="3" stroke="#f0c24b" stroke-width="1.6"/><path d="M6 8h10M6 12h6" stroke="#f0c24b" stroke-width="1.6" stroke-linecap="round"/></svg>
-          <div><small>MAIL 邮箱</small><a href="mailto:gwzixun@163.com"><b>gwzixun@163.com</b></a></div>
-        </div>
         <div class="c-row">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M4 3h14a1 1 0 011 1v12a1 1 0 01-1 1h-8l-4 3v-3H4a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="#f0c24b" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8.5" cy="10" r="1" fill="#f0c24b"/><circle cx="11.5" cy="10" r="1" fill="#f0c24b"/><circle cx="14.5" cy="10" r="1" fill="#f0c24b"/></svg>
           <div><small>WECHAT 微信</small><b>XJ159365</b></div>

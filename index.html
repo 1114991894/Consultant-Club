@@ -107,6 +107,7 @@ section{position:relative}
 .nav-cta{
   margin-left:12px;padding:10px 20px !important;
   background:var(--amber);color:var(--ink) !important;font-weight:700;border-radius:99px;
+  border:none;cursor:pointer;font-family:inherit;font-size:inherit;line-height:1.4;
   transition:transform .2s var(--ease),box-shadow .2s;
 }
 .nav-cta:hover{background:#f6cf63;transform:translateY(-1px);box-shadow:0 6px 18px rgba(240,194,75,.35)}
@@ -591,7 +592,7 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
         <li><a href="#ai">AI 咨询</a></li>
         <li><a href="#cases">咨询项目</a></li>
         <li><a href="#diagnosis">管理诊断</a></li>
-        <li><a class="nav-cta" href="#contact">预约诊断</a></li>
+        <li><button class="nav-cta" id="navBookBtn" type="button">预约诊断</button></li>
       </ul>
     </nav>
     <button class="nav-burger" id="burger" aria-label="打开菜单" aria-expanded="false">
@@ -1138,6 +1139,11 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
       burger.setAttribute("aria-expanded", "false");
     }
   });
+  /* 导航「预约诊断」按钮：打开弹窗时顺手收起移动端菜单 */
+  document.getElementById("navBookBtn").addEventListener("click", function(){
+    links.classList.remove("open"); burger.classList.remove("x");
+    burger.setAttribute("aria-expanded", "false");
+  });
 
   /* ---- 滚动侦测高亮 ---- */
   var navAnchors = [].slice.call(links.querySelectorAll('a[href^="#"]:not(.nav-cta)'));
@@ -1564,7 +1570,7 @@ var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
               submit:"applySubmit", type:"apply", btns:["applyBtn"], hash:"#apply" });
 
   initModal({ modal:"bookModal", form:"bookForm", done:"bookDone", foot:"bookFoot",
-              submit:"bookSubmit", type:"book", btns:["bookBtn"], hash:"#book" });
+              submit:"bookSubmit", type:"book", btns:["bookBtn","navBookBtn"], hash:"#book" });
 })();
 </script>
 </body>

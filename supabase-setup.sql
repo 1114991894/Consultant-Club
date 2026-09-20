@@ -190,8 +190,8 @@ end;
 $$;
 
 -- ---------- 4. 初始化总管理员 ----------
--- 手机号：15967143596    初始密码：Admin@2026
+-- 手机号：13634169539    初始密码：liu123456
 -- ⚠️ 首次登录后请立即在「修改密码」中更改！
 insert into public.admins (phone, password_hash, name, role)
-values ('15967143596', crypt('Admin@2026', gen_salt('bf')), '总管理员', 'super')
+values ('13634169539', crypt('liu123456', gen_salt('bf')), '总管理员', 'super')
 on conflict (phone) do nothing;

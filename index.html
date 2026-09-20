@@ -611,7 +611,7 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
       <span>深入一线</span><span>管理进化</span><span>陪伴成长</span><span>驱动增长</span>
     </div>
     <div class="hero-actions rise d6">
-      <a class="btn btn-primary" href="#contact">预约管理诊断</a>
+      <button class="btn btn-primary" id="bookBtn" type="button">预约管理诊断</button>
       <a class="btn btn-ghost" href="#cases">查看咨询项目</a>
     </div>
     <div class="hero-stats rise d6">
@@ -1216,6 +1216,99 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
 })();
 </script>
 <!-- ================= 申请咨询师弹窗 ================= -->
+<div class="amodal" id="bookModal" role="dialog" aria-modal="true" aria-labelledby="bookTitle">
+  <div class="mask" data-close></div>
+  <div class="card">
+    <div class="hd">
+      <div class="k">Book a Diagnosis</div>
+      <h3 id="bookTitle">预约诊断</h3>
+      <p>留下企业信息与需求，我们会在 1 个工作日内与你联系，安排首次沟通。</p>
+      <button class="x" type="button" data-close aria-label="关闭">✕</button>
+    </div>
+
+    <form class="bd" id="bookForm" novalidate>
+      <div class="fsec">企业信息 Company Info</div>
+      <div class="frow">
+        <div class="fitem">
+          <label for="b_company">公司名称<i>*</i></label>
+          <input id="b_company" name="company" type="text" data-req placeholder="请填写公司全称" autocomplete="organization">
+          <div class="msg">请填写公司名称</div>
+        </div>
+        <div class="fitem">
+          <label for="b_contact">联系人<i>*</i></label>
+          <input id="b_contact" name="contact" type="text" data-req placeholder="您的姓名" autocomplete="name">
+          <div class="msg">请填写联系人</div>
+        </div>
+        <div class="fitem">
+          <label for="b_title">职务</label>
+          <input id="b_title" name="title" type="text" placeholder="选填，如：人力资源总监">
+        </div>
+        <div class="fitem">
+          <label for="b_phone">手机<i>*</i></label>
+          <input id="b_phone" name="phone" type="tel" data-req inputmode="tel" maxlength="11" placeholder="11 位手机号" autocomplete="tel">
+          <div class="msg">请填写正确的 11 位手机号</div>
+        </div>
+        <div class="fitem">
+          <label for="b_city">所在城市<i>*</i></label>
+          <input id="b_city" name="city" type="text" data-req placeholder="如：杭州">
+          <div class="msg">请填写所在城市</div>
+        </div>
+        <div class="fitem">
+          <label for="b_size">员工数<i>*</i></label>
+          <select id="b_size" name="size" data-req>
+            <option value="" disabled selected>请选择</option>
+            <option>20 人以下</option><option>20 - 50 人</option><option>50 - 100 人</option>
+            <option>100 - 300 人</option><option>300 - 1000 人</option><option>1000 人以上</option>
+          </select>
+          <div class="msg">请选择员工数</div>
+        </div>
+      </div>
+
+      <div class="fsec">需求与计划 Needs</div>
+      <div class="frow">
+        <div class="fitem full">
+          <label for="b_need">需求<i>*</i></label>
+          <textarea id="b_need" name="needs" data-req placeholder="例：公司近两年人效下降，想梳理绩效与薪酬体系；或：希望用 AI 改造订单与客服流程……"></textarea>
+          <div class="msg">请简要描述您的问题或需求</div>
+        </div>
+        <div class="fitem">
+          <label for="b_cycle">项目周期<i>*</i></label>
+          <select id="b_cycle" name="cycle" data-req>
+            <option value="" disabled selected>请选择</option>
+            <option>1 个月内</option><option>1 - 3 个月</option><option>3 - 6 个月</option>
+            <option>6 个月以上</option><option>视诊断结果而定</option><option>暂不确定</option>
+          </select>
+          <div class="msg">请选择期望的项目周期</div>
+        </div>
+        <div class="fitem">
+          <label for="b_budget">预算<i>*</i></label>
+          <select id="b_budget" name="budget" data-req>
+            <option value="" disabled selected>请选择</option>
+            <option>5 万以内</option><option>5 - 10 万</option><option>10 - 30 万</option>
+            <option>30 - 50 万</option><option>50 - 100 万</option><option>100 万以上</option>
+            <option>视方案而定</option><option>面议</option>
+          </select>
+          <div class="msg">请选择预算范围</div>
+        </div>
+      </div>
+    </form>
+
+    <div class="adone" id="bookDone">
+      <div class="ok">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="15.5" stroke="#b78a22" stroke-width="1.6"/><path d="M10.5 17.5l4.5 4.5 8.5-9" stroke="#b78a22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>预约已提交</h3>
+      <p>感谢你的信任。我们会在 1 个工作日内与你联系，<br>确认诊断时间与方式——首次沟通不收费。</p>
+      <button class="btn btn-dark" type="button" data-close>好的</button>
+    </div>
+
+    <div class="ft" id="bookFoot">
+      <div class="note">提交后即表示同意平台获取和使用您的信息进行项目匹配与咨询链接。<br>资料仅用于内部评估，不会对外公开。</div>
+      <button class="btn btn-dark" id="bookSubmit" type="submit" form="bookForm">提交</button>
+    </div>
+  </div>
+</div>
+
 <div class="amodal" id="applyModal" role="dialog" aria-modal="true" aria-labelledby="applyTitle">
   <div class="mask" data-close></div>
   <div class="card">
@@ -1380,64 +1473,74 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
 
 <script>
 (function(){
-  var modal = document.getElementById("applyModal");
-  var form = document.getElementById("applyForm");
-  var done = document.getElementById("applyDone");
-  var foot = document.getElementById("applyFoot");
+  /* 通用弹窗初始化：打开/关闭/校验/成功视图 */
+  function initModal(cfg){
+    var modal = document.getElementById(cfg.modal);
+    var form = document.getElementById(cfg.form);
+    var done = document.getElementById(cfg.done);
+    var foot = document.getElementById(cfg.foot);
 
-  function openModal(){ modal.classList.add("open"); document.body.style.overflow = "hidden"; }
-  function closeModal(){
-    modal.classList.remove("open"); document.body.style.overflow = "";
-    /* 重置回表单视图，便于再次打开 */
-    setTimeout(function(){
-      if(!modal.classList.contains("open")){ form.style.display=""; done.style.display=""; foot.style.display=""; }
-    }, 200);
+    function openModal(){ modal.classList.add("open"); document.body.style.overflow = "hidden"; }
+    function closeModal(){
+      modal.classList.remove("open"); document.body.style.overflow = "";
+      /* 重置回表单视图，便于再次打开 */
+      setTimeout(function(){
+        if(!modal.classList.contains("open")){ form.style.display=""; done.style.display=""; foot.style.display=""; }
+      }, 200);
+    }
+
+    cfg.btns.forEach(function(id){
+      var b = document.getElementById(id);
+      if(b) b.addEventListener("click", openModal);
+    });
+    if(cfg.hash && location.hash === cfg.hash) openModal();
+
+    modal.addEventListener("click", function(e){
+      if(e.target.closest("[data-close]")) closeModal();
+    });
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Escape" && modal.classList.contains("open")) closeModal();
+    });
+
+    /* 提交校验：必填项逐项检查 */
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      var firstBad = null;
+      [].slice.call(form.querySelectorAll("[data-req]")).forEach(function(el){
+        var item = el.closest(".fitem");
+        var ok = el.value.trim().length > 0;
+        if(ok && el.name === "phone") ok = /^1\d{10}$/.test(el.value.trim());
+        item.classList.toggle("err", !ok);
+        if(!ok && !firstBad) firstBad = el;
+      });
+      if(firstBad){
+        firstBad.scrollIntoView({behavior:"smooth", block:"center"});
+        firstBad.focus({preventScroll:true});
+        return;
+      }
+      /* TODO: 接入后端/表单服务后在此发送数据；当前为演示提交 */
+      form.style.display = "none";
+      done.style.display = "flex";
+      foot.style.display = "none";
+      done.scrollIntoView({block:"nearest"});
+    });
+
+    /* 输入即清除错误态 */
+    form.addEventListener("input", function(e){
+      var item = e.target.closest(".fitem");
+      if(item) item.classList.remove("err");
+    });
+    form.addEventListener("change", function(e){
+      var item = e.target.closest(".fitem");
+      if(item) item.classList.remove("err");
+    });
   }
 
-  var btn = document.getElementById("applyBtn");
-  btn.addEventListener("click", openModal);
-  if(location.hash === "#apply") openModal();
+  initModal({ modal:"applyModal", form:"applyForm", done:"applyDone", foot:"applyFoot",
+              btns:["applyBtn"], hash:"#apply" });
 
-  modal.addEventListener("click", function(e){
-    if(e.target.closest("[data-close]")) closeModal();
-  });
-  document.addEventListener("keydown", function(e){
-    if(e.key === "Escape" && modal.classList.contains("open")) closeModal();
-  });
-
-  /* 提交校验：必填项逐项检查 */
-  form.addEventListener("submit", function(e){
-    e.preventDefault();
-    var firstBad = null;
-    var phones = form.querySelectorAll("[data-req]");
-    [].slice.call(phones).forEach(function(el){
-      var item = el.closest(".fitem");
-      var ok = el.value.trim().length > 0;
-      if(ok && el.id === "f_phone") ok = /^1\d{10}$/.test(el.value.trim());
-      item.classList.toggle("err", !ok);
-      if(!ok && !firstBad) firstBad = el;
-    });
-    if(firstBad){
-      firstBad.scrollIntoView({behavior:"smooth", block:"center"});
-      firstBad.focus({preventScroll:true});
-      return;
-    }
-    /* TODO: 接入后端/表单服务后在此发送数据；当前为演示提交 */
-    form.style.display = "none";
-    done.style.display = "flex";
-    foot.style.display = "none";
-    done.scrollIntoView({block:"nearest"});
-  });
-
-  /* 输入即清除错误态 */
-  form.addEventListener("input", function(e){
-    var item = e.target.closest(".fitem");
-    if(item) item.classList.remove("err");
-  });
-  form.addEventListener("change", function(e){
-    var item = e.target.closest(".fitem");
-    if(item) item.classList.remove("err");
-  });
+  initModal({ modal:"bookModal", form:"bookForm", done:"bookDone", foot:"bookFoot",
+              btns:["bookBtn"], hash:"#book" });
 })();
 </script>
 </body>

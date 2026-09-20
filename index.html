@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consultant Club — AI 咨询 · 战略咨询 · 对赌落地陪跑</title>
+<meta name="description" content="Consultant Club 专注 AI 与咨询融合落地，以「战略咨询 × 智能体定制 × 对赌落地陪跑」三位一体路径，陪跑中小企业数智化转型，让每一家中小企业进入高速成长状态。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Ccircle cx='17' cy='22' r='11' fill='%23F0C24B'/%3E%3Ccircle cx='27' cy='22' r='10.5' fill='none' stroke='%23232457' stroke-width='2.4'/%3E%3C/svg%3E">
+<style>
+/* ============ Design Tokens ============ */
+:root{
+  --ink:#181938;
+  --indigo-950:#14153a;
+  --indigo-900:#1e1f4e;
+  --indigo-800:#282a68;
+  --indigo-700:#323580;
+  --indigo-500:#4a4da3;
+  --amber:#f0c24b;
+  --amber-deep:#c99a2e;
+  --paper:#f7f5ef;
+  --paper-2:#efebe0;
+  --white:#fdfdfb;
+  --text:#232457;
+  --muted:#63648a;
+  --line:rgba(35,36,87,.14);
+  --line-light:rgba(247,245,239,.16);
+  --serif:'Playfair Display','Noto Serif SC',serif;
+  --serif-cn:'Noto Serif SC','Playfair Display',serif;
+  --sans:'Noto Sans SC',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --shadow-1:0 2px 6px rgba(24,25,56,.06);
+  --shadow-2:0 8px 24px rgba(24,25,56,.10);
+  --shadow-3:0 24px 64px rgba(24,25,56,.16);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);
+  background:var(--paper);
+  color:var(--text);
+  line-height:1.7;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:var(--amber);color:var(--ink)}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2.5px solid var(--amber);outline-offset:3px;border-radius:2px}
+
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+
+/* 噪点纹理 */
+.grain::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .035 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* 章节公共 */
+section{position:relative}
+.sec{padding:clamp(72px,9vw,128px) 0}
+.sec-label{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.22em;
+  color:var(--amber-deep);text-transform:uppercase;margin-bottom:22px;
+}
+.sec-label::before{content:"";width:34px;height:1px;background:var(--amber-deep)}
+.sec-title{
+  font-family:var(--serif-cn);font-weight:900;
+  font-size:clamp(30px,4.4vw,52px);line-height:1.18;letter-spacing:-.01em;
+}
+.sec-title em{font-style:normal;color:var(--amber-deep)}
+.dark .sec-label{color:var(--amber)}
+.dark .sec-label::before{background:var(--amber)}
+
+/* Logo */
+.logo{display:inline-flex;align-items:center;gap:11px;color:inherit}
+.logo-mark{width:30px;height:30px;flex:none}
+.logo-word{font-family:var(--serif);font-weight:600;font-size:19px;letter-spacing:.01em;line-height:1.1}
+.logo-word small{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.34em;opacity:.62;font-weight:400;margin-top:3px}
+
+/* ============ 导航 ============ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  transition:background .35s var(--ease),box-shadow .35s var(--ease),backdrop-filter .35s;
+}
+.nav.scrolled{
+  background:rgba(20,21,58,.88);backdrop-filter:blur(14px);
+  box-shadow:0 1px 0 var(--line-light);
+}
+.nav-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  height:72px;color:#fdfdfb;
+}
+.nav-links{display:flex;gap:6px;list-style:none;align-items:center}
+.nav-links a{
+  display:block;padding:9px 13px;font-size:14.5px;font-weight:500;
+  color:rgba(253,253,251,.82);border-radius:8px;transition:color .2s,background .2s;
+}
+.nav-links a:hover{color:#fff;background:rgba(255,255,255,.07)}
+.nav-links a.active{color:var(--amber)}
+.nav-cta{
+  margin-left:12px;padding:10px 20px !important;
+  background:var(--amber);color:var(--ink) !important;font-weight:700;border-radius:99px;
+  transition:transform .2s var(--ease),box-shadow .2s;
+}
+.nav-cta:hover{background:#f6cf63;transform:translateY(-1px);box-shadow:0 6px 18px rgba(240,194,75,.35)}
+.nav-burger{
+  display:none;background:none;border:0;width:44px;height:44px;color:#fff;
+  flex-direction:column;align-items:center;justify-content:center;gap:5px;
+}
+.nav-burger span{display:block;width:22px;height:2px;background:currentColor;transition:.3s var(--ease)}
+
+/* ============ Hero ============ */
+.hero{
+  min-height:100svh;display:flex;flex-direction:column;justify-content:center;
+  background:
+    radial-gradient(52% 68% at 82% 8%,rgba(74,77,163,.55),transparent 62%),
+    radial-gradient(46% 60% at 8% 92%,rgba(240,194,75,.14),transparent 60%),
+    linear-gradient(158deg,var(--indigo-950) 0%,var(--indigo-900) 54%,var(--indigo-800) 100%);
+  color:#fdfdfb;overflow:hidden;
+}
+.hero::after{ /* 细网格 */
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.16;
+  background-image:linear-gradient(rgba(255,255,255,.28) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.28) 1px,transparent 1px);
+  background-size:72px 72px;
+  mask-image:radial-gradient(72% 82% at 60% 34%,#000 0%,transparent 100%);
+  -webkit-mask-image:radial-gradient(72% 82% at 60% 34%,#000 0%,transparent 100%);
+}
+.hero .wrap{position:relative;z-index:2;width:100%}
+.hero-en{
+  font-family:var(--serif);font-style:italic;font-weight:500;
+  font-size:clamp(64px,13vw,190px);line-height:.9;letter-spacing:-.02em;
+  color:transparent;-webkit-text-stroke:1px rgba(253,253,251,.34);
+  user-select:none;margin-bottom:-.28em;white-space:nowrap;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:10px;margin:26px 0 20px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.24em;color:var(--amber);
+  border:1px solid rgba(240,194,75,.4);border-radius:99px;padding:8px 18px;
+}
+.hero-badge i{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 2.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{
+  font-family:var(--serif-cn);font-weight:900;
+  font-size:clamp(34px,5.6vw,68px);line-height:1.22;letter-spacing:-.01em;max-width:19em;
+}
+.hero h1 em{font-style:normal;color:var(--amber);position:relative;white-space:nowrap}
+.hero-sub{margin:26px 0 0;max-width:36em;font-size:clamp(15px,1.4vw,17.5px);color:rgba(253,253,251,.78)}
+.hero-sub strong{color:#fff;font-weight:700}
+.hero-slogans{display:flex;flex-wrap:wrap;gap:0 26px;margin-top:26px;font-size:14.5px;color:rgba(253,253,251,.6)}
+.hero-slogans span{display:flex;align-items:center;gap:26px}
+.hero-slogans span:not(:last-child)::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--amber)}
+.hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:38px}
+.btn{
+  display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:13px 30px;
+  border-radius:99px;font-size:15.5px;font-weight:700;border:1px solid transparent;
+  transition:transform .25s var(--ease),box-shadow .25s,background .25s,border-color .25s;
+}
+.btn-primary{background:var(--amber);color:var(--ink)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(240,194,75,.38)}
+.btn-ghost{border-color:rgba(253,253,251,.35);color:#fdfdfb}
+.btn-ghost:hover{border-color:#fff;background:rgba(255,255,255,.08);transform:translateY(-2px)}
+.hero-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1px;margin-top:clamp(44px,6vh,72px);
+  background:var(--line-light);border:1px solid var(--line-light);
+}
+.hero-stat{background:rgba(20,21,58,.55);backdrop-filter:blur(6px);padding:22px 26px}
+.hero-stat b{
+  display:block;font-family:var(--serif);font-weight:600;font-size:clamp(26px,3vw,38px);
+  color:var(--amber);line-height:1.1;letter-spacing:-.01em;
+}
+.hero-stat span{font-size:13px;color:rgba(253,253,251,.62)}
+.scroll-hint{
+  position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:rgba(253,253,251,.45);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.scroll-hint::after{content:"";width:1px;height:34px;background:linear-gradient(rgba(253,253,251,.5),transparent);animation:drip 2s var(--ease) infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}55%{transform:scaleY(1);transform-origin:top}56%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ============ 客户跑马灯 ============ */
+.ticker{
+  background:var(--ink);color:rgba(253,253,251,.5);
+  border-top:1px solid var(--line-light);border-bottom:1px solid var(--line-light);
+  overflow:hidden;padding:15px 0;position:relative;z-index:2;
+}
+.ticker-track{display:flex;gap:0;width:max-content;animation:ticker 46s linear infinite}
+.ticker:hover .ticker-track{animation-play-state:paused}
+.ticker ul{display:flex;list-style:none;gap:0;align-items:center}
+.ticker li{display:flex;align-items:center;font-family:var(--mono);font-size:12.5px;letter-spacing:.12em;white-space:nowrap}
+.ticker li::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--amber);margin:0 26px;opacity:.7}
+@keyframes ticker{to{transform:translateX(-50%)}}
+
+/* ============ 关于我们 ============ */
+.about-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(36px,6vw,88px);align-items:start}
+.about-lead{font-size:clamp(16.5px,1.5vw,19px);margin-top:26px;color:var(--text)}
+.about-lead strong{color:var(--ink)}
+.about-quote{
+  margin:30px 0;padding:22px 28px;border-left:3px solid var(--amber);
+  background:var(--paper-2);font-family:var(--serif-cn);font-weight:700;
+  font-size:clamp(18px,2vw,23px);line-height:1.55;color:var(--indigo-900);
+}
+.about-p{color:var(--muted);margin-top:14px;max-width:34em}
+.trinity{position:relative;border:1px solid var(--line);background:var(--white);box-shadow:var(--shadow-2);padding:clamp(26px,3vw,40px)}
+.trinity::before{content:"";position:absolute;inset:10px -10px -10px 10px;border:1px solid var(--amber);z-index:-1}
+.trinity-cap{font-family:var(--mono);font-size:11.5px;letter-spacing:.2em;color:var(--amber-deep);margin-bottom:20px}
+.trinity-flow{display:flex;flex-direction:column;gap:0}
+.trinity-item{
+  display:flex;align-items:baseline;gap:16px;padding:18px 4px;border-bottom:1px dashed var(--line);
+}
+.trinity-item:last-of-type{border-bottom:0}
+.trinity-item i{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--amber-deep);flex:none;width:34px}
+.trinity-item b{font-family:var(--serif-cn);font-size:clamp(17px,1.8vw,21px);font-weight:700;color:var(--ink)}
+.trinity-item span{font-size:13px;color:var(--muted)}
+.trinity-arrow{
+  text-align:center;font-size:20px;color:var(--amber-deep);padding:2px 0;
+}
+.trinity-result{
+  margin-top:20px;background:var(--indigo-900);color:#fdfdfb;
+  padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;
+}
+.trinity-result b{font-family:var(--serif-cn);font-size:clamp(16px,1.7vw,20px);color:var(--amber)}
+.trinity-result span{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:rgba(253,253,251,.55)}
+.mission-strip{
+  margin-top:clamp(40px,5vw,64px);display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--line);border:1px solid var(--line);
+}
+.mission-cell{background:var(--paper);padding:26px 28px}
+.mission-cell b{display:block;font-family:var(--serif-cn);font-size:17px;color:var(--ink);margin-bottom:6px}
+.mission-cell b i{font-style:normal;color:var(--amber-deep);font-family:var(--mono);font-size:12px;margin-right:8px}
+.mission-cell p{font-size:14px;color:var(--muted)}
+
+/* ============ 核心成员 ============ */
+.team{background:var(--indigo-950);color:#fdfdfb}
+.team .sec-title{color:#fff}
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:clamp(36px,5vw,60px)}
+.member{
+  border:1px solid var(--line-light);background:rgba(253,253,251,.035);
+  padding:28px 24px 24px;position:relative;overflow:hidden;
+  transition:transform .35s var(--ease),background .35s,border-color .35s;
+}
+.member:hover{transform:translateY(-6px);background:rgba(253,253,251,.06);border-color:rgba(240,194,75,.45)}
+.member-photo{
+  width:104px;height:104px;border-radius:50%;overflow:hidden;margin-bottom:20px;
+  border:2px solid rgba(240,194,75,.55);box-shadow:0 0 0 6px rgba(240,194,75,.1);
+}
+.member-photo img{width:100%;height:100%;object-fit:cover;filter:saturate(.92)}
+.member h3{font-family:var(--serif-cn);font-size:20px;font-weight:700}
+.member h3 small{font-family:var(--mono);font-size:11px;font-weight:400;letter-spacing:.14em;color:rgba(253,253,251,.5);margin-left:8px}
+.member-role{
+  display:inline-block;margin:10px 0 14px;font-size:12.5px;font-weight:700;color:var(--ink);
+  background:var(--amber);padding:3px 12px;border-radius:99px;
+}
+.member ul{list-style:none;display:grid;gap:7px}
+.member li{font-size:13.5px;color:rgba(253,253,251,.72);padding-left:16px;position:relative}
+.member li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:6px;border-radius:50%;background:rgba(240,194,75,.6)}
+
+/* ============ 服务体系 ============ */
+.svc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:26px;margin-top:clamp(36px,5vw,60px)}
+.svc-card{
+  position:relative;background:var(--white);border:1px solid var(--line);
+  padding:clamp(26px,3vw,40px);overflow:hidden;
+  transition:transform .35s var(--ease),box-shadow .35s;
+}
+.svc-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-3)}
+.svc-card::after{
+  content:attr(data-no);position:absolute;top:-14px;right:6px;
+  font-family:var(--serif);font-style:italic;font-size:96px;line-height:1;
+  color:transparent;-webkit-text-stroke:1px rgba(35,36,87,.13);pointer-events:none;
+}
+.svc-card h3{font-family:var(--serif-cn);font-size:clamp(19px,2vw,23px);font-weight:900;color:var(--ink);display:flex;align-items:center;gap:12px}
+.svc-card h3 i{
+  font-style:normal;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--amber-deep);
+  border:1px solid var(--amber);border-radius:50%;width:30px;height:30px;flex:none;
+  display:inline-flex;align-items:center;justify-content:center;
+}
+.svc-card ol{list-style:none;margin-top:18px;display:grid;gap:9px;counter-reset:svc}
+.svc-card li{counter-increment:svc;font-size:14.5px;color:var(--muted);padding-left:34px;position:relative}
+.svc-card li::before{
+  content:counter(svc,decimal-leading-zero);position:absolute;left:0;top:.2em;
+  font-family:var(--mono);font-size:11px;color:var(--amber-deep);
+}
+.svc-card li b{color:var(--text);font-weight:500}
+
+/* ============ AI 咨询 ============ */
+.ai{
+  background:
+    radial-gradient(60% 90% at 88% 0%,rgba(74,77,163,.5),transparent 60%),
+    radial-gradient(40% 60% at 0% 100%,rgba(240,194,75,.12),transparent 55%),
+    var(--indigo-950);
+  color:#fdfdfb;
+}
+.ai .sec-title{color:#fff}
+.ai-head{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,5vw,80px);align-items:end}
+.ai-head p{color:rgba(253,253,251,.72);font-size:clamp(15px,1.5vw,17.5px);max-width:30em}
+.ai-head p strong{color:var(--amber)}
+.ai-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line-light);border:1px solid var(--line-light);margin-top:clamp(40px,5vw,64px)}
+.ai-cell{
+  background:rgba(20,21,58,.72);padding:30px 26px;position:relative;
+  transition:background .35s;
+}
+.ai-cell:hover{background:rgba(50,53,128,.5)}
+.ai-cell i{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--amber)}
+.ai-cell h3{font-family:var(--serif-cn);font-size:19px;font-weight:700;margin:12px 0 10px}
+.ai-cell p{font-size:13.5px;color:rgba(253,253,251,.66)}
+.ai-flow{
+  margin-top:clamp(40px,5vw,64px);border:1px solid rgba(240,194,75,.35);
+  background:rgba(240,194,75,.06);padding:26px 32px;display:flex;flex-wrap:wrap;gap:12px 0;align-items:center;justify-content:center;
+}
+.ai-flow span{
+  font-size:14.5px;color:rgba(253,253,251,.85);display:flex;align-items:center;
+}
+.ai-flow span:not(:last-child)::after{content:"→";color:var(--amber);margin:0 18px;font-family:var(--serif)}
+.ai-flow b{color:var(--amber)}
+
+/* ============ 咨询项目 ============ */
+.cases-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px}
+.cases-stats{display:flex;gap:34px}
+.cases-stats b{display:block;font-family:var(--serif);font-weight:600;font-size:30px;color:var(--indigo-800);line-height:1.1}
+.cases-stats span{font-size:12.5px;color:var(--muted)}
+.filter{display:flex;flex-wrap:wrap;gap:10px;margin-top:clamp(28px,4vw,44px)}
+.filter button{
+  border:1px solid var(--line);background:var(--white);color:var(--muted);
+  font-size:13.5px;font-weight:500;padding:9px 20px;border-radius:99px;
+  transition:all .25s var(--ease);min-height:40px;
+}
+.filter button:hover{border-color:var(--indigo-500);color:var(--text)}
+.filter button.on{background:var(--indigo-900);border-color:var(--indigo-900);color:var(--amber)}
+.cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:30px}
+.case{
+  background:var(--white);border:1px solid var(--line);padding:26px 26px 22px;
+  display:flex;flex-direction:column;gap:12px;position:relative;
+  transition:transform .3s var(--ease),box-shadow .3s,opacity .4s;
+}
+.case:hover{transform:translateY(-4px);box-shadow:var(--shadow-2)}
+.case.hide{display:none}
+.case-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.case-co{font-family:var(--serif-cn);font-weight:900;font-size:18px;color:var(--ink)}
+.case-code{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--amber-deep);border:1px solid rgba(201,154,46,.4);padding:2px 8px;border-radius:4px;white-space:nowrap}
+.case-tag{
+  align-self:flex-start;font-size:11.5px;font-weight:700;letter-spacing:.06em;
+  color:var(--indigo-700);background:rgba(74,77,163,.1);padding:3px 11px;border-radius:99px;
+}
+.case-title{font-size:14.5px;font-weight:500;color:var(--text);line-height:1.55}
+.case-metric{margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);display:flex;align-items:baseline;gap:10px}
+.case-metric b{font-family:var(--serif);font-weight:600;font-size:clamp(22px,2vw,27px);color:var(--indigo-800);letter-spacing:-.01em;white-space:nowrap}
+.case-metric span{font-size:12.5px;color:var(--muted)}
+.cases-note{margin-top:26px;font-size:13px;color:var(--muted);font-family:var(--mono)}
+
+/* ============ 管理诊断 ============ */
+.diag{background:var(--paper-2)}
+.diag-quote{
+  font-family:var(--serif-cn);font-weight:700;font-size:clamp(21px,2.8vw,32px);
+  line-height:1.5;color:var(--indigo-900);max-width:26em;margin-top:8px;
+}
+.diag-quote em{font-style:normal;border-bottom:3px solid var(--amber)}
+.diag-quote cite{
+  display:block;font-family:var(--mono);font-style:normal;font-size:12px;
+  letter-spacing:.2em;color:var(--muted);margin-top:16px;
+}
+.diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,5vw,72px);margin-top:clamp(40px,5vw,64px)}
+.diag-col h3{
+  font-family:var(--serif-cn);font-size:19px;font-weight:900;color:var(--ink);
+  padding-bottom:14px;border-bottom:2px solid var(--ink);margin-bottom:8px;
+}
+.need{padding:18px 0;border-bottom:1px solid var(--line)}
+.need b{font-size:15.5px;color:var(--indigo-800);display:flex;align-items:center;gap:10px}
+.need b i{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--amber-deep)}
+.need p{font-size:13.5px;color:var(--muted);margin-top:5px}
+.value-card{
+  background:var(--white);border:1px solid var(--line);padding:26px 28px;margin-bottom:16px;
+  display:flex;gap:20px;transition:transform .3s var(--ease),box-shadow .3s;
+}
+.value-card:hover{transform:translateX(6px);box-shadow:var(--shadow-2)}
+.value-card i{
+  font-style:normal;font-family:var(--serif);font-size:30px;font-weight:600;color:var(--amber-deep);line-height:1;flex:none;
+}
+.value-card h4{font-family:var(--serif-cn);font-size:17px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.value-card p{font-size:13.5px;color:var(--muted)}
+.diag-cta{
+  margin-top:8px;text-align:center;font-family:var(--serif-cn);font-weight:900;
+  font-size:clamp(20px,2.6vw,28px);color:var(--indigo-900);
+}
+.diag-cta em{font-style:normal;color:var(--amber-deep)}
+
+/* ============ 联系合作 ============ */
+.contact{background:var(--indigo-950);color:#fdfdfb}
+.contact .sec-title{color:#fff}
+.contact-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(36px,6vw,88px);margin-top:clamp(36px,5vw,60px);align-items:start}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-light);border:1px solid var(--line-light)}
+.mode{background:rgba(253,253,251,.04);padding:24px 22px;transition:background .3s}
+.mode:hover{background:rgba(240,194,75,.08)}
+.mode i{font-style:italic;font-family:var(--serif);font-size:14px;color:var(--amber)}
+.mode h4{font-family:var(--serif-cn);font-size:17px;font-weight:700;margin:8px 0 4px}
+.mode p{font-size:13px;color:rgba(253,253,251,.62)}
+.guarantee{
+  margin-top:22px;border:1px dashed rgba(240,194,75,.55);background:rgba(240,194,75,.07);
+  padding:20px 26px;display:flex;gap:16px;align-items:center;
+}
+.guarantee svg{flex:none}
+.guarantee b{color:var(--amber);font-family:var(--serif-cn);font-size:16.5px;display:block}
+.guarantee span{font-size:13px;color:rgba(253,253,251,.68)}
+.contact-card{background:rgba(253,253,251,.045);border:1px solid var(--line-light);padding:clamp(28px,3vw,40px)}
+.contact-card h3{font-family:var(--serif-cn);font-size:22px;font-weight:900}
+.contact-card .sub{font-size:13.5px;color:rgba(253,253,251,.6);margin:6px 0 24px}
+.c-row{
+  display:flex;align-items:center;gap:16px;padding:15px 0;border-bottom:1px solid var(--line-light);
+}
+.c-row:last-of-type{border-bottom:0}
+.c-row svg{flex:none;opacity:.85}
+.c-row small{display:block;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:rgba(253,253,251,.45)}
+.c-row b{font-size:16.5px;font-weight:500;letter-spacing:.02em;color:#fdfdfb}
+.c-row a b{transition:color .2s}
+.c-row a:hover b{color:var(--amber)}
+.resp{
+  margin-top:22px;display:flex;align-items:center;gap:10px;font-size:13.5px;color:rgba(253,253,251,.75);
+}
+.resp i{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 2.2s infinite}
+
+/* ============ Footer ============ */
+footer{background:var(--ink);color:rgba(253,253,251,.55);padding:34px 0;border-top:1px solid var(--line-light)}
+.foot-inner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px}
+.foot-inner .logo{opacity:.9}
+footer p{font-size:12.5px}
+footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
+
+/* ============ 入场动效 ============ */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.hero .rise{opacity:0;animation:rise .9s var(--ease) forwards}
+.d1{animation-delay:.05s}.d2{animation-delay:.18s}.d3{animation-delay:.32s}
+.d4{animation-delay:.46s}.d5{animation-delay:.6s}.d6{animation-delay:.74s}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
+  .hero .rise{opacity:1;animation:none}
+}
+
+/* ============ 响应式 ============ */
+@media (max-width:1020px){
+  .team-grid{grid-template-columns:repeat(2,1fr)}
+  .ai-grid{grid-template-columns:repeat(2,1fr)}
+  .cases-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:860px){
+  .nav-links{
+    position:fixed;inset:72px 0 auto 0;flex-direction:column;align-items:stretch;gap:0;
+    background:rgba(20,21,58,.97);backdrop-filter:blur(16px);padding:12px 20px 24px;
+    transform:translateY(-130%);transition:transform .45s var(--ease);border-bottom:1px solid var(--line-light);
+  }
+  .nav-links.open{transform:none}
+  .nav-links a{padding:15px 10px;border-bottom:1px solid rgba(253,253,251,.08);border-radius:0;font-size:16px}
+  .nav-links a:last-child{border-bottom:0;text-align:center;margin-top:14px}
+  .nav-burger{display:flex}
+  .nav-burger.x span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .nav-burger.x span:nth-child(2){opacity:0}
+  .nav-burger.x span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .about-grid,.ai-head,.diag-grid,.contact-grid{grid-template-columns:1fr}
+  .svc-grid{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .mission-strip{grid-template-columns:1fr}
+  .cases-stats{gap:22px}
+  .hero-en{white-space:normal}
+}
+@media (max-width:560px){
+  .team-grid{grid-template-columns:1fr}
+  .ai-grid{grid-template-columns:1fr}
+  .cases-grid{grid-template-columns:1fr}
+  .modes{grid-template-columns:1fr}
+  .hero-stat{padding:16px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 导航 ================= -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="logo" href="#top" aria-label="Consultant Club 首页">
+      <svg class="logo-mark" viewBox="0 0 44 44" aria-hidden="true">
+        <circle cx="17" cy="22" r="11" fill="#f0c24b"/>
+        <circle cx="27" cy="22" r="10.4" fill="none" stroke="currentColor" stroke-width="2.3"/>
+      </svg>
+      <span class="logo-word">Consultant Club<small>AI-NATIVE CONSULTING</small></span>
+    </a>
+    <nav aria-label="主导航">
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#about">关于我们</a></li>
+        <li><a href="#team">核心成员</a></li>
+        <li><a href="#services">服务体系</a></li>
+        <li><a href="#ai">AI 咨询</a></li>
+        <li><a href="#cases">咨询项目</a></li>
+        <li><a href="#diagnosis">管理诊断</a></li>
+        <li><a class="nav-cta" href="#contact">预约诊断</a></li>
+      </ul>
+    </nav>
+    <button class="nav-burger" id="burger" aria-label="打开菜单" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ================= Hero ================= -->
+<section class="hero grain" id="top">
+  <div class="wrap">
+    <div class="hero-en rise d1" aria-hidden="true">Consultant Club</div>
+    <div class="hero-badge rise d2"><i></i>AI × CONSULTING · 中小企业数智化转型陪跑首选</div>
+    <h1 class="rise d3">让每一家中小企业，<br>进入<em>高速成长</em>状态</h1>
+    <p class="hero-sub rise d4">Consultant Club 专注 <strong>AI 与咨询融合落地</strong>，以「战略咨询 × 智能体定制 × 对赌落地陪跑」三位一体路径，帮助企业构建可持续进化的<strong>「智能生命系统」</strong>。</p>
+    <div class="hero-slogans rise d5" aria-label="品牌理念">
+      <span>深入一线</span><span>管理进化</span><span>陪伴成长</span><span>驱动增长</span>
+    </div>
+    <div class="hero-actions rise d6">
+      <a class="btn btn-primary" href="#contact">预约管理诊断</a>
+      <a class="btn btn-ghost" href="#cases">查看咨询项目</a>
+    </div>
+    <div class="hero-stats rise d6">
+      <div class="hero-stat"><b data-count="17" data-suffix="+">0</b><span>咨询项目实战落地</span></div>
+      <div class="hero-stat"><b data-count="8" data-suffix="+">0</b><span>服务上市及大型企业</span></div>
+      <div class="hero-stat"><b data-count="32" data-prefix="+" data-suffix="%">0</b><span>客户最高人效提升</span></div>
+      <div class="hero-stat"><b data-count="50" data-suffix="%">0</b><span>首期不满意退费保障</span></div>
+    </div>
+  </div>
+  <div class="scroll-hint" aria-hidden="true">SCROLL</div>
+</section>
+
+<!-- ================= 客户跑马灯 ================= -->
+<div class="ticker" aria-label="部分合作企业">
+  <div class="ticker-track">
+    <ul>
+      <li>长城汽车</li><li>吉利汽车</li><li>海兰信集团</li><li>汇源果汁</li><li>华友钴业</li><li>龙芯中科</li><li>东方园林</li><li>天津银行</li><li>联东U谷</li><li>亚特餐饮集团</li><li>正邦品牌设计</li><li>东方红马电商</li><li>晓谷科技</li><li>懿菲华服</li><li>神笔马良医美</li><li>宝熙服饰集团</li><li>GCRUES</li>
+    </ul>
+    <ul aria-hidden="true">
+      <li>长城汽车</li><li>吉利汽车</li><li>海兰信集团</li><li>汇源果汁</li><li>华友钴业</li><li>龙芯中科</li><li>东方园林</li><li>天津银行</li><li>联东U谷</li><li>亚特餐饮集团</li><li>正邦品牌设计</li><li>东方红马电商</li><li>晓谷科技</li><li>懿菲华服</li><li>神笔马良医美</li><li>宝熙服饰集团</li><li>GCRUES</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ================= 关于我们 ================= -->
+<section class="sec" id="about">
+  <div class="wrap">
+    <div class="about-grid">
+      <div class="reveal">
+        <div class="sec-label">01 · 关于我们 ABOUT US</div>
+        <h2 class="sec-title">不做什么，<br>比做什么<em>更重要</em></h2>
+        <p class="about-lead"><strong>Consultant Club 专注 AI 与咨询融合落地</strong>，致力于成为中小企业数智化转型的陪跑首选。我们不做浮于表面的方案交付，而是深入一线，与企业管理者一起把战略、组织与 AI 真正"用起来"。</p>
+        <div class="about-quote">"战略看得清，组织转得动，<br>AI 用得进——增长才会发生。"</div>
+        <p class="about-p">我们相信：企业的问题从来不是孤立的点，而是战略、流程、人才相互咬合的系统。真正的咨询，是帮你找到可撬动的增长杠杆，并陪你把它落地成结果。</p>
+      </div>
+      <div class="reveal">
+        <div class="trinity">
+          <div class="trinity-cap">THREE-IN-ONE · 三位一体核心服务路径</div>
+          <div class="trinity-flow">
+            <div class="trinity-item"><i>×1</i><div><b>战略咨询</b><br><span>方向聚焦 · 增长路径 · 策略组合</span></div></div>
+            <div class="trinity-arrow">＋</div>
+            <div class="trinity-item"><i>×2</i><div><b>智能体定制</b><br><span>业务智能体 · AI 应用工具 · 流程嵌入</span></div></div>
+            <div class="trinity-arrow">＋</div>
+            <div class="trinity-item"><i>×3</i><div><b>对赌落地陪跑</b><br><span>结果导向 · 阶段对赌 · 全程陪跑</span></div></div>
+            <div class="trinity-arrow">↓</div>
+          </div>
+          <div class="trinity-result"><b>企业「智能生命系统」</b><span>SELF-EVOLVING SYSTEM</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="mission-strip reveal">
+      <div class="mission-cell"><b><i>使命</i>MISSION</b><p>让所有中小型企业进入高速成长状态。</p></div>
+      <div class="mission-cell"><b><i>方式</i>APPROACH</b><p>深入一线、管理进化、陪伴成长、驱动增长。</p></div>
+      <div class="mission-cell"><b><i>信念</i>BELIEF</b><p>不做什么，比做什么更重要——聚焦真问题，拒绝伪动作。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 核心成员 ================= -->
+<section class="sec team grain" id="team">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-label">02 · 核心成员 CORE TEAM</div>
+      <h2 class="sec-title">一线打过仗的人，<br>才懂怎么<em>陪跑</em></h2>
+    </div>
+    <div class="team-grid">
+      <article class="member reveal">
+        <div class="member-photo"><img src="assets/team-yang.jpg" alt="杨景宇" loading="lazy"></div>
+        <h3>杨景宇</h3>
+        <span class="member-role">战略顾问</span>
+        <ul>
+          <li>世界前 10 强集团 / P8</li>
+          <li>大型金融集团 / 总经理</li>
+          <li>上市连锁商超 / 人力总监</li>
+        </ul>
+      </article>
+      <article class="member reveal">
+        <div class="member-photo"><img src="assets/team-tang.jpg" alt="唐名华" loading="lazy"></div>
+        <h3>唐名华</h3>
+        <span class="member-role">AI 技术经理</span>
+        <ul>
+          <li>阿里特邀讲师</li>
+          <li>人工智能高级技师</li>
+          <li>开发多个 AI 应用工具</li>
+        </ul>
+      </article>
+      <article class="member reveal">
+        <div class="member-photo"><img src="assets/team-doris.jpg" alt="Doris" loading="lazy"></div>
+        <h3>Doris</h3>
+        <span class="member-role">业绩增长教练</span>
+        <ul>
+          <li>销冠陪练官智能体产品设计者</li>
+          <li>HBDI® 全脑优势分析师</li>
+          <li>ICF（国际认证）PCC 高管教练</li>
+        </ul>
+      </article>
+      <article class="member reveal">
+        <div class="member-photo"><img src="assets/team-li.jpg" alt="李文科" loading="lazy"></div>
+        <h3>李文科</h3>
+        <span class="member-role">组织发展顾问</span>
+        <ul>
+          <li>西南百强猎头</li>
+          <li>华为人才发展专家</li>
+          <li>APQC 流程搭建师</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 服务体系 ================= -->
+<section class="sec" id="services">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-label">03 · 服务体系 SERVICE SYSTEM</div>
+      <h2 class="sec-title">从诊断到落地，<br>一套<em>闭环</em>打法</h2>
+    </div>
+    <div class="svc-grid">
+      <article class="svc-card reveal" data-no="01">
+        <h3><i>01</i>组织诊断与增长分析</h3>
+        <ol>
+          <li><b>流程结构分析</b>——找到流转中的断点与冗余</li>
+          <li><b>岗位负荷诊断</b>，看清人岗匹配的真实状态</li>
+          <li><b>组织协同效率识别</b>，定位协作损耗</li>
+          <li><b>人才梯队评估</b>，盘点关键岗位继任力</li>
+          <li><b>资源投产比分析</b>，把投入算明白</li>
+          <li><b>数据分析 & 问题定位</b>，用数据锁定真问题</li>
+        </ol>
+      </article>
+      <article class="svc-card reveal" data-no="02">
+        <h3><i>02</i>战略重构设计</h3>
+        <ol>
+          <li><b>战略方向聚焦</b>与增长意图澄清</li>
+          <li><b>识别核心业务突破点</b>，撬动增长飞轮</li>
+          <li><b>制定阶段性增长路径</b>与策略组合</li>
+          <li><b>AI 策略模拟</b>与最优路径推演</li>
+        </ol>
+      </article>
+      <article class="svc-card reveal" data-no="03">
+        <h3><i>03</i>运营效率优化</h3>
+        <ol>
+          <li><b>关键岗位角色再设计</b>，责任到人、边界清晰</li>
+          <li><b>人效模型建立</b>，让产出可量化</li>
+          <li><b>基于岗位胜任力模型</b>，搭建人才发展路径</li>
+          <li><b>AI 智能体驱动的人才训练系统</b>构建</li>
+        </ol>
+      </article>
+      <article class="svc-card reveal" data-no="04">
+        <h3><i>04</i>专项问题解决方案</h3>
+        <ol>
+          <li><b>销冠打造训练营</b>——把 top sales 的动作标准化</li>
+          <li><b>高绩效团队训练营</b>，从个体强到团队强</li>
+          <li><b>管理者实战工作坊</b>，练兵场上带兵</li>
+          <li><b>AI 应用落地陪跑方案</b>，从会用 to 用好</li>
+        </ol>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= AI 咨询 ================= -->
+<section class="sec ai grain" id="ai">
+  <div class="wrap">
+    <div class="ai-head reveal">
+      <div>
+        <div class="sec-label">04 · AI 咨询 AI ADVISORY</div>
+        <h2 class="sec-title">拥有 AI，<br>不等于<em>用好</em> AI</h2>
+      </div>
+      <p>大多数企业的问题不是"没有 AI"，而是 AI 停留在聊天框里、停在个别人手里。我们帮助企业<strong>把 AI 嵌入关键业务流程</strong>，打造既能提效、又能演化的<strong>「智能生命系统」</strong>。</p>
+    </div>
+    <div class="ai-grid reveal">
+      <div class="ai-cell">
+        <i>a.</i>
+        <h3>AI 策略模拟</h3>
+        <p>对战略方向做多路径推演与压力测试，用 AI 找到概率最高的最优路径，再决策。</p>
+      </div>
+      <div class="ai-cell">
+        <i>b.</i>
+        <h3>业务智能体定制</h3>
+        <p>销冠陪练官等岗位级智能体定制开发，把顶尖业务经验沉淀为组织能力。</p>
+      </div>
+      <div class="ai-cell">
+        <i>c.</i>
+        <h3>人才训练系统</h3>
+        <p>AI 智能体驱动的人才训练与带教体系，让新人上手更快、老带新不再靠运气。</p>
+      </div>
+      <div class="ai-cell">
+        <i>d.</i>
+        <h3>AI 应用落地陪跑</h3>
+        <p>从工具选型、流程嵌入到习惯养成，全程陪跑，确保 AI 真正"用进流程"。</p>
+      </div>
+    </div>
+    <div class="ai-flow reveal" aria-label="AI 落地路径">
+      <span>诊断流程断点</span>
+      <span>选定关键场景</span>
+      <span><b>定制智能体</b></span>
+      <span>嵌入业务流程</span>
+      <span><b>对赌落地陪跑</b></span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 咨询项目 ================= -->
+<section class="sec" id="cases">
+  <div class="wrap">
+    <div class="cases-head reveal">
+      <div>
+        <div class="sec-label">05 · 咨询项目 SELECTED CASES</div>
+        <h2 class="sec-title">结果，是咨询唯一的<em>发言权</em></h2>
+      </div>
+      <div class="cases-stats">
+        <div><b data-count="17" data-suffix="+">0</b><span>落地项目</span></div>
+        <div><b data-count="16" data-suffix="+">0</b><span>合作企业</span></div>
+        <div><b data-count="200" data-suffix="%">0</b><span>最高业绩增长</span></div>
+      </div>
+    </div>
+    <div class="filter reveal" role="tablist" aria-label="项目分类筛选">
+      <button class="on" data-filter="all">全部</button>
+      <button data-filter="strategy">战略规划</button>
+      <button data-filter="perf">绩效体系</button>
+      <button data-filter="org">组织变革</button>
+      <button data-filter="talent">人才发展</button>
+      <button data-filter="growth">业绩增长</button>
+      <button data-filter="training">专项培训</button>
+    </div>
+    <div class="cases-grid" id="casesGrid">
+      <article class="case reveal" data-cat="perf">
+        <div class="case-top"><span class="case-co">长城汽车</span><span class="case-code">601633 / 02333.HK</span></div>
+        <span class="case-tag">绩效体系</span>
+        <p class="case-title">变速箱团队考核升级：围绕产量、质量与交付效率的闭环激励体系，2 年持续运行。</p>
+        <div class="case-metric"><b>+11%</b><span>团队人效提升，骨干稳定性显著增强</span></div>
+      </article>
+      <article class="case reveal" data-cat="perf">
+        <div class="case-top"><span class="case-co">吉利汽车</span><span class="case-code">00175.HK</span></div>
+        <span class="case-tag">绩效体系</span>
+        <p class="case-title">绩效方案设计与落地：重构指标与权重，升级为围绕核心业务指标的结果导向体系。</p>
+        <div class="case-metric"><b>+9.5%</b><span>人效提升，规模稳定下效率产出双升</span></div>
+      </article>
+      <article class="case reveal" data-cat="strategy">
+        <div class="case-top"><span class="case-co">海兰信集团</span><span class="case-code">300065</span></div>
+        <span class="case-tag">战略规划</span>
+        <p class="case-title">3 个月完成"海底数据中心"新业务板块搭建；重构船舶系统业务市场定位与销售打法。</p>
+        <div class="case-metric"><b>35亿→135亿</b><span>市值倍增，业绩增长 200%</span></div>
+      </article>
+      <article class="case reveal" data-cat="strategy">
+        <div class="case-top"><span class="case-co">汇源果汁</span><span class="case-code">01886.HK</span></div>
+        <span class="case-tag">战略规划</span>
+        <p class="case-title">从诊断到落地的全周期战略规划：围绕"天然、健康、场景化"重塑产品与品牌定位。</p>
+        <div class="case-metric"><b>全周期</b><span>破解产品单一、客群老化与渠道效率难题</span></div>
+      </article>
+      <article class="case reveal" data-cat="talent">
+        <div class="case-top"><span class="case-co">华友钴业</span><span class="case-code">603799</span></div>
+        <span class="case-tag">人才发展</span>
+        <p class="case-title">从人才定位到人才画像，重建关键岗位人才标准，搭建胜任力模型并嵌入招聘体系。</p>
+        <div class="case-metric"><b>90%</b><span>招聘合格率</span></div>
+      </article>
+      <article class="case reveal" data-cat="growth">
+        <div class="case-top"><span class="case-co">龙芯中科</span><span class="case-code">688047</span></div>
+        <span class="case-tag">业绩增长</span>
+        <p class="case-title">国产自主可控 CPU 核心企业业绩增长项目，支撑关键信息基础设施领域持续拓展。</p>
+        <div class="case-metric"><b>+2亿</b><span>2021 年业绩增长</span></div>
+      </article>
+      <article class="case reveal" data-cat="growth">
+        <div class="case-top"><span class="case-co">东方园林</span><span class="case-code">002310</span></div>
+        <span class="case-tag">业绩增长</span>
+        <p class="case-title">生态环保领军企业业绩增长项目，支撑全国生态修复与环保工程业务扩张。</p>
+        <div class="case-metric"><b>+22%</b><span>2018 年净利润同比增长</span></div>
+      </article>
+      <article class="case reveal" data-cat="org">
+        <div class="case-top"><span class="case-co">天津银行</span><span class="case-code">01578.HK</span></div>
+        <span class="case-tag">组织变革</span>
+        <p class="case-title">组织流程迭代：设计人才发展规划，明确数千人规模岗位画像并完成组织评估调整。</p>
+        <div class="case-metric"><b>&gt;95%</b><span>岗位匹配度 · 绩效通过率 90%</span></div>
+      </article>
+      <article class="case reveal" data-cat="strategy">
+        <div class="case-top"><span class="case-co">神笔马良医美</span><span class="case-code">MEDICAL AESTHETICS</span></div>
+        <span class="case-tag">战略规划</span>
+        <p class="case-title">2 年深度陪跑：聚焦"轻医美"细分赛道，从战略定位到运营落地，打造数字化获客与全周期服务体系。</p>
+        <div class="case-metric"><b>5000万→5亿</b><span>营业额 10 倍增长</span></div>
+      </article>
+      <article class="case reveal" data-cat="strategy">
+        <div class="case-top"><span class="case-co">懿菲华服</span><span class="case-code">HAUTE COUTURE</span></div>
+        <span class="case-tag">战略规划</span>
+        <p class="case-title">"文化传承 + 轻奢化转型"一体化全案：战略定位、组织管控、人才激励与全链路营销矩阵升级。</p>
+        <div class="case-metric"><b>+38%</b><span>项目实施后业绩增长</span></div>
+      </article>
+      <article class="case reveal" data-cat="org">
+        <div class="case-top"><span class="case-co">正邦品牌设计</span><span class="case-code">BRANDING</span></div>
+        <span class="case-tag">组织变革</span>
+        <p class="case-title">全链路组织变革：重构"战略—架构—人才"一体化体系，建立契合创意产业特性的管理与激励模式。</p>
+        <div class="case-metric"><b>+5%</b><span>变革上线后整体人效提升</span></div>
+      </article>
+      <article class="case reveal" data-cat="org">
+        <div class="case-top"><span class="case-co">东方红马电商</span><span class="case-code">E-COMMERCE</span></div>
+        <span class="case-tag">组织变革</span>
+        <p class="case-title">组织架构设计与岗位梳理，配套标准化人才选拔与培训体系，为规模跃升打好组织基础。</p>
+        <div class="case-metric"><b>2000万→2亿</b><span>营收跨越 · 人效 +16%</span></div>
+      </article>
+      <article class="case reveal" data-cat="strategy">
+        <div class="case-top"><span class="case-co">亚特餐饮集团</span><span class="case-code">FOOD & BEVERAGE</span></div>
+        <span class="case-tag">战略规划</span>
+        <p class="case-title">集团战略规划与新品牌布局：孵化落地 3 个新品牌，重构组织绩效与股权激励，搭建集团商学院。</p>
+        <div class="case-metric"><b>2亿→40亿</b><span>整体业绩增长 · 人效 +32%</span></div>
+      </article>
+      <article class="case reveal" data-cat="org">
+        <div class="case-top"><span class="case-co">晓谷科技</span><span class="case-code">DIGITAL OPERATION</span></div>
+        <span class="case-tag">组织变革</span>
+        <p class="case-title">年度市场战略与任务分解，明确产品定位与目标客户结构，搭建企业商学院体系持续输送人才。</p>
+        <div class="case-metric"><b>5亿→8亿</b><span>整体业务增长 · 高绩效学员约 90%</span></div>
+      </article>
+      <article class="case reveal" data-cat="perf">
+        <div class="case-top"><span class="case-co">联东U谷</span><span class="case-code">INDUSTRIAL PARKS</span></div>
+        <span class="case-tag">绩效体系</span>
+        <p class="case-title">覆盖全国 526 个园区的全维度绩效管理体系：招商转化、租金收缴、空置控制等关键指标全面纳入。</p>
+        <div class="case-metric"><b>+30%</b><span>营收增速 · 助力蝉联行业 TOP1</span></div>
+      </article>
+      <article class="case reveal" data-cat="training">
+        <div class="case-top"><span class="case-co">宝熙服饰集团</span><span class="case-code">HEBEI</span></div>
+        <span class="case-tag">专项培训</span>
+        <p class="case-title">河北分公司《百万销冠》专项培训：把销冠动作标准化，复制到一线销售团队。</p>
+        <div class="case-metric"><b>+35%</b><span>业绩增长</span></div>
+      </article>
+      <article class="case reveal" data-cat="training">
+        <div class="case-top"><span class="case-co">GCRUES</span><span class="case-code">LEADERSHIP</span></div>
+        <span class="case-tag">专项培训</span>
+        <p class="case-title">《领导力艺术》专项培训：面向管理层的领导力实战训练，重塑管理动作与团队带教方式。</p>
+        <div class="case-metric"><b>×10</b><span>管理效率提升</span></div>
+      </article>
+    </div>
+    <p class="cases-note">* 以上为部分代表项目，数据来源于项目验收与客户回访。更多同类行业案例，欢迎预约交流。</p>
+  </div>
+</section>
+
+<!-- ================= 管理诊断 ================= -->
+<section class="sec diag" id="diagnosis">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-label">06 · 管理诊断 MANAGEMENT DIAGNOSIS</div>
+      <blockquote class="diag-quote">"如果我有一个小时解决问题，<br>我会用 <em>55 分钟</em>找出真问题。"<cite>—— 阿尔伯特 · 爱因斯坦</cite></blockquote>
+    </div>
+    <div class="diag-grid">
+      <div class="reveal">
+        <div class="diag-col">
+          <h3>哪些企业最需要管理诊断？</h3>
+          <div class="need">
+            <b><i>A</i>缺乏系统管理体系的企业</b>
+            <p>战略模糊、资源分散，目标难以达成；流程低效、成本偏高，执行依赖经验；组织稳定性差，核心人才留不住。</p>
+          </div>
+          <div class="need">
+            <b><i>B</i>增长遇到瓶颈的企业</b>
+            <p>业务扩张停滞，战略方向与增长不匹配；增长点模糊，难以找到突破路径；组织常陷入"高投入、低产出"循环。</p>
+          </div>
+          <div class="need">
+            <b><i>C</i>正在寻找转型突破的企业</b>
+            <p>想推动变革，但缺少清晰路径与方法；尝试用 AI 加速企业发展，但未真正落地；希望降本提效，建立可复制、可持续的增长飞轮。</p>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="diag-col">
+          <h3>管理诊断的价值</h3>
+          <div class="value-card">
+            <i>1.</i>
+            <div>
+              <h4>找到真正影响增长的「卡点」</h4>
+              <p>增长停滞，表面看是业绩问题，真正的卡点可能藏在战略偏差、流程断点或人岗错配中。结构化诊断帮你从复杂现象中识别可撬动的增长杠杆。</p>
+            </div>
+          </div>
+          <div class="value-card">
+            <i>2.</i>
+            <div>
+              <h4>让目标变得可被执行</h4>
+              <p>不是告诉你"要增长"，而是通过诊断拆解出增长的路径、阶段节奏与协同机制，形成一个可落地的执行系统。</p>
+            </div>
+          </div>
+          <div class="value-card">
+            <i>3.</i>
+            <div>
+              <h4>把 AI「用进流程」，提升组织效能</h4>
+              <p>拥有 AI，不等于用好 AI。我们帮助企业把 AI 嵌入关键业务流程，打造既能提效、又能演化的「智能生命系统」。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="diag-cta reveal">找到真问题，才是<em>改变的开始</em>。</p>
+  </div>
+</section>
+
+<!-- ================= 联系合作 ================= -->
+<section class="sec contact grain" id="contact">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="sec-label">07 · 商务合作 CONTACT</div>
+      <h2 class="sec-title">下一步，从一次<em>诊断</em>开始</h2>
+    </div>
+    <div class="contact-grid">
+      <div class="reveal">
+        <div class="modes">
+          <div class="mode"><i>i.</i><h4>按项目收费</h4><p>专项问题，单点突破，交付明确成果。</p></div>
+          <div class="mode"><i>ii.</i><h4>长期陪跑</h4><p>年度陪伴式服务，随业务节奏持续迭代。</p></div>
+          <div class="mode"><i>iii.</i><h4>专项培训</h4><p>销冠打造 · 高绩效团队 · 管理者实战工作坊。</p></div>
+          <div class="mode"><i>iv.</i><h4>灵活合作方式</h4><p>按企业阶段组合，先诊断、后定制。</p></div>
+        </div>
+        <div class="guarantee">
+          <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true">
+            <circle cx="17" cy="17" r="15.5" stroke="#f0c24b" stroke-width="1.6"/>
+            <path d="M11 17.5l4 4 8-9" stroke="#f0c24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div>
+            <b>零风险承诺</b>
+            <span>首期服务不满意可无条件终止，退回 50% 咨询费。</span>
+          </div>
+        </div>
+      </div>
+      <div class="contact-card reveal">
+        <h3>24 小时内响应，欢迎深度交流</h3>
+        <p class="sub">告知您的行业、团队规模与当前最困扰的问题，我们将为您匹配顾问。</p>
+        <div class="c-row">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><rect x="2" y="3" width="18" height="16" rx="3" stroke="#f0c24b" stroke-width="1.6"/><path d="M6 8h10M6 12h6" stroke="#f0c24b" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <div><small>MAIL 邮箱</small><a href="mailto:gwzixun@163.com"><b>gwzixun@163.com</b></a></div>
+        </div>
+        <div class="c-row">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M4 3h14a1 1 0 011 1v12a1 1 0 01-1 1h-8l-4 3v-3H4a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="#f0c24b" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8.5" cy="10" r="1" fill="#f0c24b"/><circle cx="11.5" cy="10" r="1" fill="#f0c24b"/><circle cx="14.5" cy="10" r="1" fill="#f0c24b"/></svg>
+          <div><small>WECHAT 微信</small><b>XJ159365</b></div>
+        </div>
+        <div class="c-row">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M4 4h14v14H4z" stroke="#f0c24b" stroke-width="1.6"/><path d="M4.5 5.5L11 11l6.5-5.5" stroke="#f0c24b" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <div><small>TEL 咨询热线</small><a href="tel:15967143596"><b>159 6714 3596</b></a></div>
+        </div>
+        <div class="resp"><i></i>工作日 24 小时内响应 · 首次沟通不收费</div>
+        <a class="btn btn-primary" href="Consultant%20Club%20公司简介.pdf" download style="margin-top:22px;justify-content:center">下载公司简介 PDF</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Footer ================= -->
+<footer>
+  <div class="wrap foot-inner">
+    <a class="logo" href="#top">
+      <svg class="logo-mark" viewBox="0 0 44 44" aria-hidden="true">
+        <circle cx="17" cy="22" r="11" fill="#f0c24b"/>
+        <circle cx="27" cy="22" r="10.4" fill="none" stroke="currentColor" stroke-width="2.3"/>
+      </svg>
+      <span class="logo-word">Consultant Club<small>AI-NATIVE CONSULTING</small></span>
+    </a>
+    <span class="slogan">深入一线 · 管理进化 · 陪伴成长 · 驱动增长</span>
+    <p>© 2026 Consultant Club. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- 导航状态 ---- */
+  var nav = document.getElementById("nav");
+  var burger = document.getElementById("burger");
+  var links = document.getElementById("navLinks");
+  function onScroll(){ nav.classList.toggle("scrolled", window.scrollY > 24); }
+  window.addEventListener("scroll", onScroll, {passive:true}); onScroll();
+
+  burger.addEventListener("click", function(){
+    var open = links.classList.toggle("open");
+    burger.classList.toggle("x", open);
+    burger.setAttribute("aria-expanded", open);
+    burger.setAttribute("aria-label", open ? "关闭菜单" : "打开菜单");
+  });
+  links.addEventListener("click", function(e){
+    if(e.target.tagName === "A" && links.classList.contains("open")){
+      links.classList.remove("open"); burger.classList.remove("x");
+      burger.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  /* ---- 滚动侦测高亮 ---- */
+  var navAnchors = [].slice.call(links.querySelectorAll('a[href^="#"]:not(.nav-cta)'));
+  var sections = navAnchors.map(function(a){ return document.querySelector(a.getAttribute("href")); }).filter(Boolean);
+  if("IntersectionObserver" in window && sections.length){
+    var spy = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          navAnchors.forEach(function(a){
+            a.classList.toggle("active", a.getAttribute("href") === "#" + en.target.id);
+          });
+        }
+      });
+    }, {rootMargin:"-40% 0px -55% 0px"});
+    sections.forEach(function(s){ spy.observe(s); });
+  }
+
+  /* ---- 入场揭示 ---- */
+  var reveals = [].slice.call(document.querySelectorAll(".reveal"));
+  if(reduce || !("IntersectionObserver" in window)){
+    reveals.forEach(function(el){ el.classList.add("in"); });
+  }else{
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en, i){
+        if(en.isIntersecting){
+          setTimeout(function(){ en.target.classList.add("in"); }, Math.min(i * 70, 280));
+          io.unobserve(en.target);
+        }
+      });
+    }, {threshold:.12, rootMargin:"0px 0px -6% 0px"});
+    reveals.forEach(function(el){ io.observe(el); });
+  }
+
+  /* ---- 数字滚动 ---- */
+  function countUp(el){
+    var target = parseInt(el.getAttribute("data-count"), 10) || 0;
+    var pre = el.getAttribute("data-prefix") || "";
+    var suf = el.getAttribute("data-suffix") || "";
+    if(reduce){ el.textContent = pre + target + suf; return; }
+    var t0 = null, dur = 1400;
+    function step(t){
+      if(!t0) t0 = t;
+      var p = Math.min((t - t0) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = pre + Math.round(target * eased) + suf;
+      if(p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var nums = [].slice.call(document.querySelectorAll("[data-count]"));
+  if("IntersectionObserver" in window){
+    var nio = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ countUp(en.target); nio.unobserve(en.target); }
+      });
+    }, {threshold:.6});
+    nums.forEach(function(el){ nio.observe(el); });
+  }else{
+    nums.forEach(countUp);
+  }
+
+  /* ---- 案例筛选 ---- */
+  var filterBtns = [].slice.call(document.querySelectorAll(".filter button"));
+  var cases = [].slice.call(document.querySelectorAll("#casesGrid .case"));
+  filterBtns.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      filterBtns.forEach(function(b){ b.classList.remove("on"); });
+      btn.classList.add("on");
+      var f = btn.getAttribute("data-filter");
+      cases.forEach(function(c){
+        var show = f === "all" || c.getAttribute("data-cat") === f;
+        c.classList.toggle("hide", !show);
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -91,6 +91,7 @@ main{flex:1;padding:30px 36px 60px;min-width:0}
   background:var(--ink);color:#fff;transition:opacity .2s}
 .pbtn:hover{opacity:.86}
 .pbtn.ghost{background:#fff;color:var(--ink);border:1.4px solid var(--line)}
+.pbtn.amber{background:var(--amber);color:var(--ink)}
 .pbtn.warn{background:var(--bad)}
 .pbtn.sm{padding:5px 12px;font-size:12px;border-radius:7px}
 
@@ -114,10 +115,10 @@ tr:hover td{background:#fcfbf7}
 .t-actions{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
 .view-btn{border:1.3px solid var(--line);background:#fff;border-radius:8px;padding:5px 13px;font-size:12.5px}
 .view-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
-.mark-btn{border:0;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600;color:#fff;background:var(--ink)}
+.mark-btn{border:1.3px solid transparent;border-radius:7px;padding:5px 13px;font-size:12px;font-weight:700;color:#fff;background:var(--ink)}
 .mark-btn:hover{opacity:.85}
-.mark-btn.pending{background:var(--amber-d)}
-.mark-btn.handled{background:#bbb}
+.mark-btn.handled{background:var(--amber);color:var(--ink)}
+.mark-btn.pending{background:#f1efe8;color:#8a8776;border-color:var(--line)}
 .note-btn{border:1.3px solid var(--line);background:#fff;border-radius:7px;padding:5px 11px;font-size:12px}
 .note-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
 .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:14px}
@@ -138,11 +139,16 @@ tr:hover td{background:#fcfbf7}
 .modal .mb{padding:22px 28px;overflow-y:auto;flex:1}
 .modal .mf{padding:16px 28px;border-top:1px solid var(--line);background:#faf9f4;flex-shrink:0;display:flex;gap:10px;align-items:center}
 
-.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--line)}
-.hgrid .hk{color:var(--muted);font-size:13px;padding:10px 2px;border-bottom:1px solid #f0efe8}
-.hgrid .hv{font-size:13.5px;padding:10px 2px;border-bottom:1px solid #f0efe8;border-right:1px solid var(--line);word-break:break-all}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;border:1px solid var(--line);border-radius:12px;
+  background:#fff;padding:10px 20px 14px;box-shadow:0 1px 3px rgba(20,21,58,.05)}
 .hgrid .col{display:flex;flex-direction:column}
-.hgrid .col.left{border-right:1px solid var(--line)}
+.hgrid .col.left{border-right:1px solid var(--line);padding-right:28px}
+.hgrid .row{display:grid;grid-template-columns:104px 1fr;gap:12px;align-items:center;
+  padding:9px 0;border-bottom:1px dashed #eceade}
+.hgrid .row:last-child{border-bottom:0}
+.hgrid .hk{color:#8a8776;font-size:12px;background:#f6f4ec;border-radius:6px;
+  padding:4px 2px;text-align:center;white-space:nowrap}
+.hgrid .hv{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.5;word-break:break-all}
 
 .notes-box{margin-top:18px;background:#faf9f4;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
 .notes-box h4{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px}
@@ -194,6 +200,7 @@ tr:hover td{background:#fcfbf7}
   aside .me{display:flex;align-items:center;gap:10px}
   main{padding:20px 16px 60px}
   .hgrid{grid-template-columns:1fr}
+  .hgrid .col.left{border-right:0;padding-right:0}
   .modal .mc{width:96%;max-height:92vh}
   .t-actions{flex-direction:column;align-items:flex-start}
 }
@@ -336,7 +343,7 @@ tr:hover td{background:#fcfbf7}
     <div class="mf">
       <input class="note-input" id="mNoteInput" placeholder="输入联系记录，回车添加…">
       <button class="pbtn ghost" id="mAddNote">添加记录</button>
-      <button class="pbtn" id="mToggleStatus">标记已处理</button>
+      <button class="pbtn amber" id="mToggleStatus">处理</button>
     </div>
   </div>
 </div>
@@ -523,8 +530,8 @@ function render(){
     var handler = s.handler_name || s.handler_phone || "";
     var handlerTxt = handler ? ("<br><small style='color:#888'>"+esc(handler)+" · "+esc(fmtTime(s.handled_at))+"</small>") : "";
     var markBtn = statusCls === "handled"
-      ? '<button class="mark-btn sm pending" data-act="unhandled">标为未处理</button>'
-      : '<button class="mark-btn sm handled" data-act="handled">标为已处理</button>';
+      ? '<button class="mark-btn sm pending" data-act="unhandled">未处理</button>'
+      : '<button class="mark-btn sm handled" data-act="handled">处理</button>';
     return "<tr data-id='" + s.id + "'>" +
       '<td class="t-time">' + esc(fmtTime(s.created_at)) + "</td>" +
       '<td class="t-key"><b>' + esc(k.t) + "</b><small>" + esc(k.s) + "</small></td>" +
@@ -623,24 +630,24 @@ function openDetail(s){
   var left = keys.slice(0, half), right = keys.slice(half);
   function makeCol(arr){
     return arr.map(function(k){
-      return "<div class='k'>" + esc(LABELS[k] || k) + "</div><div class='v'>" + esc(d[k]) + "</div>";
+      return "<div class='row'><div class='hk'>" + esc(LABELS[k] || k) + "</div><div class='hv'>" + esc(d[k]) + "</div></div>";
     }).join("");
   }
   var htm = "<div class='col left'>" + makeCol(left) + "</div>" +
             "<div class='col'>" + makeCol(right) + "</div>";
-  if(keys.length === 0) htm = "<div class='col left'><div class='k'>—</div><div class='v'>无内容</div></div><div class='col'></div>";
+  if(keys.length === 0) htm = "<div class='col left'><div class='row'><div class='hk'>—</div><div class='hv'>无内容</div></div></div><div class='col'></div>";
   $("mGrid").innerHTML = htm;
   $("mNotes").textContent = s.notes || "";
 
-  $("mToggleStatus").textContent = s.status === "handled" ? "标为未处理" : "标记已处理";
-  $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : "");
+  $("mToggleStatus").textContent = s.status === "handled" ? "未处理" : "处理";
+  $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : " amber");
   $("modal").classList.add("open");
   setTimeout(function(){ $("mNoteInput").focus(); }, 100);
 }
 function refreshModal(s){
   $("mNotes").textContent = s.notes || "";
-  $("mToggleStatus").textContent = s.status === "handled" ? "标为未处理" : "标记已处理";
-  $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : "");
+  $("mToggleStatus").textContent = s.status === "handled" ? "未处理" : "处理";
+  $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : " amber");
   var handler = s.handler_name || s.handler_phone || "";
   var meta = fmtTime(s.created_at);
   if(s.status === "handled") meta += " · 已处理"; else meta += " · 未处理";

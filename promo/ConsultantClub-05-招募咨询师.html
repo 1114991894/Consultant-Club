@@ -1,0 +1,131 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>招募项目咨询师</title><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"><style>
+:root{
+  --indigo-950:#14153a; --indigo-900:#1e1f4e; --indigo-500:#4a4da3;
+  --amber:#f0c24b; --amber-deep:#b78a22; --white:#fdfdfb;
+  --serif:'Playfair Display','Noto Serif SC',serif;
+  --serif-cn:'Noto Serif SC','Source Han Serif SC','STZhongsong','SimSun',serif;
+  --sans:'Noto Sans SC','Microsoft YaHei',sans-serif;
+  --mono:'IBM Plex Mono',Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden}
+body{font-family:var(--sans);color:var(--white);-webkit-font-smoothing:antialiased}
+.poster{position:relative;width:1920px;height:1080px;overflow:hidden;
+  background:
+    radial-gradient(56% 64% at 92% -10%,rgba(74,77,163,.58),transparent 64%),
+    radial-gradient(44% 52% at 2% 106%,rgba(240,194,75,.22),transparent 70%),
+    linear-gradient(152deg,#14153a 0%,#1c1d4a 44%,#0f1030 100%);}
+.grid{position:absolute;inset:0;opacity:.30;
+  background-image:linear-gradient(rgba(253,253,251,.055) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(253,253,251,.055) 1px,transparent 1px);
+  background-size:96px 96px}
+.band{position:absolute;top:-30%;right:16%;width:30%;height:160%;transform:rotate(16deg);
+  background:linear-gradient(180deg,rgba(240,194,75,0),rgba(240,194,75,.14),rgba(240,194,75,0))}
+.pad{position:absolute;inset:0;padding:70px 96px 58px;display:flex;flex-direction:column}
+
+.brand{display:flex;align-items:center;gap:16px}
+.mark{position:relative;width:46px;height:46px;flex:none}
+.mark i{position:absolute;border-radius:50%;display:block}
+.mark i:first-child{left:0;top:0;width:34px;height:34px;background:var(--amber)}
+.mark i:last-child{right:0;bottom:0;width:28px;height:28px;border:2.5px solid var(--indigo-500)}
+.brand .wm{font-family:var(--serif);font-weight:600;font-size:27px}
+.brand .tag{font-family:var(--mono);font-size:12.5px;letter-spacing:.24em;color:rgba(253,253,251,.5);margin-left:8px;padding-top:4px}
+
+.top{display:flex;justify-content:space-between;align-items:flex-end;margin-top:64px}
+.eyebrow{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:14px;
+  letter-spacing:.22em;color:var(--amber);text-transform:uppercase}
+.eyebrow::before{content:"";width:34px;height:1.5px;background:currentColor}
+h1{font-family:var(--serif-cn);font-weight:900;font-size:96px;line-height:1.14;letter-spacing:-.015em;margin-top:30px}
+h1 em{font-style:normal;color:var(--amber)}
+.sub{margin-top:24px;font-size:24px;line-height:1.8;color:rgba(253,253,251,.7);max-width:1080px}
+.sub b{color:var(--white);font-weight:500}
+.openbox{text-align:right;border-right:3px solid var(--amber);padding-right:26px}
+.openbox .n{font-family:var(--serif-cn);font-weight:900;font-size:82px;color:var(--white);line-height:1}
+.openbox .n u{text-decoration:none;color:var(--amber);font-size:40px;margin-left:4px}
+.openbox .t{margin-top:12px;font-size:19px;color:rgba(253,253,251,.62);letter-spacing:.04em}
+
+.cols{display:flex;gap:0;margin-top:auto;border-top:1px solid rgba(253,253,251,.16);padding-top:38px}
+.col{flex:1;padding-right:46px;margin-right:46px;border-right:1px solid rgba(253,253,251,.13)}
+.col:last-child{border-right:0;padding-right:0;margin-right:0}
+.col .hd{display:flex;align-items:baseline;gap:14px}
+.col .hd .k{font-family:var(--mono);font-size:13.5px;letter-spacing:.18em;color:var(--amber)}
+.col .hd h4{font-family:var(--serif-cn);font-weight:700;font-size:30px;color:var(--white)}
+.col ul{margin-top:22px;display:flex;flex-direction:column;gap:16px}
+.col li{list-style:none;font-size:19px;line-height:1.65;color:rgba(253,253,251,.72);padding-left:24px;position:relative}
+.col li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;border-radius:50%;background:rgba(240,194,75,.75)}
+.col li b{color:var(--white);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+.chip{border:1px solid rgba(240,194,75,.5);color:#f6d47c;font-size:19px;padding:11px 22px;letter-spacing:.02em}
+.chip.dim{border-color:rgba(253,253,251,.22);color:rgba(253,253,251,.78)}
+.steps{margin-top:22px;display:flex;flex-direction:column;gap:14px}
+.step{display:flex;gap:14px;align-items:baseline;font-size:19px;color:rgba(253,253,251,.72)}
+.step i{font-family:var(--mono);font-style:normal;font-size:13.5px;color:var(--amber);letter-spacing:.16em}
+.step b{color:var(--white);font-weight:500;margin-right:6px}
+
+.cta{margin-top:38px;display:flex;align-items:center;gap:26px;
+  background:rgba(253,253,251,.055);border:1px solid rgba(253,253,251,.14);padding:22px 30px}
+.cta .btn{font-weight:500;background:var(--amber);color:#1a1b40;padding:15px 32px;font-size:22px;flex:none}
+.cta .info{display:flex;gap:38px;font-size:21px;color:rgba(253,253,251,.85)}
+.cta .info b{font-family:var(--mono);font-weight:500;color:var(--white);letter-spacing:.04em}
+.cta .slog{font-size:21px;line-height:1.6;color:rgba(253,253,251,.7)}
+.cta .slog b{color:var(--white);font-weight:500}
+.cta .last{margin-left:auto;font-family:var(--mono);font-size:13.5px;letter-spacing:.16em;color:rgba(253,253,251,.42);text-align:right;line-height:1.7}
+</style></head><body>
+<div class="poster"><div class="grid"></div><div class="band"></div>
+<div class="pad">
+<div class="brand"><span class="mark"><i></i><i></i></span><span class="wm">Consultant Club</span>
+  <span class="tag">AI-NATIVE CONSULTING</span></div>
+
+<div class="top">
+  <div>
+    <div class="eyebrow">WE ARE HIRING · 招募项目咨询师</div>
+    <h1>不缺项目，<br>缺把它<em>做到位</em>的人</h1>
+    <div class="sub">平台负责获客、售前、工具与结算，你只负责一件事——<b>把项目做出结果</b>。<br>
+    按项目合作，不打卡、不坐班、不签长约，先聊一次。</div>
+  </div>
+  <div class="openbox">
+    <div class="n">6<u>大方向</u></div>
+    <div class="t">持续开放 · 按领域与档期匹配</div>
+  </div>
+</div>
+
+<div class="cols">
+  <div class="col">
+    <div class="hd"><span class="k">01 · WHO</span><h4>我们在找这样的人</h4></div>
+    <ul>
+      <li><b>一线打过仗</b>——在业务里拿过结果，而不只是讲过课</li>
+      <li><b>能独立带项目</b>——从诊断到落地，对结果负责</li>
+      <li><b>愿意下场陪跑</b>——进得了车间和会议室，写得了方案</li>
+      <li><b>会用 AI</b>——把它当成放大交付效率的工具</li>
+    </ul>
+  </div>
+  <div class="col">
+    <div class="hd"><span class="k">02 · WHERE</span><h4>开放的招募方向</h4></div>
+    <div class="chips">
+      <span class="chip">战略规划</span><span class="chip">组织变革</span>
+      <span class="chip">绩效薪酬</span><span class="chip">人才发展</span>
+      <span class="chip">业绩增长</span><span class="chip">AI 落地</span>
+      <span class="chip dim">股权合伙</span><span class="chip dim">财税合规</span>
+    </div>
+    <ul style="margin-top:24px">
+      <li>以上任一领域有 <b>3 年以上实战履历</b> 即可</li>
+      <li>讲师、顾问、企业高管、独立咨询师均欢迎</li>
+    </ul>
+  </div>
+  <div class="col">
+    <div class="hd"><span class="k">03 · HOW</span><h4>怎么加入</h4></div>
+    <div class="steps">
+      <div class="step"><i>STEP 01</i><span><b>一次深聊</b>——聊你做过什么、擅长什么</span></div>
+      <div class="step"><i>STEP 02</i><span><b>匹配项目</b>——按领域与档期对接在谈需求</span></div>
+      <div class="step"><i>STEP 03</i><span><b>项目制合作</b>——分成规则前置约定，透明结算</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="cta">
+  <span class="btn">申请成为项目咨询师</span>
+  <span class="slog"><b>先聊一次，不谈签约</b>——聊你做过什么、擅长什么，合不合适当场就知道</span>
+  <span class="last">PROJECT-BASED<br>顾问合作 · 按项目结算</span>
+</div>
+</div></div></body></html>

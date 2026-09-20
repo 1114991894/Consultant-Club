@@ -507,6 +507,67 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
   .modes{grid-template-columns:1fr}
   .hero-stat{padding:16px 18px}
 }
+/* ============ 申请咨询师弹窗 ============ */
+button.btn{font-family:inherit;cursor:pointer;border:0}
+.amodal{position:fixed;left:0;top:0;width:100vw;height:100vh;max-width:100vw;overflow:hidden;z-index:300;display:none}
+.amodal.open{display:block}
+.amodal .mask{position:absolute;inset:0;background:rgba(10,11,30,.62);backdrop-filter:blur(6px)}
+.amodal .card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(780px,calc(100% - 28px));max-height:min(94vh,940px);display:flex;flex-direction:column;
+  background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 40px 90px rgba(10,11,30,.45)}
+.amodal .hd{flex:none;position:relative;padding:26px 60px 22px 34px;color:#fff;
+  background:linear-gradient(135deg,#14153a,#1e1f4e)}
+.amodal .hd::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:var(--amber)}
+.amodal .hd .k{font-family:var(--mono);font-size:11.5px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase}
+.amodal .hd h3{font-family:var(--serif-cn);font-weight:900;font-size:25px;margin-top:8px}
+.amodal .hd p{margin-top:6px;font-size:13.5px;color:rgba(253,253,251,.62)}
+.amodal .x{position:absolute;right:20px;top:20px;width:38px;height:38px;border-radius:50%;
+  border:1px solid rgba(253,253,251,.3);background:none;color:#fff;font-size:19px;line-height:1;cursor:pointer}
+.amodal .x:hover{background:rgba(253,253,251,.12)}
+.amodal .bd{overflow-y:auto;padding:26px 34px 30px;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.fsec{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;
+  letter-spacing:.18em;color:var(--amber-deep);text-transform:uppercase;margin:28px 0 14px}
+.fsec::before{content:"";width:18px;height:1px;background:currentColor}
+.fsec:first-child{margin-top:0}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+.fitem.full{grid-column:1/-1}
+.fitem label{display:block;font-size:13.5px;color:var(--muted);margin-bottom:7px}
+.fitem label i{color:var(--amber-deep);font-style:normal;margin-left:2px}
+.fitem input,.fitem select,.fitem textarea{
+  width:100%;font-size:16px;font-family:inherit;color:var(--ink);background:#fbfaf6;
+  border:1px solid rgba(35,36,87,.22);border-radius:9px;padding:12px 14px;outline:0;
+  transition:border-color .2s,box-shadow .2s,background .2s;-webkit-appearance:none;appearance:none}
+.fitem select{padding-right:42px;background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23232457' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 15px center}
+.fitem textarea{min-height:96px;resize:vertical;line-height:1.7}
+.fitem input:focus,.fitem select:focus,.fitem textarea:focus{
+  border-color:var(--indigo-700);background:#fff;box-shadow:0 0 0 3px rgba(50,53,128,.12)}
+.fitem input::placeholder,.fitem textarea::placeholder{color:rgba(95,96,133,.5)}
+.fitem.err input,.fitem.err select,.fitem.err textarea{border-color:#c94a3d;box-shadow:0 0 0 3px rgba(201,74,61,.1)}
+.fitem .msg{display:none;font-size:12.5px;color:#c94a3d;margin-top:6px}
+.fitem.err .msg{display:block}
+.amodal .ft{flex:none;display:flex;align-items:center;gap:16px;padding:16px 34px;
+  border-top:1px solid var(--line);background:#fbfaf6}
+.amodal .ft .note{font-size:12.5px;color:var(--muted);line-height:1.6}
+.amodal .ft .btn{margin-left:auto;flex:none}
+.adone{display:none;flex-direction:column;align-items:center;text-align:center;padding:64px 40px 58px}
+.adone .ok{width:74px;height:74px;border-radius:50%;background:rgba(240,194,75,.18);
+  display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.adone h3{font-family:var(--serif-cn);font-weight:900;font-size:26px;color:var(--indigo-900)}
+.adone p{margin-top:14px;font-size:15.5px;line-height:1.9;color:var(--muted);max-width:30em}
+.adone .btn{margin-top:30px}
+@media (max-width:640px){
+  .amodal .card{width:100vw;max-width:100vw;height:100%;max-height:none;left:0;top:0;transform:none;border-radius:0}
+  .amodal .hd{padding:20px 64px 16px 20px}
+  .amodal .x{right:14px;top:14px}
+  .amodal .hd h3{font-size:21px}
+  .amodal .bd{padding:20px 20px 26px}
+  .frow{grid-template-columns:1fr;gap:15px}
+  .amodal .ft{flex-direction:column;align-items:stretch;gap:12px;
+    padding:14px 20px calc(14px + env(safe-area-inset-bottom))}
+  .amodal .ft .btn{margin:0;width:100%;justify-content:center}
+  .adone{padding:56px 24px 48px}
+}
 </style>
 </head>
 <body>
@@ -711,7 +772,7 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
         <b>如果你在战略、组织、人力、营销、财税、AI 应用任一领域有实战履历</b>
         <span>我们想认识你——先聊一次，不谈签约。</span>
       </div>
-      <a class="btn btn-dark" href="#contact">申请成为项目咨询师</a>
+      <button class="btn btn-dark" id="applyBtn" type="button">申请成为项目咨询师</button>
     </div>
   </div>
 </section>
@@ -1151,6 +1212,231 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
         c.classList.toggle("hide", !show);
       });
     });
+  });
+})();
+</script>
+<!-- ================= 申请咨询师弹窗 ================= -->
+<div class="amodal" id="applyModal" role="dialog" aria-modal="true" aria-labelledby="applyTitle">
+  <div class="mask" data-close></div>
+  <div class="card">
+    <div class="hd">
+      <div class="k">Join as Consultant</div>
+      <h3 id="applyTitle">成为项目咨询师</h3>
+      <p>填写以下资料，平台会在 3 个工作日内与你联系，安排一次深度沟通。</p>
+      <button class="x" type="button" data-close aria-label="关闭">✕</button>
+    </div>
+
+    <form class="bd" id="applyForm" novalidate>
+      <div class="fsec">基本信息 Basic Info</div>
+      <div class="frow">
+        <div class="fitem">
+          <label for="f_name">姓名<i>*</i></label>
+          <input id="f_name" name="name" type="text" data-req placeholder="请输入真实姓名" autocomplete="name">
+          <div class="msg">请填写姓名</div>
+        </div>
+        <div class="fitem">
+          <label for="f_phone">手机<i>*</i></label>
+          <input id="f_phone" name="phone" type="tel" data-req inputmode="tel" maxlength="11" placeholder="11 位手机号" autocomplete="tel">
+          <div class="msg">请填写正确的 11 位手机号</div>
+        </div>
+        <div class="fitem">
+          <label for="f_company">公司名称<i>*</i></label>
+          <input id="f_company" name="company" type="text" data-req placeholder="当前或最近任职的公司">
+          <div class="msg">请填写公司名称</div>
+        </div>
+        <div class="fitem">
+          <label for="f_employer">过往雇主（举例）</label>
+          <input id="f_employer" name="employers" type="text" placeholder="如：阿里 / 华为 / 某制造集团，选填">
+        </div>
+        <div class="fitem">
+          <label for="f_loc">所在国家/城市<i>*</i></label>
+          <input id="f_loc" name="location" type="text" data-req placeholder="如：中国杭州">
+          <div class="msg">请填写所在国家/城市</div>
+        </div>
+        <div class="fitem">
+          <label for="f_age">年龄</label>
+          <select id="f_age" name="age">
+            <option value="" disabled selected>请选择</option>
+            <option>25 岁以下</option><option>26 - 30</option><option>31 - 35</option>
+            <option>36 - 40</option><option>41 - 45</option><option>46 - 50</option><option>50 岁以上</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fsec">专业背景 Professional Background</div>
+      <div class="frow">
+        <div class="fitem full">
+          <label for="f_exp">咨询行业经历<i>*</i></label>
+          <textarea id="f_exp" name="experience" data-req placeholder="例：10 年管理咨询经验，主导过制造业绩效体系与组织变革项目，服务过 2 家上市公司……"></textarea>
+          <div class="msg">请简要介绍你的咨询行业经历</div>
+        </div>
+        <div class="fitem">
+          <label for="f_edu">最高学历<i>*</i></label>
+          <select id="f_edu" name="education" data-req>
+            <option value="" disabled selected>请选择</option>
+            <option>大专及以下</option><option>本科</option><option>硕士</option><option>MBA</option><option>博士</option>
+          </select>
+          <div class="msg">请选择最高学历</div>
+        </div>
+        <div class="fitem">
+          <label for="f_school">毕业的学校</label>
+          <input id="f_school" name="school" type="text" placeholder="选填">
+        </div>
+        <div class="fitem">
+          <label for="f_ind">擅长的行业<i>*</i></label>
+          <select id="f_ind" name="industry" data-req>
+            <option value="" disabled selected>请选择最擅长的一个</option>
+            <option>制造业</option><option>汽车与零部件</option><option>电子信息 / 半导体</option>
+            <option>科技互联网 / 软件</option><option>人工智能 / 大数据</option><option>通信 / 运营商</option>
+            <option>零售与消费品</option><option>电商 / 新零售</option><option>食品饮料 / 农业农产品</option>
+            <option>纺织服装 / 轻工</option><option>医药 / 医疗器械</option><option>医疗服务 / 大健康</option>
+            <option>金融 / 银行</option><option>保险 / 证券 / 基金</option><option>投资 / PE / VC</option>
+            <option>能源 / 电力</option><option>化工 / 材料</option><option>环保 / 双碳</option>
+            <option>矿业 / 冶金</option><option>建筑工程 / 地产</option><option>家居 / 建材</option>
+            <option>物流 / 供应链</option><option>交通运输 / 航空航运</option><option>贸易 / 进出口</option>
+            <option>教育培训</option><option>文化 / 传媒 / 广告</option><option>文旅 / 酒店 / 餐饮</option>
+            <option>专业服务 / 咨询</option><option>法律服务</option><option>人力资源服务</option>
+            <option>政府与公共事业</option><option>国防军工</option><option>其他</option>
+          </select>
+          <div class="msg">请选择擅长的行业</div>
+        </div>
+        <div class="fitem">
+          <label for="f_field">擅长的领域（如战略、组织、AI）<i>*</i></label>
+          <select id="f_field" name="field" data-req>
+            <option value="" disabled selected>请选择最擅长的一个</option>
+            <option>战略规划</option><option>组织变革</option><option>绩效薪酬</option><option>人才发展</option>
+            <option>业绩增长</option><option>股权合伙</option><option>财税合规</option><option>法律合规</option>
+            <option>AI 落地</option><option>其他</option>
+          </select>
+          <div class="msg">请选择擅长的领域</div>
+        </div>
+        <div class="fitem">
+          <label for="f_status">目前的状态<i>*</i></label>
+          <select id="f_status" name="status" data-req>
+            <option value="" disabled selected>请选择</option>
+            <option>在职 · 看机会</option><option>在职 · 暂不考虑</option><option>全职自由顾问</option>
+            <option>创业 / 工作室</option><option>独立讲师</option><option>退休返聘</option>
+          </select>
+          <div class="msg">请选择目前的状态</div>
+        </div>
+        <div class="fitem">
+          <label for="f_freel">Freelancer 经验<i>*</i></label>
+          <select id="f_freel" name="freelance" data-req>
+            <option value="" disabled selected>请选择</option>
+            <option>无经验</option><option>1 年以下</option><option>1 - 3 年</option>
+            <option>3 - 5 年</option><option>5 年以上</option>
+          </select>
+          <div class="msg">请选择 Freelancer 经验</div>
+        </div>
+      </div>
+
+      <div class="fsec">合作意向 Cooperation</div>
+      <div class="frow">
+        <div class="fitem">
+          <label for="f_start">开始接项目的时间<i>*</i></label>
+          <select id="f_start" name="start" data-req>
+            <option value="" disabled selected>请选择</option>
+            <option>已在接项目中</option><option>1 个月内</option><option>3 个月内</option>
+            <option>6 个月内</option><option>1 年内</option><option>1 年以上</option><option>暂不确定</option>
+          </select>
+          <div class="msg">请选择开始接项目的时间</div>
+        </div>
+        <div class="fitem">
+          <label for="f_salary">期待的薪资<i>*</i></label>
+          <select id="f_salary" name="salary" data-req>
+            <option value="" disabled selected>请选择期望薪资</option>
+            <option>5 千以内</option><option>5 千 - 1 万</option><option>1 - 2 万</option>
+            <option>2 - 3 万</option><option>3 - 5 万</option><option>5 - 8 万</option>
+            <option>8 - 15 万</option><option>15 万以上</option><option>面议</option>
+          </select>
+          <div class="msg">请选择期待的薪资</div>
+        </div>
+        <div class="fitem">
+          <label for="f_unit">计薪单位<i>*</i></label>
+          <select id="f_unit" name="unit" data-req>
+            <option value="" disabled selected>请选择</option>
+            <option>按小时</option><option>按天</option><option>按月</option><option>按项目</option>
+          </select>
+          <div class="msg">请选择计薪单位</div>
+        </div>
+      </div>
+    </form>
+
+    <div class="adone" id="applyDone">
+      <div class="ok">
+        <svg width="34" height="34" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="15.5" stroke="#b78a22" stroke-width="1.6"/><path d="M10.5 17.5l4.5 4.5 8.5-9" stroke="#b78a22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>资料已提交</h3>
+      <p>感谢你的信任。平台会仔细阅读每一份资料，<br>并在 3 个工作日内与你联系，安排一次深度沟通——<br>先聊一次，不谈签约。</p>
+      <button class="btn btn-dark" type="button" data-close>好的</button>
+    </div>
+
+    <div class="ft" id="applyFoot">
+      <div class="note">提交后即表示同意平台获取和使用您的信息进行项目匹配与咨询链接。<br>资料仅用于内部评估，不会对外公开。</div>
+      <button class="btn btn-dark" id="applySubmit" type="submit" form="applyForm">提交</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var modal = document.getElementById("applyModal");
+  var form = document.getElementById("applyForm");
+  var done = document.getElementById("applyDone");
+  var foot = document.getElementById("applyFoot");
+
+  function openModal(){ modal.classList.add("open"); document.body.style.overflow = "hidden"; }
+  function closeModal(){
+    modal.classList.remove("open"); document.body.style.overflow = "";
+    /* 重置回表单视图，便于再次打开 */
+    setTimeout(function(){
+      if(!modal.classList.contains("open")){ form.style.display=""; done.style.display=""; foot.style.display=""; }
+    }, 200);
+  }
+
+  var btn = document.getElementById("applyBtn");
+  btn.addEventListener("click", openModal);
+  if(location.hash === "#apply") openModal();
+
+  modal.addEventListener("click", function(e){
+    if(e.target.closest("[data-close]")) closeModal();
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && modal.classList.contains("open")) closeModal();
+  });
+
+  /* 提交校验：必填项逐项检查 */
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var firstBad = null;
+    var phones = form.querySelectorAll("[data-req]");
+    [].slice.call(phones).forEach(function(el){
+      var item = el.closest(".fitem");
+      var ok = el.value.trim().length > 0;
+      if(ok && el.id === "f_phone") ok = /^1\d{10}$/.test(el.value.trim());
+      item.classList.toggle("err", !ok);
+      if(!ok && !firstBad) firstBad = el;
+    });
+    if(firstBad){
+      firstBad.scrollIntoView({behavior:"smooth", block:"center"});
+      firstBad.focus({preventScroll:true});
+      return;
+    }
+    /* TODO: 接入后端/表单服务后在此发送数据；当前为演示提交 */
+    form.style.display = "none";
+    done.style.display = "flex";
+    foot.style.display = "none";
+    done.scrollIntoView({block:"nearest"});
+  });
+
+  /* 输入即清除错误态 */
+  form.addEventListener("input", function(e){
+    var item = e.target.closest(".fitem");
+    if(item) item.classList.remove("err");
+  });
+  form.addEventListener("change", function(e){
+    var item = e.target.closest(".fitem");
+    if(item) item.classList.remove("err");
   });
 })();
 </script>

@@ -1473,6 +1473,11 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
 
 <script>
 (function(){
+"use strict";
+/* Supabase 配置（publishable key 仅可写入 submissions 表，安全） */
+var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
+var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
+
   /* 通用弹窗初始化：打开/关闭/校验/成功视图 */
   function initModal(cfg){
     var modal = document.getElementById(cfg.modal);
@@ -1519,10 +1524,29 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
         return;
       }
       /* TODO: 接入后端/表单服务后在此发送数据；当前为演示提交 */
-      form.style.display = "none";
-      done.style.display = "flex";
-      foot.style.display = "none";
-      done.scrollIntoView({block:"nearest"});
+      var payload = {};
+      [].slice.call(form.querySelectorAll("input,select,textarea")).forEach(function(el){
+        if(el.name) payload[el.name] = el.value.trim();
+      });
+      var sbtn = document.getElementById(cfg.submit);
+      sbtn.disabled = true;
+      var t0 = sbtn.textContent;
+      sbtn.textContent = "提交中…";
+      fetch(SB_URL + "/rest/v1/submissions", {
+        method: "POST",
+        headers: { "apikey": SB_KEY, "Content-Type": "application/json", "Prefer": "return=minimal" },
+        body: JSON.stringify({ type: cfg.type, data: payload })
+      }).then(function(r){
+        if(!r.ok) throw new Error("bad status");
+        form.style.display = "none";
+        done.style.display = "flex";
+        foot.style.display = "none";
+        done.scrollIntoView({block:"nearest"});
+      }).catch(function(){
+        sbtn.disabled = false;
+        sbtn.textContent = t0;
+        alert("提交失败，请检查网络后重试");
+      });
     });
 
     /* 输入即清除错误态 */
@@ -1537,10 +1561,10 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
   }
 
   initModal({ modal:"applyModal", form:"applyForm", done:"applyDone", foot:"applyFoot",
-              btns:["applyBtn"], hash:"#apply" });
+              submit:"applySubmit", type:"apply", btns:["applyBtn"], hash:"#apply" });
 
   initModal({ modal:"bookModal", form:"bookForm", done:"bookDone", foot:"bookFoot",
-              btns:["bookBtn"], hash:"#book" });
+              submit:"bookSubmit", type:"book", btns:["bookBtn"], hash:"#book" });
 })();
 </script>
 </body>

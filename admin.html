@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理后台 · Consultant Club</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{
+  --ink:#14153a; --ink2:#1a1b40; --amber:#f0c24b; --amber-d:#b78a22;
+  --white:#fdfdfb; --muted:#6b6d85; --line:#e4e2da; --bg:#f4f3ee;
+  --ok:#2e8b57; --bad:#c0392b;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;font-size:15px}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:16px}
+a{color:inherit}
+
+/* ---------- 登录 ---------- */
+#loginView{min-height:100vh;display:none;align-items:center;justify-content:center;padding:24px;
+  background:linear-gradient(150deg,#101132 0%,#14153a 55%,#23245e 100%)}
+#loginView.open{display:flex}
+.lcard{width:400px;max-width:100%;background:var(--white);border-radius:18px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.lcard .top{background:var(--ink);padding:30px 34px 24px;position:relative;color:#fff}
+.lcard .top::before{content:"";position:absolute;left:0;top:0;right:0;height:3px;background:var(--amber)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.04em}
+.brand .dots{display:inline-flex;gap:5px}
+.brand .dots i{width:9px;height:9px;border-radius:50%;background:var(--amber)}
+.brand .dots i.o{background:transparent;border:1.6px solid var(--amber)}
+.lcard .top h1{font-size:22px;margin-top:16px;font-weight:900}
+.lcard .top p{font-size:12.5px;color:rgba(253,253,251,.55);margin-top:5px;letter-spacing:.08em}
+.lcard .bd{padding:28px 34px 32px}
+.lcard label{display:block;font-size:13px;font-weight:600;color:#3c3d5c;margin:16px 0 6px}
+.lcard label:first-child{margin-top:0}
+.lcard input{width:100%;padding:12px 14px;border:1.4px solid var(--line);border-radius:9px;outline:none;
+  transition:border-color .2s}
+.lcard input:focus{border-color:var(--amber-d)}
+.lbtn{width:100%;margin-top:24px;padding:13px;border:0;border-radius:9px;background:var(--ink);color:#fff;
+  font-size:15px;font-weight:600;transition:opacity .2s}
+.lbtn:hover{opacity:.88}
+.lbtn:disabled{opacity:.5;cursor:default}
+.lerr{margin-top:14px;font-size:13px;color:var(--bad);display:none}
+.lerr.show{display:block}
+.lhint{margin-top:18px;font-size:12px;color:var(--muted);text-align:center;line-height:1.7}
+
+/* ---------- 后台框架 ---------- */
+#app{display:none;min-height:100vh}
+#app.open{display:flex}
+aside{width:232px;flex:none;background:var(--ink);color:#fff;display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh}
+aside .b{padding:24px 22px 20px;border-bottom:1px solid rgba(253,253,251,.09)}
+aside nav{padding:14px 12px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;
+  color:rgba(253,253,251,.72);padding:12px 12px;border-radius:9px;font-size:14.5px;margin-bottom:4px;
+  transition:background .15s,color .15s}
+.nav-item svg{flex:none}
+.nav-item:hover{background:rgba(253,253,251,.07);color:#fff}
+.nav-item.on{background:rgba(240,194,75,.16);color:var(--amber)}
+aside .me{padding:16px 20px;border-top:1px solid rgba(253,253,251,.09);font-size:13px}
+aside .me .ph{font-weight:600;letter-spacing:.03em}
+.role-badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;margin-top:5px;
+  background:rgba(240,194,75,.18);color:var(--amber);letter-spacing:.08em}
+main{flex:1;padding:30px 36px 60px;min-width:0}
+.mhead{display:flex;align-items:baseline;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.mhead h2{font-size:21px;font-weight:900}
+.mhead .sub{font-size:13px;color:var(--muted)}
+
+/* 统计卡 */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.stat .n{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--muted);margin-top:3px}
+.stat.hl .n{color:var(--amber-d)}
+
+/* 工具条 */
+.bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.tabs{display:flex;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tabs button{border:0;background:none;padding:9px 16px;font-size:13.5px;color:var(--muted)}
+.tabs button.on{background:var(--ink);color:#fff}
+.search{flex:1;min-width:200px;max-width:340px;padding:9px 14px;border:1.4px solid var(--line);
+  border-radius:10px;outline:none}
+.search:focus{border-color:var(--amber-d)}
+.pbtn{border:0;border-radius:10px;padding:10px 18px;font-size:14px;font-weight:600;
+  background:var(--ink);color:#fff;transition:opacity .2s}
+.pbtn:hover{opacity:.86}
+.pbtn.ghost{background:#fff;color:var(--ink);border:1.4px solid var(--line)}
+.pbtn.warn{background:var(--bad)}
+
+/* 表格 */
+.tblwrap{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13.8px;min-width:760px}
+th{background:#faf9f4;text-align:left;font-size:12px;letter-spacing:.06em;color:var(--muted);
+  padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid #f0efe8;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr:hover td{background:#fcfbf7}
+.t-type{display:inline-block;font-size:11.5px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.t-type.book{background:rgba(240,194,75,.16);color:#8a6a10}
+.t-type.apply{background:rgba(20,21,58,.08);color:var(--ink)}
+.t-time{white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}
+.t-key b{display:block}
+.t-key small{color:var(--muted)}
+.view-btn{border:1.3px solid var(--line);background:#fff;border-radius:8px;padding:6px 13px;font-size:12.5px}
+.view-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:14px}
+.tblfoot{padding:10px 16px;font-size:12px;color:var(--muted);text-align:right}
+
+/* 明细抽屉 */
+.drawer{position:fixed;inset:0;z-index:60;display:none}
+.drawer.open{display:block}
+.drawer .dm{position:absolute;inset:0;background:rgba(10,11,30,.5);backdrop-filter:blur(4px)}
+.drawer .dp{position:absolute;right:0;top:0;bottom:0;width:480px;max-width:92vw;background:#fff;
+  overflow-y:auto;padding:26px 28px 40px;box-shadow:-20px 0 60px rgba(0,0,0,.25)}
+.drawer h3{font-size:18px;font-weight:900;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.drawer .dt{font-size:12.5px;color:var(--muted);margin-bottom:20px}
+.drawer .close{position:absolute;right:18px;top:16px;width:34px;height:34px;border-radius:50%;
+  border:0;background:#f1f0ea;font-size:15px}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:0;border-top:1px solid var(--line)}
+.kv>div{padding:10px 2px;border-bottom:1px solid #f0efe8;font-size:13.5px}
+.kv .k{color:var(--muted)}
+.kv .v{word-break:break-all}
+
+/* 区块卡片（管理员/密码） */
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin-bottom:20px}
+.card h3{font-size:16px;font-weight:900;margin-bottom:6px}
+.card .desc{font-size:13px;color:var(--muted);margin-bottom:16px}
+.frm{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.frm .fi{display:flex;flex-direction:column;gap:6px}
+.frm label{font-size:12.5px;font-weight:600;color:#3c3d5c}
+.frm input{padding:10px 13px;border:1.4px solid var(--line);border-radius:9px;outline:none;min-width:200px}
+.frm input:focus{border-color:var(--amber-d)}
+.adm-row td .del{border:1.3px solid #f0d9d5;background:#fff;color:var(--bad);border-radius:8px;
+  padding:5px 12px;font-size:12.5px}
+.adm-row td .del:hover{background:#fdf3f1}
+.tag-super{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;margin-left:8px;
+  background:rgba(20,21,58,.08);color:var(--ink);letter-spacing:.06em}
+
+/* 消息条 */
+.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);z-index:99;
+  background:var(--ink);color:#fff;padding:11px 22px;border-radius:30px;font-size:13.5px;
+  opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+.toast.err{background:var(--bad)}
+
+/* 响应式 */
+@media (max-width:960px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  #app.open{flex-direction:column}
+  aside{width:100%;height:auto;position:static;flex-direction:column}
+  aside nav{display:flex;flex-wrap:wrap;padding:8px}
+  .nav-item{width:auto;margin:0 4px 4px 0;padding:9px 13px;font-size:13.5px}
+  aside .me{display:flex;align-items:center;gap:10px}
+  main{padding:20px 16px 60px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 登录 ================= -->
+<div id="loginView">
+  <div class="lcard">
+    <div class="top">
+      <div class="brand"><span class="dots"><i></i><i class="o"></i></span>CONSULTANT CLUB</div>
+      <h1>管理后台</h1>
+      <p>ADMIN CONSOLE · 请使用管理员账号登录</p>
+    </div>
+    <div class="bd">
+      <label for="lgPhone">手机号</label>
+      <input id="lgPhone" type="tel" maxlength="11" inputmode="tel" placeholder="11 位手机号" autocomplete="username">
+      <label for="lgPass">密码</label>
+      <input id="lgPass" type="password" placeholder="请输入密码" autocomplete="current-password">
+      <button class="lbtn" id="lgBtn">登 录</button>
+      <div class="lerr" id="lgErr"></div>
+      <div class="lhint">忘记密码请联系总管理员重置</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 后台 ================= -->
+<div id="app">
+  <aside>
+    <div class="b">
+      <div class="brand"><span class="dots"><i></i><i class="o"></i></span>CONSULTANT CLUB</div>
+      <div style="font-size:11px;color:rgba(253,253,251,.4);margin-top:6px;letter-spacing:.14em">ADMIN CONSOLE</div>
+    </div>
+    <nav>
+      <button class="nav-item on" data-view="dash">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5.5" height="5.5" rx="1.4" stroke="currentColor" stroke-width="1.5"/></svg>
+        数据总览
+      </button>
+      <button class="nav-item" data-view="admins" id="navAdmins" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 14c.6-2.7 2.8-4 5.5-4s4.9 1.3 5.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        管理员管理
+      </button>
+      <button class="nav-item" data-view="pwd">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="6.5" width="11" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6.5V5a3 3 0 016 0v1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10.2" r="1.2" fill="currentColor"/></svg>
+        修改密码
+      </button>
+      <button class="nav-item" id="logoutBtn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.5 2.5H4A1.5 1.5 0 002.5 4v8A1.5 1.5 0 004 13.5h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 5l3 3-3 3M13 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        退出登录
+      </button>
+    </nav>
+    <div class="me">
+      <div class="ph" id="mePhone">—</div>
+      <span class="role-badge" id="meRole">管理员</span>
+    </div>
+  </aside>
+
+  <main>
+    <!-- 数据总览 -->
+    <section id="view-dash">
+      <div class="mhead"><h2>数据总览</h2><span class="sub">表单提交实时收集</span></div>
+      <div class="stats">
+        <div class="stat hl"><div class="n" id="stTotal">–</div><div class="l">全部提交</div></div>
+        <div class="stat"><div class="n" id="stBook">–</div><div class="l">预约诊断</div></div>
+        <div class="stat"><div class="n" id="stApply">–</div><div class="l">咨询师申请</div></div>
+        <div class="stat"><div class="n" id="stToday">–</div><div class="l">今日新增</div></div>
+      </div>
+      <div class="bar">
+        <div class="tabs">
+          <button class="on" data-f="all">全部</button>
+          <button data-f="book">预约诊断</button>
+          <button data-f="apply">咨询师申请</button>
+        </div>
+        <input class="search" id="searchInput" type="text" placeholder="搜索公司 / 姓名 / 手机号…">
+        <button class="pbtn ghost" id="refreshBtn">刷新</button>
+      </div>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>提交时间</th><th>类型</th><th>关键信息</th><th>联系方式</th><th></th></tr></thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+        <div class="empty" id="tblEmpty" style="display:none">暂无提交记录</div>
+        <div class="tblfoot" id="tblCount"></div>
+      </div>
+    </section>
+
+    <!-- 管理员管理 -->
+    <section id="view-admins" style="display:none">
+      <div class="mhead"><h2>管理员管理</h2><span class="sub">仅总管理员可见 · 管理员使用手机号 + 密码登录</span></div>
+      <div class="card">
+        <h3>添加管理员</h3>
+        <div class="desc">为团队伙伴开通后台账号，初始密码请线下告知对方，其登录后可自行修改。</div>
+        <div class="frm">
+          <div class="fi"><label>手机号 *</label><input id="naPhone" type="tel" maxlength="11" inputmode="tel" placeholder="11 位手机号"></div>
+          <div class="fi"><label>姓名</label><input id="naName" type="text" placeholder="选填"></div>
+          <div class="fi"><label>初始密码 *</label><input id="naPass" type="text" placeholder="至少 6 位"></div>
+          <button class="pbtn" id="naBtn">添加</button>
+        </div>
+      </div>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>手机号</th><th>姓名</th><th>角色</th><th>创建时间</th><th></th></tr></thead>
+          <tbody id="admBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 修改密码 -->
+    <section id="view-pwd" style="display:none">
+      <div class="mhead"><h2>修改密码</h2><span class="sub">修改后其他设备需重新登录</span></div>
+      <div class="card" style="max-width:460px">
+        <div class="frm" style="flex-direction:column;align-items:stretch">
+          <div class="fi"><label>原密码</label><input id="pwOld" type="password" autocomplete="current-password"></div>
+          <div class="fi"><label>新密码（至少 6 位）</label><input id="pwNew" type="password" autocomplete="new-password"></div>
+          <div class="fi"><label>确认新密码</label><input id="pwNew2" type="password" autocomplete="new-password"></div>
+          <button class="pbtn" id="pwBtn" style="margin-top:8px">确认修改</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- 提交明细抽屉 -->
+<div class="drawer" id="drawer">
+  <div class="dm" data-dclose></div>
+  <div class="dp">
+    <button class="close" data-dclose>✕</button>
+    <h3><span class="t-type" id="dType">—</span><span id="dTitle">提交明细</span></h3>
+    <div class="dt" id="dTime"></div>
+    <div class="kv" id="dKv"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
+var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
+var LS_KEY = "cc_admin_session";
+
+/* ---------- 字段中文标签 ---------- */
+var LABELS = {
+  company:"公司名称", contact:"联系人", title:"职务", phone:"手机", city:"所在城市",
+  size:"员工数", needs:"需求", cycle:"项目周期", budget:"预算",
+  name:"姓名", employers:"过往雇主", location:"所在国家/城市", age:"年龄",
+  experience:"咨询行业经历", education:"最高学历", school:"毕业学校",
+  industry:"擅长的行业", field:"擅长的领域", status:"目前状态",
+  freelance:"Freelancer 经验", start:"开始接项目时间", salary:"期待薪资", unit:"计薪单位"
+};
+var TYPE_NAME = { book:"预约诊断", apply:"咨询师申请" };
+
+/* ---------- 工具 ---------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function fmtTime(iso){
+  if(!iso) return "—";
+  var d = new Date(iso);
+  var p = function(n){ return (n<10?"0":"")+n; };
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes());
+}
+var toastTimer;
+function toast(msg, err){
+  var t = $("toast"); t.textContent = msg;
+  t.className = "toast show" + (err ? " err" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.className = "toast"; }, 2600);
+}
+function sess(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)); }catch(e){ return null; } }
+function saveSess(s){ s ? localStorage.setItem(LS_KEY, JSON.stringify(s)) : localStorage.removeItem(LS_KEY); }
+function api(path, opts){
+  opts = opts || {};
+  var s = sess();
+  opts.headers = Object.assign({
+    "apikey": SB_KEY,
+    "Content-Type": "application/json"
+  }, s && s.token ? { "x-admin-token": s.token } : {}, opts.headers || {});
+  return fetch(SB_URL + path, opts).then(function(r){ return r.json().then(function(j){
+    return { status: r.status, body: j };
+  }); });
+}
+function rpc(fn, body){ return api("/rest/v1/rpc/" + fn, { method:"POST", body: JSON.stringify(body) }); }
+
+/* ---------- 视图切换 ---------- */
+var state = { filter:"all", q:"", list:[] };
+
+function showLogin(){
+  $("app").classList.remove("open");
+  $("loginView").classList.add("open");
+}
+function showApp(s){
+  $("loginView").classList.remove("open");
+  $("app").classList.add("open");
+  $("mePhone").textContent = s.phone;
+  $("meRole").textContent = s.role === "super" ? "总管理员" : "管理员";
+  $("navAdmins").style.display = s.role === "super" ? "" : "none";
+  switchView("dash");
+  loadList();
+}
+function switchView(v){
+  ["dash","admins","pwd"].forEach(function(k){
+    $("view-"+k).style.display = (k===v) ? "" : "none";
+  });
+  document.querySelectorAll(".nav-item[data-view]").forEach(function(b){
+    b.classList.toggle("on", b.getAttribute("data-view")===v);
+  });
+  if(v==="admins") loadAdmins();
+}
+document.querySelectorAll(".nav-item[data-view]").forEach(function(b){
+  b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
+});
+$("logoutBtn").addEventListener("click", function(){ saveSess(null); showLogin(); });
+
+/* ---------- 登录 ---------- */
+function doLogin(){
+  var phone = $("lgPhone").value.trim(), pass = $("lgPass").value;
+  var err = $("lgErr");
+  err.className = "lerr";
+  if(!/^1\d{10}$/.test(phone)){ err.textContent = "请输入正确的 11 位手机号"; err.className="lerr show"; return; }
+  if(!pass){ err.textContent = "请输入密码"; err.className="lerr show"; return; }
+  var btn = $("lgBtn"); btn.disabled = true; btn.textContent = "登录中…";
+  rpc("admin_login", { p_phone: phone, p_password: pass }).then(function(r){
+    btn.disabled = false; btn.textContent = "登 录";
+    var j = r.body;
+    if(j && j.ok){
+      var s = { token:j.token, role:j.role, phone:j.phone, name:j.name, at:Date.now() };
+      saveSess(s); showApp(s);
+    } else {
+      err.textContent = (j && j.error) || "登录失败，请稍后重试";
+      err.className = "lerr show";
+    }
+  }).catch(function(){
+    btn.disabled = false; btn.textContent = "登 录";
+    err.textContent = "网络异常，请稍后重试"; err.className = "lerr show";
+  });
+}
+$("lgBtn").addEventListener("click", doLogin);
+$("lgPass").addEventListener("keydown", function(e){ if(e.key==="Enter") doLogin(); });
+$("lgPhone").addEventListener("keydown", function(e){ if(e.key==="Enter") $("lgPass").focus(); });
+
+/* ---------- 数据总览 ---------- */
+function loadList(){
+  api("/rest/v1/submissions?select=*&order=created_at.desc&limit=1000").then(function(r){
+    if(r.status === 401){ saveSess(null); showLogin(); return; }
+    state.list = Array.isArray(r.body) ? r.body : [];
+    render();
+  }).catch(function(){ toast("加载失败，请检查网络", true); });
+}
+$("refreshBtn").addEventListener("click", loadList);
+$("searchInput").addEventListener("input", function(){ state.q = this.value.trim().toLowerCase(); render(); });
+document.querySelectorAll(".tabs button").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll(".tabs button").forEach(function(x){ x.classList.remove("on"); });
+    b.classList.add("on"); state.filter = b.getAttribute("data-f"); render();
+  });
+});
+
+function rowKey(s){
+  var d = s.data || {};
+  if(s.type === "book")
+    return { t: d.company || "—", s: (d.contact||"") + (d.title ? " · "+d.title : "") };
+  return { t: d.company || d.name || "—", s: d.name || "" };
+}
+function matches(s){
+  if(state.filter !== "all" && s.type !== state.filter) return false;
+  if(!state.q) return true;
+  var d = s.data || {}, blob = JSON.stringify(d).toLowerCase();
+  return blob.indexOf(state.q) !== -1;
+}
+function render(){
+  var list = state.list.filter(matches);
+  var all = state.list;
+  var today = new Date(); today = today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");
+  var todayN = all.filter(function(s){ return (s.created_at||"").slice(0,10) === today; }).length;
+  $("stTotal").textContent = all.length;
+  $("stBook").textContent = all.filter(function(s){ return s.type==="book"; }).length;
+  $("stApply").textContent = all.filter(function(s){ return s.type==="apply"; }).length;
+  $("stToday").textContent = todayN;
+
+  var tb = $("tblBody");
+  $("tblEmpty").style.display = list.length ? "none" : "";
+  $("tblCount").textContent = "共 " + list.length + " 条";
+  tb.innerHTML = list.map(function(s){
+    var k = rowKey(s), d = s.data || {};
+    return "<tr>" +
+      '<td class="t-time">' + esc(fmtTime(s.created_at)) + "</td>" +
+      '<td><span class="t-type ' + s.type + '">' + TYPE_NAME[s.type] + "</span></td>" +
+      '<td class="t-key"><b>' + esc(k.t) + "</b><small>" + esc(k.s) + "</small></td>" +
+      '<td>' + esc(d.phone || "—") + "</td>" +
+      '<td><button class="view-btn" data-id="' + s.id + '">详情</button></td></tr>';
+  }).join("");
+  tb.querySelectorAll(".view-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      var s = state.list.find(function(x){ return x.id === b.getAttribute("data-id"); });
+      if(s) openDetail(s);
+    });
+  });
+}
+function openDetail(s){
+  $("dType").className = "t-type " + s.type;
+  $("dType").textContent = TYPE_NAME[s.type] || s.type;
+  $("dTitle").textContent = (s.data && (s.data.company || s.data.name)) || "提交明细";
+  $("dTime").textContent = "提交于 " + fmtTime(s.created_at);
+  var d = s.data || {}, html = "";
+  Object.keys(d).forEach(function(k){
+    var v = d[k];
+    if(v === "" || v == null) return;
+    html += "<div class='k'>" + esc(LABELS[k] || k) + "</div><div class='v'>" + esc(v) + "</div>";
+  });
+  $("dKv").innerHTML = html || "<div class='k'>—</div><div class='v'>无内容</div>";
+  $("drawer").classList.add("open");
+}
+document.querySelectorAll("[data-dclose]").forEach(function(el){
+  el.addEventListener("click", function(){ $("drawer").classList.remove("open"); });
+});
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape") $("drawer").classList.remove("open");
+});
+
+/* ---------- 管理员管理 ---------- */
+function loadAdmins(){
+  rpc("admin_list", { p_token: sess().token }).then(function(r){
+    var j = r.body;
+    if(!j || !j.ok){ toast((j && j.error) || "加载失败", true); return; }
+    var tb = $("admBody");
+    tb.innerHTML = j.admins.map(function(a){
+      var isSelf = a.phone === sess().phone;
+      var del = (!isSelf && a.role !== "super")
+        ? '<button class="del" data-id="' + a.id + '">删除</button>' : "";
+      return "<tr class='adm-row'>" +
+        "<td>" + esc(a.phone) + "</td>" +
+        "<td>" + esc(a.name || "—") + "</td>" +
+        "<td>" + (a.role === "super" ? "总管理员<span class='tag-super'>SUPER</span>" : "管理员") + "</td>" +
+        '<td class="t-time">' + esc(fmtTime(a.created_at)) + "</td>" +
+        "<td>" + del + "</td></tr>";
+    }).join("");
+    tb.querySelectorAll(".del").forEach(function(b){
+      b.addEventListener("click", function(){
+        if(!confirm("确定删除该管理员？删除后其账号立即失效。")) return;
+        rpc("admin_delete", { p_token: sess().token, p_admin_id: b.getAttribute("data-id") })
+          .then(function(r){
+            var j = r.body;
+            if(j && j.ok){ toast("已删除"); loadAdmins(); }
+            else toast((j && j.error) || "删除失败", true);
+          });
+      });
+    });
+  });
+}
+$("naBtn").addEventListener("click", function(){
+  var phone = $("naPhone").value.trim(), name = $("naName").value.trim(), pass = $("naPass").value;
+  if(!/^1\d{10}$/.test(phone)) return toast("手机号格式不正确", true);
+  if(!pass || pass.length < 6) return toast("初始密码至少 6 位", true);
+  rpc("admin_create", { p_token: sess().token, p_phone: phone, p_password: pass, p_name: name })
+    .then(function(r){
+      var j = r.body;
+      if(j && j.ok){
+        toast("管理员已添加");
+        $("naPhone").value = $("naName").value = $("naPass").value = "";
+        loadAdmins();
+      } else toast((j && j.error) || "添加失败", true);
+    });
+});
+
+/* ---------- 修改密码 ---------- */
+$("pwBtn").addEventListener("click", function(){
+  var o = $("pwOld").value, n = $("pwNew").value, n2 = $("pwNew2").value;
+  if(!o) return toast("请输入原密码", true);
+  if(!n || n.length < 6) return toast("新密码至少 6 位", true);
+  if(n !== n2) return toast("两次输入的新密码不一致", true);
+  rpc("admin_change_password", { p_token: sess().token, p_old: o, p_new: n }).then(function(r){
+    var j = r.body;
+    if(j && j.ok){
+      toast("密码已修改，下次登录请使用新密码");
+      $("pwOld").value = $("pwNew").value = $("pwNew2").value = "";
+    } else toast((j && j.error) || "修改失败", true);
+  });
+});
+
+/* ---------- 启动 ---------- */
+var s = sess();
+if(s && s.token) showApp(s); else showLogin();
+})();
+</script>
+</body>
+</html>

@@ -5,13 +5,14 @@
 -- 可重复执行（幂等）
 -- ============================================================
 
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
+create extension if not exists "uuid-ossp" with schema extensions;
 
 -- ---------- 1. 数据表 ----------
 
 -- 管理员表（总管理员 role=super / 普通管理员 role=admin）
 create table if not exists public.admins (
-  id            uuid primary key default gen_random_uuid(),
+  id            uuid primary key default extensions.uuid_generate_v4(),
   phone         text unique not null,
   password_hash text not null,
   name          text,
@@ -29,7 +30,7 @@ create table if not exists public.sessions (
 
 -- 表单提交收集表（type: book=预约诊断 / apply=咨询师申请）
 create table if not exists public.submissions (
-  id         uuid primary key default gen_random_uuid(),
+  id         uuid primary key default extensions.uuid_generate_v4(),
   type       text not null check (type in ('book','apply')),
   data       jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
@@ -38,7 +39,19 @@ create table if not exists public.submissions (
 create index if not exists submissions_created_idx on public.submissions (created_at desc);
 create index if not exists submissions_type_idx    on public.submissions (type);
 
--- ---------- 2. RLS（行级安全） ----------
+-- ---------- 2. 辅助函数（先于 RLS，因 RLS 策略会引用 admin_from_token） ----------
+
+-- 根据 token 取当前管理员（内部辅助）
+create or replace function public.admin_from_token(p_token text)
+returns public.admins
+language sql stable security definer set search_path = public, extensions as $$
+  select a.* from public.sessions s
+  join public.admins a on a.id = s.admin_id
+  where s.token = p_token and s.expires_at > now()
+  limit 1
+$$;
+
+-- ---------- 3. RLS（行级安全） ----------
 
 alter table public.admins      enable row level security;
 alter table public.sessions    enable row level security;
@@ -58,32 +71,22 @@ create policy submissions_admin_read on public.submissions
     admin_from_token(current_setting('request.headers', true)::json->>'x-admin-token') is not null
   );
 
--- ---------- 3. 安全函数（供 PostgREST RPC 调用） ----------
-
--- 根据 token 取当前管理员（内部辅助）
-create or replace function public.admin_from_token(p_token text)
-returns public.admins
-language sql stable security definer set search_path = public as $$
-  select a.* from public.sessions s
-  join public.admins a on a.id = s.admin_id
-  where s.token = p_token and s.expires_at > now()
-  limit 1
-$$;
+-- ---------- 4. 业务函数 ----------
 
 -- 登录：手机号 + 密码 → token
 create or replace function public.admin_login(p_phone text, p_password text)
 returns json
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_admin public.admins;
   v_token text;
 begin
-  delete from public.sessions where expires_at < now();   -- 清理过期会话
+  delete from public.sessions where expires_at < now();
   select * into v_admin from public.admins where phone = p_phone limit 1;
   if v_admin.id is null or v_admin.password_hash <> crypt(p_password, v_admin.password_hash) then
     return json_build_object('ok', false, 'error', '手机号或密码错误');
   end if;
-  v_token := encode(gen_random_bytes(32), 'hex');
+  v_token := encode(extensions.gen_random_bytes(32), 'hex');
   insert into public.sessions (token, admin_id, expires_at)
   values (v_token, v_admin.id, now() + interval '7 days');
   return json_build_object('ok', true, 'token', v_token,
@@ -94,7 +97,7 @@ $$;
 -- 修改自己的密码
 create or replace function public.admin_change_password(p_token text, p_old text, p_new text)
 returns json
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_admin public.admins;
 begin
@@ -109,7 +112,6 @@ begin
     return json_build_object('ok', false, 'error', '新密码至少 6 位');
   end if;
   update public.admins set password_hash = crypt(p_new, gen_salt('bf')) where id = v_admin.id;
-  -- 改密后吊销本人其他会话
   delete from public.sessions where admin_id = v_admin.id and token <> p_token;
   return json_build_object('ok', true);
 end;
@@ -118,7 +120,7 @@ $$;
 -- 总管理员：列出所有管理员
 create or replace function public.admin_list(p_token text)
 returns json
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare v_admin public.admins;
 begin
   v_admin := admin_from_token(p_token);
@@ -140,7 +142,7 @@ $$;
 -- 总管理员：添加管理员
 create or replace function public.admin_create(p_token text, p_phone text, p_password text, p_name text)
 returns json
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare v_admin public.admins;
 begin
   v_admin := admin_from_token(p_token);
@@ -168,7 +170,7 @@ $$;
 -- 总管理员：删除管理员（不能删自己和总管理员）
 create or replace function public.admin_delete(p_token text, p_admin_id uuid)
 returns json
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare v_admin public.admins;
 begin
   v_admin := admin_from_token(p_token);
@@ -189,9 +191,8 @@ begin
 end;
 $$;
 
--- ---------- 4. 初始化总管理员 ----------
+-- ---------- 5. 初始化总管理员 ----------
 -- 手机号：13634169539    初始密码：liu123456
--- ⚠️ 首次登录后请立即在「修改密码」中更改！
 insert into public.admins (phone, password_hash, name, role)
 values ('13634169539', crypt('liu123456', gen_salt('bf')), '总管理员', 'super')
 on conflict (phone) do nothing;

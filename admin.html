@@ -77,9 +77,13 @@ main{flex:1;padding:30px 36px 60px;min-width:0}
 
 /* 工具条 */
 .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.tabs{display:flex;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.tabs button{border:0;background:none;padding:9px 16px;font-size:13.5px;color:var(--muted)}
+.tabs{display:flex;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative}
+.tabs button{border:0;background:none;padding:9px 20px;font-size:13.5px;color:var(--muted);position:relative}
 .tabs button.on{background:var(--ink);color:#fff}
+.tabs button .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;
+  border-radius:20px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;line-height:1}
+.tabs button.on .badge{background:var(--amber);color:var(--ink)}
 .search{flex:1;min-width:200px;max-width:340px;padding:9px 14px;border:1.4px solid var(--line);
   border-radius:10px;outline:none}
 .search:focus{border-color:var(--amber-d)}
@@ -88,10 +92,11 @@ main{flex:1;padding:30px 36px 60px;min-width:0}
 .pbtn:hover{opacity:.86}
 .pbtn.ghost{background:#fff;color:var(--ink);border:1.4px solid var(--line)}
 .pbtn.warn{background:var(--bad)}
+.pbtn.sm{padding:5px 12px;font-size:12px;border-radius:7px}
 
 /* 表格 */
 .tblwrap{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:auto}
-table{width:100%;border-collapse:collapse;font-size:13.8px;min-width:760px}
+table{width:100%;border-collapse:collapse;font-size:13.8px;min-width:900px}
 th{background:#faf9f4;text-align:left;font-size:12px;letter-spacing:.06em;color:var(--muted);
   padding:12px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
 td{padding:12px 16px;border-bottom:1px solid #f0efe8;vertical-align:middle}
@@ -103,25 +108,48 @@ tr:hover td{background:#fcfbf7}
 .t-time{white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}
 .t-key b{display:block}
 .t-key small{color:var(--muted)}
-.view-btn{border:1.3px solid var(--line);background:#fff;border-radius:8px;padding:6px 13px;font-size:12.5px}
+.status-pill{display:inline-block;font-size:12px;padding:3px 11px;border-radius:20px;font-weight:600}
+.status-pill.pending{background:#fff3e0;color:#c67a00}
+.status-pill.handled{background:#e8f5e9;color:#2e7d32}
+.t-actions{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.view-btn{border:1.3px solid var(--line);background:#fff;border-radius:8px;padding:5px 13px;font-size:12.5px}
 .view-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.mark-btn{border:0;border-radius:7px;padding:5px 11px;font-size:12px;font-weight:600;color:#fff;background:var(--ink)}
+.mark-btn:hover{opacity:.85}
+.mark-btn.pending{background:var(--amber-d)}
+.mark-btn.handled{background:#bbb}
+.note-btn{border:1.3px solid var(--line);background:#fff;border-radius:7px;padding:5px 11px;font-size:12px}
+.note-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
 .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:14px}
 .tblfoot{padding:10px 16px;font-size:12px;color:var(--muted);text-align:right}
 
-/* 明细抽屉 */
-.drawer{position:fixed;inset:0;z-index:60;display:none}
-.drawer.open{display:block}
-.drawer .dm{position:absolute;inset:0;background:rgba(10,11,30,.5);backdrop-filter:blur(4px)}
-.drawer .dp{position:absolute;right:0;top:0;bottom:0;width:480px;max-width:92vw;background:#fff;
-  overflow-y:auto;padding:26px 28px 40px;box-shadow:-20px 0 60px rgba(0,0,0,.25)}
-.drawer h3{font-size:18px;font-weight:900;display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.drawer .dt{font-size:12.5px;color:var(--muted);margin-bottom:20px}
-.drawer .close{position:absolute;right:18px;top:16px;width:34px;height:34px;border-radius:50%;
-  border:0;background:#f1f0ea;font-size:15px}
-.kv{display:grid;grid-template-columns:110px 1fr;gap:0;border-top:1px solid var(--line)}
-.kv>div{padding:10px 2px;border-bottom:1px solid #f0efe8;font-size:13.5px}
-.kv .k{color:var(--muted)}
-.kv .v{word-break:break-all}
+/* 横向弹窗 */
+.modal{position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px}
+.modal.open{display:flex}
+.modal .mm{position:absolute;inset:0;background:rgba(10,11,30,.5);backdrop-filter:blur(4px)}
+.modal .mc{position:relative;background:#fff;border-radius:16px;width:92%;max-width:1100px;max-height:86vh;
+  display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.45);overflow:hidden}
+.modal .mh{padding:20px 28px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;
+  background:#faf9f4;flex-shrink:0}
+.modal .mh h3{font-size:17px;font-weight:900}
+.modal .mh .meta{font-size:12.5px;color:var(--muted);margin-left:auto}
+.modal .close{border:0;background:#f1f0ea;width:34px;height:34px;border-radius:50%;
+  position:absolute;right:16px;top:14px;font-size:16px;z-index:1}
+.modal .mb{padding:22px 28px;overflow-y:auto;flex:1}
+.modal .mf{padding:16px 28px;border-top:1px solid var(--line);background:#faf9f4;flex-shrink:0;display:flex;gap:10px;align-items:center}
+
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--line)}
+.hgrid .hk{color:var(--muted);font-size:13px;padding:10px 2px;border-bottom:1px solid #f0efe8}
+.hgrid .hv{font-size:13.5px;padding:10px 2px;border-bottom:1px solid #f0efe8;border-right:1px solid var(--line);word-break:break-all}
+.hgrid .col{display:flex;flex-direction:column}
+.hgrid .col.left{border-right:1px solid var(--line)}
+
+.notes-box{margin-top:18px;background:#faf9f4;border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.notes-box h4{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.notes-history{font-size:13px;color:#3c3d5c;white-space:pre-wrap;line-height:1.8;max-height:200px;overflow-y:auto}
+.notes-history:empty::before{content:"暂无联系记录";color:var(--muted);font-size:12px}
+.note-input{flex:1;padding:8px 12px;border:1.4px solid var(--line);border-radius:8px;outline:none;font-size:13px;min-height:36px;resize:none}
+.note-input:focus{border-color:var(--amber-d)}
 
 /* 区块卡片（管理员/密码） */
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin-bottom:20px}
@@ -145,6 +173,17 @@ tr:hover td{background:#fcfbf7}
 .toast.show{opacity:1;transform:translateX(-50%)}
 .toast.err{background:var(--bad)}
 
+/* 联系记录弹窗 */
+.ndrawer{position:fixed;inset:0;z-index:80;display:none}
+.ndrawer.open{display:flex;align-items:center;justify-content:center;padding:20px}
+.ndrawer .nm{position:absolute;inset:0;background:rgba(10,11,30,.5)}
+.ndrawer .nc{position:relative;background:#fff;border-radius:14px;padding:24px;max-width:520px;width:100%;
+  box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.ndrawer h4{font-size:15px;font-weight:900;margin-bottom:14px}
+.ndrawer textarea{width:100%;min-height:100px;padding:10px 12px;border:1.4px solid var(--line);border-radius:9px;outline:none;font-size:13px;resize:vertical}
+.ndrawer textarea:focus{border-color:var(--amber-d)}
+.ndrawer .nfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+
 /* 响应式 */
 @media (max-width:960px){
   .stats{grid-template-columns:repeat(2,1fr)}
@@ -154,6 +193,9 @@ tr:hover td{background:#fcfbf7}
   .nav-item{width:auto;margin:0 4px 4px 0;padding:9px 13px;font-size:13.5px}
   aside .me{display:flex;align-items:center;gap:10px}
   main{padding:20px 16px 60px}
+  .hgrid{grid-template-columns:1fr}
+  .modal .mc{width:96%;max-height:92vh}
+  .t-actions{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
@@ -222,16 +264,15 @@ tr:hover td{background:#fcfbf7}
       </div>
       <div class="bar">
         <div class="tabs">
-          <button class="on" data-f="all">全部</button>
-          <button data-f="book">预约诊断</button>
-          <button data-f="apply">咨询师申请</button>
+          <button class="on" data-f="book">预约诊断<span class="badge" id="badgeBook" style="display:none">0</span></button>
+          <button data-f="apply">咨询师申请<span class="badge" id="badgeApply" style="display:none">0</span></button>
         </div>
         <input class="search" id="searchInput" type="text" placeholder="搜索公司 / 姓名 / 手机号…">
-        <button class="pbtn ghost" id="refreshBtn">刷新</button>
+        <button class="pbtn ghost" id="searchBtn">搜索</button>
       </div>
       <div class="tblwrap">
         <table>
-          <thead><tr><th>提交时间</th><th>类型</th><th>关键信息</th><th>联系方式</th><th></th></tr></thead>
+          <thead><tr><th>提交时间</th><th>关键信息</th><th>联系方式</th><th>状态</th><th>操作</th></tr></thead>
           <tbody id="tblBody"></tbody>
         </table>
         <div class="empty" id="tblEmpty" style="display:none">暂无提交记录</div>
@@ -275,14 +316,41 @@ tr:hover td{background:#fcfbf7}
   </main>
 </div>
 
-<!-- 提交明细抽屉 -->
-<div class="drawer" id="drawer">
-  <div class="dm" data-dclose></div>
-  <div class="dp">
-    <button class="close" data-dclose>✕</button>
-    <h3><span class="t-type" id="dType">—</span><span id="dTitle">提交明细</span></h3>
-    <div class="dt" id="dTime"></div>
-    <div class="kv" id="dKv"></div>
+<!-- 横向详情弹窗 -->
+<div class="modal" id="modal">
+  <div class="mm" data-mclose></div>
+  <div class="mc">
+    <div class="close" data-mclose>✕</div>
+    <div class="mh">
+      <span class="t-type" id="mType">—</span>
+      <h3 id="mTitle">提交明细</h3>
+      <span class="meta" id="mMeta"></span>
+    </div>
+    <div class="mb">
+      <div class="hgrid" id="mGrid"></div>
+      <div class="notes-box">
+        <h4>联系记录</h4>
+        <div class="notes-history" id="mNotes"></div>
+      </div>
+    </div>
+    <div class="mf">
+      <input class="note-input" id="mNoteInput" placeholder="输入联系记录，回车添加…">
+      <button class="pbtn ghost" id="mAddNote">添加记录</button>
+      <button class="pbtn" id="mToggleStatus">标记已处理</button>
+    </div>
+  </div>
+</div>
+
+<!-- 添加联系记录小弹窗 -->
+<div class="ndrawer" id="noteDrawer">
+  <div class="nm" data-nclose></div>
+  <div class="nc">
+    <h4>添加联系记录</h4>
+    <textarea id="noteText" placeholder="输入本次沟通/跟进内容…"></textarea>
+    <div class="nfoot">
+      <button class="pbtn ghost" data-nclose>取消</button>
+      <button class="pbtn" id="noteSave">保存</button>
+    </div>
   </div>
 </div>
 
@@ -295,7 +363,6 @@ var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
 var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
 var LS_KEY = "cc_admin_session";
 
-/* ---------- 字段中文标签 ---------- */
 var LABELS = {
   company:"公司名称", contact:"联系人", title:"职务", phone:"手机", city:"所在城市",
   size:"员工数", needs:"需求", cycle:"项目周期", budget:"预算",
@@ -306,7 +373,6 @@ var LABELS = {
 };
 var TYPE_NAME = { book:"预约诊断", apply:"咨询师申请" };
 
-/* ---------- 工具 ---------- */
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -339,7 +405,7 @@ function api(path, opts){
 function rpc(fn, body){ return api("/rest/v1/rpc/" + fn, { method:"POST", body: JSON.stringify(body) }); }
 
 /* ---------- 视图切换 ---------- */
-var state = { filter:"all", q:"", list:[] };
+var state = { filter:"book", q:"", list:[], current:null };
 
 function showLogin(){
   $("app").classList.remove("open");
@@ -400,11 +466,24 @@ function loadList(){
   api("/rest/v1/submissions?select=*&order=created_at.desc&limit=1000").then(function(r){
     if(r.status === 401){ saveSess(null); showLogin(); return; }
     state.list = Array.isArray(r.body) ? r.body : [];
+    loadBadges();
     render();
   }).catch(function(){ toast("加载失败，请检查网络", true); });
 }
-$("refreshBtn").addEventListener("click", loadList);
-$("searchInput").addEventListener("input", function(){ state.q = this.value.trim().toLowerCase(); render(); });
+function loadBadges(){
+  rpc("admin_unread_counts", { p_token: sess().token }).then(function(r){
+    var j = r.body;
+    if(j && j.ok && j.counts){
+      var bk = j.counts.book | 0, ba = j.counts.apply | 0;
+      $("badgeBook").textContent = bk;
+      $("badgeBook").style.display = bk ? "" : "none";
+      $("badgeApply").textContent = ba;
+      $("badgeApply").style.display = ba ? "" : "none";
+    }
+  });
+}
+$("searchBtn").addEventListener("click", loadList);
+$("searchInput").addEventListener("keydown", function(e){ if(e.key==="Enter") loadList(); });
 document.querySelectorAll(".tabs button").forEach(function(b){
   b.addEventListener("click", function(){
     document.querySelectorAll(".tabs button").forEach(function(x){ x.classList.remove("on"); });
@@ -439,39 +518,169 @@ function render(){
   $("tblCount").textContent = "共 " + list.length + " 条";
   tb.innerHTML = list.map(function(s){
     var k = rowKey(s), d = s.data || {};
-    return "<tr>" +
+    var statusCls = s.status || "pending";
+    var statusTxt = statusCls === "handled" ? "已处理" : "未处理";
+    var handler = s.handler_name || s.handler_phone || "";
+    var handlerTxt = handler ? ("<br><small style='color:#888'>"+esc(handler)+" · "+esc(fmtTime(s.handled_at))+"</small>") : "";
+    var markBtn = statusCls === "handled"
+      ? '<button class="mark-btn sm pending" data-act="unhandled">标为未处理</button>'
+      : '<button class="mark-btn sm handled" data-act="handled">标为已处理</button>';
+    return "<tr data-id='" + s.id + "'>" +
       '<td class="t-time">' + esc(fmtTime(s.created_at)) + "</td>" +
-      '<td><span class="t-type ' + s.type + '">' + TYPE_NAME[s.type] + "</span></td>" +
       '<td class="t-key"><b>' + esc(k.t) + "</b><small>" + esc(k.s) + "</small></td>" +
       '<td>' + esc(d.phone || "—") + "</td>" +
-      '<td><button class="view-btn" data-id="' + s.id + '">详情</button></td></tr>';
+      '<td><span class="status-pill ' + statusCls + '">' + statusTxt + '</span>' + handlerTxt + "</td>" +
+      '<td><div class="t-actions">' + markBtn +
+      '<button class="note-btn sm" data-act="note">加记录</button>' +
+      '<button class="view-btn" data-act="detail">详情</button></div></td></tr>';
   }).join("");
-  tb.querySelectorAll(".view-btn").forEach(function(b){
-    b.addEventListener("click", function(){
-      var s = state.list.find(function(x){ return x.id === b.getAttribute("data-id"); });
-      if(s) openDetail(s);
+  tb.querySelectorAll("tr").forEach(function(tr){
+    var id = tr.getAttribute("data-id");
+    tr.querySelectorAll("button").forEach(function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        var act = btn.getAttribute("data-act");
+        var s = state.list.find(function(x){ return x.id === id; });
+        if(!s) return;
+        if(act === "detail") openDetail(s);
+        else if(act === "handled" || act === "unhandled") toggleStatus(s, act);
+        else if(act === "note") openNoteDrawer(s);
+      });
     });
   });
 }
-function openDetail(s){
-  $("dType").className = "t-type " + s.type;
-  $("dType").textContent = TYPE_NAME[s.type] || s.type;
-  $("dTitle").textContent = (s.data && (s.data.company || s.data.name)) || "提交明细";
-  $("dTime").textContent = "提交于 " + fmtTime(s.created_at);
-  var d = s.data || {}, html = "";
-  Object.keys(d).forEach(function(k){
-    var v = d[k];
-    if(v === "" || v == null) return;
-    html += "<div class='k'>" + esc(LABELS[k] || k) + "</div><div class='v'>" + esc(v) + "</div>";
+
+/* ---------- 状态切换 & 添加记录 ---------- */
+function toggleStatus(s, target){
+  var newStatus = target === "handled" ? "handled" : "pending";
+  rpc("admin_mark_status", {
+    p_token: sess().token,
+    p_submission_id: s.id,
+    p_status: newStatus
+  }).then(function(r){
+    var j = r.body;
+    if(j && j.ok){
+      toast(newStatus === "handled" ? "已标记为已处理" : "已标记为未处理");
+      loadList();
+      if(state.current && state.current.id === s.id){
+        state.current.status = newStatus;
+        state.current.handler_phone = sess().phone;
+        state.current.handler_name = sess().name;
+        state.current.handled_at = newStatus === "handled" ? new Date().toISOString() : null;
+        refreshModal(state.current);
+      }
+    } else toast((j && j.error) || "操作失败", true);
   });
-  $("dKv").innerHTML = html || "<div class='k'>—</div><div class='v'>无内容</div>";
-  $("drawer").classList.add("open");
 }
-document.querySelectorAll("[data-dclose]").forEach(function(el){
-  el.addEventListener("click", function(){ $("drawer").classList.remove("open"); });
+
+/* ---------- 联系记录小抽屉 ---------- */
+var noteTarget = null;
+function openNoteDrawer(s){
+  noteTarget = s;
+  $("noteText").value = "";
+  $("noteDrawer").classList.add("open");
+  setTimeout(function(){ $("noteText").focus(); }, 50);
+}
+document.querySelectorAll("[data-nclose]").forEach(function(el){
+  el.addEventListener("click", function(){ $("noteDrawer").classList.remove("open"); });
+});
+$("noteSave").addEventListener("click", function(){
+  var txt = $("noteText").value.trim();
+  if(!txt) return toast("记录内容不能为空", true);
+  rpc("admin_add_note", {
+    p_token: sess().token,
+    p_submission_id: noteTarget.id,
+    p_notes: txt
+  }).then(function(r){
+    var j = r.body;
+    if(j && j.ok){
+      toast("记录已添加");
+      $("noteDrawer").classList.remove("open");
+      loadList();
+      if(state.current && state.current.id === noteTarget.id){
+        state.current.notes = (state.current.notes || "") + "\n[" + sess().name + " " + fmtTime(new Date()) + "] " + txt;
+        refreshModal(state.current);
+      }
+    } else toast((j && j.error) || "保存失败", true);
+  });
+});
+
+/* ---------- 横向详情弹窗 ---------- */
+function openDetail(s){
+  state.current = s;
+  $("mType").className = "t-type " + s.type;
+  $("mType").textContent = TYPE_NAME[s.type] || s.type;
+  $("mTitle").textContent = (s.data && (s.data.company || s.data.name)) || "提交明细";
+  var handler = s.handler_name || s.handler_phone || "";
+  var meta = fmtTime(s.created_at);
+  if(s.status === "handled") meta += " · 已处理"; else meta += " · 未处理";
+  if(handler) meta += " · 处理人 " + handler;
+  $("mMeta").textContent = meta;
+
+  var d = s.data || {};
+  var keys = Object.keys(d).filter(function(k){ return d[k] !== "" && d[k] != null; });
+  var half = Math.ceil(keys.length / 2);
+  var left = keys.slice(0, half), right = keys.slice(half);
+  function makeCol(arr){
+    return arr.map(function(k){
+      return "<div class='k'>" + esc(LABELS[k] || k) + "</div><div class='v'>" + esc(d[k]) + "</div>";
+    }).join("");
+  }
+  var htm = "<div class='col left'>" + makeCol(left) + "</div>" +
+            "<div class='col'>" + makeCol(right) + "</div>";
+  if(keys.length === 0) htm = "<div class='col left'><div class='k'>—</div><div class='v'>无内容</div></div><div class='col'></div>";
+  $("mGrid").innerHTML = htm;
+  $("mNotes").textContent = s.notes || "";
+
+  $("mToggleStatus").textContent = s.status === "handled" ? "标为未处理" : "标记已处理";
+  $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : "");
+  $("modal").classList.add("open");
+  setTimeout(function(){ $("mNoteInput").focus(); }, 100);
+}
+function refreshModal(s){
+  $("mNotes").textContent = s.notes || "";
+  $("mToggleStatus").textContent = s.status === "handled" ? "标为未处理" : "标记已处理";
+  $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : "");
+  var handler = s.handler_name || s.handler_phone || "";
+  var meta = fmtTime(s.created_at);
+  if(s.status === "handled") meta += " · 已处理"; else meta += " · 未处理";
+  if(handler) meta += " · 处理人 " + handler;
+  $("mMeta").textContent = meta;
+}
+document.querySelectorAll("[data-mclose]").forEach(function(el){
+  el.addEventListener("click", function(){ $("modal").classList.remove("open"); state.current = null; });
 });
 document.addEventListener("keydown", function(e){
-  if(e.key === "Escape") $("drawer").classList.remove("open");
+  if(e.key === "Escape"){
+    if($("noteDrawer").classList.contains("open")) $("noteDrawer").classList.remove("open");
+    else if($("modal").classList.contains("open")){ $("modal").classList.remove("open"); state.current = null; }
+  }
+});
+$("mToggleStatus").addEventListener("click", function(){
+  if(!state.current) return;
+  toggleStatus(state.current, state.current.status === "handled" ? "unhandled" : "handled");
+});
+$("mAddNote").addEventListener("click", function(){
+  if(!state.current) return;
+  var txt = $("mNoteInput").value.trim();
+  if(!txt) return toast("记录内容不能为空", true);
+  rpc("admin_add_note", {
+    p_token: sess().token,
+    p_submission_id: state.current.id,
+    p_notes: txt
+  }).then(function(r){
+    var j = r.body;
+    if(j && j.ok){
+      toast("记录已添加");
+      $("mNoteInput").value = "";
+      loadList();
+      state.current.notes = (state.current.notes || "") + "\n[" + sess().name + " " + fmtTime(new Date()) + "] " + txt;
+      refreshModal(state.current);
+    } else toast((j && j.error) || "保存失败", true);
+  });
+});
+$("mNoteInput").addEventListener("keydown", function(e){
+  if(e.key === "Enter"){ e.preventDefault(); $("mAddNote").click(); }
 });
 
 /* ---------- 管理员管理 ---------- */

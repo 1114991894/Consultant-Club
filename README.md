@@ -15,7 +15,7 @@ AI 与咨询融合落地的咨询公司平台官网，侧重 **AI 咨询** 与 *
 ├── Consultant Club 公司简介.pdf         # 11 页 A4 公司简介（可直接发客户）
 ├── assets/                             # 团队成员头像
 │   ├── team-yang.jpg                   # 杨景宇 · 战略顾问
-│   ├── team-tang.jpg                   # 唐名华 · AI 技术经理
+│   ├── team-liu.jpg                    # 刘诠案 · AI落地咨询师
 │   ├── team-doris.jpg                  # Doris · 业绩增长教练
 │   └── team-li.jpg                     # 李文科 · 组织发展顾问
 └── .nojekyll                           # 关闭 Jekyll 处理，保证资源原样发布

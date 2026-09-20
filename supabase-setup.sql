@@ -191,6 +191,27 @@ begin
 end;
 $$;
 
+-- 总管理员：删除提交记录（预约诊断 / 咨询师申请）
+create or replace function public.admin_delete_submission(p_token text, p_submission_id uuid)
+returns json
+language plpgsql security definer set search_path = public as $$
+declare v_admin public.admins;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期');
+  end if;
+  if v_admin.role <> 'super' then
+    return json_build_object('ok', false, 'error', '仅总管理员可操作');
+  end if;
+  delete from public.submissions where id = p_submission_id;
+  if not found then
+    return json_build_object('ok', false, 'error', '记录不存在或已删除');
+  end if;
+  return json_build_object('ok', true);
+end;
+$$;
+
 -- ---------- 5. 初始化总管理员 ----------
 -- 手机号：13634169539    初始密码：liu123456
 insert into public.admins (phone, password_hash, name, role)

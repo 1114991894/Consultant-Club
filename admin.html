@@ -121,6 +121,8 @@ tr:hover td{background:#fcfbf7}
 .mark-btn.pending{background:#f1efe8;color:#8a8776;border-color:var(--line)}
 .note-btn{border:1.3px solid var(--line);background:#fff;border-radius:7px;padding:5px 11px;font-size:12px}
 .note-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.del-btn{border:1.3px solid rgba(211,47,47,.35);background:#fff;border-radius:7px;padding:5px 11px;font-size:12px;color:#c62828}
+.del-btn:hover{background:#d32f2f;border-color:#d32f2f;color:#fff}
 .empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:14px}
 .tblfoot{padding:10px 16px;font-size:12px;color:var(--muted);text-align:right}
 
@@ -539,7 +541,9 @@ function render(){
       '<td><span class="status-pill ' + statusCls + '">' + statusTxt + '</span>' + handlerTxt + "</td>" +
       '<td><div class="t-actions">' + markBtn +
       '<button class="note-btn sm" data-act="note">加记录</button>' +
-      '<button class="view-btn" data-act="detail">详情</button></div></td></tr>';
+      '<button class="view-btn" data-act="detail">详情</button>' +
+      (sess().role === "super" ? '<button class="del-btn" data-act="del">删除</button>' : "") +
+      '</div></td></tr>';
   }).join("");
   tb.querySelectorAll("tr").forEach(function(tr){
     var id = tr.getAttribute("data-id");
@@ -552,8 +556,28 @@ function render(){
         if(act === "detail") openDetail(s);
         else if(act === "handled" || act === "unhandled") toggleStatus(s, act);
         else if(act === "note") openNoteDrawer(s);
+        else if(act === "del") deleteSubmission(s);
       });
     });
+  });
+}
+
+/* ---------- 总管理员：删除提交记录 ---------- */
+function deleteSubmission(s){
+  var k = rowKey(s);
+  if(!confirm("确定删除该条记录？\n\n" + (s.type === "book" ? "预约诊断" : "咨询师申请") + " · " + (k.t || "") + "\n删除后不可恢复！")) return;
+  rpc("admin_delete_submission", {
+    p_token: sess().token,
+    p_submission_id: s.id
+  }).then(function(r){
+    var j = r.body;
+    if(j && j.ok){
+      toast("记录已删除");
+      if(state.current && state.current.id === s.id){
+        $("modal").classList.remove("open"); state.current = null;
+      }
+      loadList();
+    } else toast((j && j.error) || "删除失败", true);
   });
 }
 

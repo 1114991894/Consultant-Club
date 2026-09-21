@@ -1633,5 +1633,49 @@ var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
 })();
 </script>
 
+<script>
+/* 版本自动同步：服务器内容更新后自动刷新页面并绕过缓存 */
+(function(){
+"use strict";
+if(location.protocol.indexOf("http") !== 0) return;
+var KEY = "cc_page_ver:" + location.pathname;
+var UPD = "cc_page_updated";
+function djb2(s){ var h = 5381; for(var i = 0; i < s.length; i++){ h = ((h<<5)+h+s.charCodeAt(i))>>>0; } return h + "." + s.length; }
+function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function lsSet(k,v){ try { localStorage.setItem(k,v); } catch(e){} }
+function check(){
+  fetch(location.href, { cache:"no-store" }).then(function(r){ return r.text(); }).then(function(txt){
+    var v = djb2(txt), old = lsGet(KEY);
+    if(old && old !== v){
+      lsSet(KEY, v);
+      var now = Date.now(), lastRl = 0;
+      try { lastRl = +(sessionStorage.getItem("cc_page_rl") || 0); } catch(e){}
+      if(now - lastRl > 10000){
+        try { sessionStorage.setItem("cc_page_rl", String(now)); } catch(e){}
+        try { sessionStorage.setItem(UPD, "1"); } catch(e){}
+        location.reload();
+      }
+      return;
+    }
+    lsSet(KEY, v);
+  }).catch(function(){});
+}
+check();
+setInterval(check, 60000);
+window.addEventListener("focus", check);
+window.addEventListener("pageshow", function(ev){ if(ev.persisted) check(); });
+try {
+  if(sessionStorage.getItem(UPD)){
+    sessionStorage.removeItem(UPD);
+    var t = document.createElement("div");
+    t.textContent = "✨ 已自动同步到最新版本";
+    t.style.cssText = "position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#083E78;color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .3s";
+    (document.body || document.documentElement).appendChild(t);
+    requestAnimationFrame(function(){ t.style.opacity = "1"; });
+    setTimeout(function(){ t.style.opacity = "0"; setTimeout(function(){ t.remove(); }, 400); }, 2600);
+  }
+} catch(e){}
+})();
+</script>
 </body>
 </html>

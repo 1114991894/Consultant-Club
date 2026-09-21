@@ -1499,6 +1499,31 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
   </div>
 </div>
 
+<script>
+/* 团队区动态化：后台「咨询师管理」配置了数据则覆盖静态卡片，否则保留静态 */
+(function(){
+"use strict";
+var KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+fetch("https://kkrokgglorelzwnzlfri.supabase.co/rest/v1/consultants?select=name,title,bio,image&order=sort.asc,created_at.asc", {
+  headers: { "apikey": KEY }
+}).then(function(r){ return r.ok ? r.json() : Promise.reject(); }).then(function(list){
+  if(!Array.isArray(list) || !list.length) return;
+  var grid = document.querySelector(".team-grid");
+  if(!grid) return;
+  grid.innerHTML = list.map(function(c){
+    var lines = String(c.bio||"").split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean);
+    return '<article class="member">' +
+      '<div class="member-photo"><img src="' + esc(c.image) + '" alt="' + esc(c.name) + '" loading="lazy"></div>' +
+      '<h3>' + esc(c.name) + '</h3>' +
+      '<span class="member-role">' + esc(c.title) + '</span>' +
+      '<ul>' + lines.map(function(l){ return '<li>' + esc(l) + '</li>'; }).join("") + '</ul>' +
+      '</article>';
+  }).join("");
+}).catch(function(){ /* 接口不可用时保留静态卡片 */ });
+})();
+</script>
 <!-- ================= 悬浮快捷按钮 ================= -->
 <div class="float-actions" aria-label="快捷操作">
   <button class="float-btn fb-book" id="floatBookBtn" type="button">

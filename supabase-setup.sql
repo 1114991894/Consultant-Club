@@ -262,3 +262,113 @@ $$;
 insert into public.admins (phone, password_hash, name, role)
 values ('13634169539', crypt('liu123456', gen_salt('bf')), '总管理员', 'super')
 on conflict (phone) do nothing;
+
+-- ---------- 6. 咨询师管理（首页「项目咨询师」动态化） ----------
+
+-- 咨询师表：image 存前端裁剪压缩后的 base64（400x400 JPEG，约 30-80KB）
+create table if not exists public.consultants (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  title text not null default '',
+  bio text not null default '',
+  image text not null default '',
+  sort bigint not null default (extract(epoch from now()) * 1000)::bigint,
+  created_at timestamptz not null default now()
+);
+
+alter table public.consultants enable row level security;
+drop policy if exists "consultants_public_read" on public.consultants;
+create policy "consultants_public_read" on public.consultants
+  for select to anon, authenticated using (true);
+
+-- 新增 / 编辑（需登录 token；p_image 传空字符串表示保留原图）
+create or replace function public.consultant_save(
+  p_token text, p_id uuid, p_name text, p_title text, p_bio text, p_image text
+)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_admin public.admins;
+  v_row public.consultants;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期');
+  end if;
+  p_name := btrim(coalesce(p_name, ''));
+  p_title := btrim(coalesce(p_title, ''));
+  if p_name = '' or p_title = '' then
+    return json_build_object('ok', false, 'error', '姓名与头衔为必填');
+  end if;
+  if p_id is null then
+    if coalesce(p_image, '') = '' then
+      return json_build_object('ok', false, 'error', '请上传人物图像');
+    end if;
+    insert into public.consultants (name, title, bio, image)
+    values (p_name, p_title, coalesce(p_bio, ''), p_image)
+    returning * into v_row;
+  else
+    update public.consultants set
+      name = p_name, title = p_title, bio = coalesce(p_bio, ''),
+      image = case when coalesce(p_image, '') = '' then image else p_image end
+    where id = p_id
+    returning * into v_row;
+    if v_row.id is null then
+      return json_build_object('ok', false, 'error', '记录不存在');
+    end if;
+  end if;
+  return json_build_object('ok', true, 'id', v_row.id);
+end;
+$$;
+
+-- 删除（需登录 token）
+create or replace function public.consultant_delete(p_token text, p_id uuid)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_admin public.admins;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期');
+  end if;
+  delete from public.consultants where id = p_id;
+  if not found then
+    return json_build_object('ok', false, 'error', '记录不存在或已删除');
+  end if;
+  return json_build_object('ok', true);
+end;
+$$;
+
+-- 上移 / 下移（与相邻记录交换 sort 值）
+create or replace function public.consultant_move(p_token text, p_id uuid, p_dir text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_admin public.admins;
+  v_cur public.consultants;
+  v_nb  public.consultants;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期');
+  end if;
+  select * into v_cur from public.consultants where id = p_id;
+  if v_cur.id is null then
+    return json_build_object('ok', false, 'error', '记录不存在');
+  end if;
+  if p_dir = 'up' then
+    select * into v_nb from public.consultants
+      where sort < v_cur.sort order by sort desc limit 1;
+  else
+    select * into v_nb from public.consultants
+      where sort > v_cur.sort order by sort asc limit 1;
+  end if;
+  if v_nb.id is null then
+    return json_build_object('ok', true, 'moved', false);
+  end if;
+  update public.consultants set sort = v_nb.sort where id = v_cur.id;
+  update public.consultants set sort = v_cur.sort where id = v_nb.id;
+  return json_build_object('ok', true, 'moved', true);
+end;
+$$;

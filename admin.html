@@ -84,6 +84,28 @@ main{flex:1;padding:30px 36px 60px;min-width:0}
   border-radius:20px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;
   display:flex;align-items:center;justify-content:center;line-height:1}
 .tabs button.on .badge{background:var(--amber);color:var(--ink)}
+/* ---------- 咨询师管理 ---------- */
+.cform{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start}
+.crop-wrap{position:relative;width:200px;height:200px;border-radius:50%;overflow:hidden;
+  border:2px solid var(--amber);box-shadow:0 0 0 6px rgba(240,194,75,.12);
+  background:#14153a;cursor:grab;touch-action:none}
+.crop-wrap.dragging{cursor:grabbing}
+.crop-wrap img{position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;-webkit-user-drag:none;pointer-events:none;max-width:none}
+.crop-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(253,253,251,.45);font-size:12px;gap:6px;text-align:center;line-height:1.8}
+.czoom{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12px;color:var(--muted)}
+.czoom input{flex:1;accent-color:var(--amber)}
+.cbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.conslist{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.cons-item{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.cons-item img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(240,194,75,.55);flex:none}
+.cons-item .ci-main{flex:1;min-width:0}
+.cons-item .ci-main b{font-size:14.5px}
+.cons-item .ci-main .tag{display:inline-block;margin-left:8px;font-size:11.5px;background:var(--amber);color:var(--ink);border-radius:99px;padding:2px 9px;font-weight:700}
+.cons-item .ci-main small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cons-item .ci-ops{display:flex;gap:6px;flex:none}
+.cons-item .ci-ops .mv{border:1px solid var(--line);background:#fff;border-radius:7px;width:28px;height:28px;font-size:13px;cursor:pointer;color:var(--muted)}
+.cons-item .ci-ops .mv:hover{border-color:var(--amber-d);color:var(--amber-d)}
+@media (max-width:720px){ .cform{grid-template-columns:1fr} }
 .search{flex:1;min-width:200px;max-width:340px;padding:9px 14px;border:1.4px solid var(--line);
   border-radius:10px;outline:none}
 .search:focus{border-color:var(--amber-d)}
@@ -246,6 +268,10 @@ tr:hover td{background:#fcfbf7}
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 14c.6-2.7 2.8-4 5.5-4s4.9 1.3 5.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         管理员管理
       </button>
+      <button class="nav-item" data-view="consultants">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="5" r="2.6" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="6.5" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 13.5c.5-2.4 2.2-3.7 4-3.7s3.5 1.3 4 3.7M9.5 13.5c.3-1.6 1.2-2.8 2.6-3.2 1.6-.5 3 .7 3.4 3.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        咨询师管理
+      </button>
       <button class="nav-item" data-view="pwd">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="6.5" width="11" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6.5V5a3 3 0 016 0v1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10.2" r="1.2" fill="currentColor"/></svg>
         修改密码
@@ -308,6 +334,44 @@ tr:hover td{background:#fcfbf7}
           <tbody id="admBody"></tbody>
         </table>
       </div>
+    </section>
+
+    <!-- 咨询师管理 -->
+    <section id="view-consultants" style="display:none">
+      <div class="mhead"><h2>咨询师管理</h2><span class="sub">管理首页「项目咨询师」展示 · 保存后官网自动更新</span></div>
+      <div class="card">
+        <h3 id="cFormTitle">添加咨询师</h3>
+        <div class="desc">照片上传后拖动调整位置、滑块缩放，保存时自动裁剪为圆形头像（400×400，自动压缩）。介绍每行一条，与首页列表格式一致。</div>
+        <div class="cform">
+          <div>
+            <div class="crop-wrap" id="cropBox">
+              <div class="crop-empty" id="cropEmpty">点击下方「选择照片」上传<br>拖动调整位置 · 滑块缩放</div>
+              <img id="cropImg" alt="" style="display:none">
+            </div>
+            <div class="czoom" id="cropZoomRow" style="display:none">
+              <span>缩放</span><input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1">
+            </div>
+            <div class="cbtns">
+              <button class="pbtn ghost" id="cropPick">选择照片</button>
+              <button class="pbtn ghost" id="cropReset" style="display:none">重选</button>
+            </div>
+            <input type="file" id="cropFile" accept="image/*" style="display:none">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="fi"><label>姓名 *</label><input id="cName" type="text" maxlength="20" placeholder="如：张三"></div>
+            <div class="fi"><label>头衔 *</label><input id="cTitle" type="text" maxlength="20" placeholder="如：战略顾问"></div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <label style="font-size:12.5px;color:var(--muted);font-weight:600">介绍 *（每行一条）</label>
+              <textarea id="cBio" rows="4" placeholder="世界前 10 强集团 / P8&#10;大型金融集团 / 总经理&#10;上市连锁商超 / 人力总监" style="border:1.4px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;font-size:13.5px;resize:vertical"></textarea>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="pbtn" id="cSave">保存</button>
+              <button class="pbtn ghost" id="cCancel" style="display:none">取消编辑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="conslist" id="consList"></div>
     </section>
 
     <!-- 修改密码 -->
@@ -430,13 +494,14 @@ function showApp(s){
   loadList();
 }
 function switchView(v){
-  ["dash","admins","pwd"].forEach(function(k){
+  ["dash","admins","pwd","consultants"].forEach(function(k){
     $("view-"+k).style.display = (k===v) ? "" : "none";
   });
   document.querySelectorAll(".nav-item[data-view]").forEach(function(b){
     b.classList.toggle("on", b.getAttribute("data-view")===v);
   });
   if(v==="admins") loadAdmins();
+  if(v==="consultants") loadConsultants();
 }
 document.querySelectorAll(".nav-item[data-view]").forEach(function(b){
   b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
@@ -773,6 +838,169 @@ $("pwBtn").addEventListener("click", function(){
     } else toast((j && j.error) || "修改失败", true);
   });
 });
+
+/* ---------- 咨询师管理 ---------- */
+var BOX = 200, OUT = 400;
+var C = { img:null, x:0, y:0, zoom:1, base:1, w:0, h:0, editId:null, list:[], dragging:false, lx:0, ly:0 };
+
+function cropApply(){
+  if(!C.img) return;
+  var dispW = C.w * C.base * C.zoom, dispH = C.h * C.base * C.zoom;
+  C.x = Math.min(0, Math.max(BOX - dispW, C.x));
+  C.y = Math.min(0, Math.max(BOX - dispH, C.y));
+  $("cropImg").style.transform = "translate(" + C.x + "px," + C.y + "px) scale(" + (C.base * C.zoom) + ")";
+}
+function cropLoadSrc(src){
+  var im = new Image();
+  im.onload = function(){
+    C.img = im; C.w = im.naturalWidth; C.h = im.naturalHeight;
+    C.base = Math.max(BOX/C.w, BOX/C.h); C.zoom = 1;
+    $("cropZoom").value = 1;
+    C.x = (BOX - C.w*C.base)/2; C.y = (BOX - C.h*C.base)/2;
+    var el = $("cropImg"); el.src = src; el.style.display = "";
+    $("cropEmpty").style.display = "none";
+    $("cropReset").style.display = "";
+    $("cropZoomRow").style.display = "";
+    cropApply();
+  };
+  im.src = src;
+}
+function cropExport(){
+  if(!C.img) return null;
+  var cv = document.createElement("canvas"); cv.width = OUT; cv.height = OUT;
+  var ctx = cv.getContext("2d");
+  var s = C.base * C.zoom, sw = BOX / s;
+  ctx.drawImage(C.img, -C.x/s, -C.y/s, sw, sw, 0, 0, OUT, OUT);
+  return cv.toDataURL("image/jpeg", 0.85);
+}
+$("cropPick").addEventListener("click", function(){ $("cropFile").click(); });
+$("cropReset").addEventListener("click", function(){ $("cropFile").click(); });
+$("cropFile").addEventListener("change", function(){
+  var f = this.files && this.files[0];
+  this.value = "";
+  if(!f) return;
+  if(f.size > 15 * 1048576){ toast("图片过大，请选择 15MB 以内的照片", true); return; }
+  var fr = new FileReader();
+  fr.onload = function(){ cropLoadSrc(fr.result); };
+  fr.readAsDataURL(f);
+});
+$("cropZoom").addEventListener("input", function(){
+  C.zoom = parseFloat(this.value) || 1; cropApply();
+});
+var cropBox = $("cropBox");
+function pt(e){
+  var t = e.touches ? e.touches[0] : e;
+  return { x: t.clientX, y: t.clientY };
+}
+function dragStart(e){
+  if(!C.img) return;
+  C.dragging = true; cropBox.classList.add("dragging");
+  var p = pt(e); C.lx = p.x; C.ly = p.y;
+  if(e.touches) e.preventDefault();
+}
+function dragMove(e){
+  if(!C.dragging) return;
+  var p = pt(e);
+  C.x += p.x - C.lx; C.y += p.y - C.ly;
+  C.lx = p.x; C.ly = p.y;
+  cropApply();
+  if(e.touches) e.preventDefault();
+}
+function dragEnd(){ C.dragging = false; cropBox.classList.remove("dragging"); }
+cropBox.addEventListener("mousedown", dragStart);
+window.addEventListener("mousemove", dragMove);
+window.addEventListener("mouseup", dragEnd);
+cropBox.addEventListener("touchstart", dragStart, {passive:false});
+cropBox.addEventListener("touchmove", dragMove, {passive:false});
+cropBox.addEventListener("touchend", dragEnd);
+
+function resetConsForm(){
+  C.editId = null; C.img = null;
+  $("cFormTitle").textContent = "添加咨询师";
+  $("cSave").textContent = "保存";
+  $("cCancel").style.display = "none";
+  $("cName").value = ""; $("cTitle").value = ""; $("cBio").value = "";
+  $("cropImg").style.display = "none"; $("cropImg").src = "";
+  $("cropEmpty").style.display = "";
+  $("cropReset").style.display = "none";
+  $("cropZoomRow").style.display = "none";
+}
+$("cCancel").addEventListener("click", resetConsForm);
+
+$("cSave").addEventListener("click", function(){
+  var sn = sess(); if(!sn) return showLogin();
+  var name = $("cName").value.trim(), title = $("cTitle").value.trim(), bio = $("cBio").value;
+  if(!name || !title) return toast("请填写姓名与头衔", true);
+  if(!bio.trim()) return toast("请填写介绍", true);
+  if(!C.editId && !C.img) return toast("请上传人物照片", true);
+  var img = cropExport();
+  $("cSave").disabled = true;
+  rpc("consultant_save", { p_token: sn.token, p_id: C.editId || null,
+    p_name: name, p_title: title, p_bio: bio, p_image: img || "" }).then(function(r){
+    $("cSave").disabled = false;
+    var j = r.body;
+    if(j && j.ok){
+      toast(C.editId ? "已保存修改" : "已添加");
+      resetConsForm(); loadConsultants();
+    } else toast((j && j.error) || "保存失败", true);
+  }).catch(function(){ $("cSave").disabled = false; toast("网络异常，请稍后再试", true); });
+});
+
+function loadConsultants(){
+  api("/rest/v1/consultants?select=*&order=sort.asc,created_at.asc", {}).then(function(r){
+    if(r.status === 200 && Array.isArray(r.body)){ C.list = r.body; renderConsultants(); }
+  }).catch(function(){});
+}
+function renderConsultants(){
+  var wrap = $("consList");
+  if(!C.list.length){
+    wrap.innerHTML = '<div class="empty">暂无咨询师 · 在上方添加后，首页「项目咨询师」将改为展示这里的内容</div>';
+    return;
+  }
+  wrap.innerHTML = C.list.map(function(c, i){
+    var first = String(c.bio||"").split(/\n/).map(function(l){return l.trim();}).filter(Boolean)[0] || "";
+    return '<div class="cons-item" data-id="' + c.id + '">' +
+      '<img src="' + esc(c.image) + '" alt="">' +
+      '<div class="ci-main"><b>' + esc(c.name) + '</b><span class="tag">' + esc(c.title) + '</span>' +
+      '<small>' + esc(first) + (String(c.bio||"").indexOf("\n") > -1 ? " 等" : "") + '</small></div>' +
+      '<div class="ci-ops">' +
+      '<button class="mv" data-act="up" title="上移">↑</button>' +
+      '<button class="mv" data-act="down" title="下移">↓</button>' +
+      '<button class="note-btn sm" data-act="edit">编辑</button>' +
+      '<button class="del-btn" data-act="del">删除</button>' +
+      '</div></div>';
+  }).join("");
+  wrap.querySelectorAll(".cons-item").forEach(function(item){
+    var id = item.getAttribute("data-id");
+    var c = C.list.find(function(x){ return x.id === id; });
+    item.querySelectorAll("button").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var act = btn.getAttribute("data-act"), sn = sess();
+        if(!sn) return showLogin();
+        if(act === "up" || act === "down"){
+          rpc("consultant_move", { p_token: sn.token, p_id: id, p_dir: act }).then(function(r){
+            if(r.body && r.body.ok) loadConsultants();
+            else toast((r.body && r.body.error) || "操作失败", true);
+          });
+        } else if(act === "edit"){
+          C.editId = id;
+          $("cFormTitle").textContent = "编辑咨询师";
+          $("cSave").textContent = "保存修改";
+          $("cCancel").style.display = "";
+          $("cName").value = c.name || ""; $("cTitle").value = c.title || ""; $("cBio").value = c.bio || "";
+          if(c.image) cropLoadSrc(c.image);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } else if(act === "del"){
+          if(!confirm("确定删除咨询师「" + c.name + "」？删除后官网不再展示。")) return;
+          rpc("consultant_delete", { p_token: sn.token, p_id: id }).then(function(r){
+            if(r.body && r.body.ok){ toast("已删除"); loadConsultants(); }
+            else toast((r.body && r.body.error) || "删除失败", true);
+          });
+        }
+      });
+    });
+  });
+}
 
 /* ---------- 启动 ---------- */
 var s = sess();

@@ -63,13 +63,17 @@ aside .me{padding:16px 20px;border-top:1px solid rgba(253,253,251,.09);font-size
 aside .me .ph{font-weight:600;letter-spacing:.03em}
 .role-badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;margin-top:5px;
   background:rgba(240,194,75,.18);color:var(--amber);letter-spacing:.08em}
-/* 个人中心分组（导航底部） */
-.nav-me{margin-top:auto;border-top:1px solid rgba(253,253,251,.09);padding-top:8px}
-.nav-me-head{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:0;
-  color:rgba(253,253,251,.45);font-size:11.5px;letter-spacing:.14em;padding:8px 12px 6px;cursor:pointer}
-.nav-me-head .arr{transition:transform .2s;font-size:10px}
-.nav-me.closed .nav-me-head .arr{transform:rotate(-90deg)}
+/* 个人中心分组（导航底部，点击 .me 展开/收起） */
+.nav-me{border-top:1px solid rgba(253,253,251,.09);margin-top:8px;padding-top:8px}
+.nav-me.closed{border:0;padding:0;margin:0}
 .nav-me.closed .nav-me-body{display:none}
+.me-top{display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;letter-spacing:.14em;color:rgba(253,253,251,.45);margin-bottom:2px}
+.me-top .arr{font-size:10px;transition:transform .2s}
+#meBlock.closed .me-top .arr{transform:rotate(-90deg)}
+#meBlock{cursor:pointer;transition:background .15s;border-radius:8px;margin:0 8px}
+#meBlock:hover{background:rgba(253,253,251,.07)}
+#meBlock.open .me-top{color:var(--amber)}
 /* 批量上传弹窗 */
 .up-preview{max-height:200px;overflow:auto;font-size:12px;line-height:1.7;background:#faf9f4;border:1px solid var(--line);
   border-radius:8px;padding:10px;margin-top:10px;display:none;white-space:pre-wrap;word-break:break-all}
@@ -282,10 +286,7 @@ tr:hover td{background:#fcfbf7}
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="5" r="2.6" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="6.5" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 13.5c.5-2.4 2.2-3.7 4-3.7s3.5 1.3 4 3.7M9.5 13.5c.3-1.6 1.2-2.8 2.6-3.2 1.6-.5 3 .7 3.4 3.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         咨询师管理
       </button>
-      <div class="nav-me" id="navMe">
-        <button class="nav-me-head" id="navMeToggle" type="button">
-          个人中心 <span class="arr">▼</span>
-        </button>
+      <div class="nav-me closed" id="navMe">
         <div class="nav-me-body">
           <button class="nav-item" data-view="admins" id="navAdmins" style="display:none">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 14c.6-2.7 2.8-4 5.5-4s4.9 1.3 5.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -302,7 +303,8 @@ tr:hover td{background:#fcfbf7}
         </div>
       </div>
     </nav>
-    <div class="me">
+    <div class="me" id="meBlock" title="点击展开个人中心">
+      <div class="me-top"><span>个人中心</span><span class="arr">▼</span></div>
       <div class="ph" id="mePhone">—</div>
       <span class="role-badge" id="meRole">管理员</span>
     </div>
@@ -575,8 +577,10 @@ document.querySelectorAll(".nav-item[data-view]").forEach(function(b){
   b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
 });
 $("logoutBtn").addEventListener("click", function(){ saveSess(null); showLogin(); });
-$("navMeToggle").addEventListener("click", function(){
-  $("navMe").classList.toggle("closed");
+$("meBlock").addEventListener("click", function(e){
+  var open = !$("navMe").classList.toggle("closed");
+  $("meBlock").classList.toggle("open", open);
+  $("meBlock").classList.toggle("closed", !open);
 });
 
 /* ---------- 登录 ---------- */

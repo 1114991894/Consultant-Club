@@ -63,17 +63,24 @@ aside .me{padding:16px 20px;border-top:1px solid rgba(253,253,251,.09);font-size
 aside .me .ph{font-weight:600;letter-spacing:.03em}
 .role-badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;margin-top:5px;
   background:rgba(240,194,75,.18);color:var(--amber);letter-spacing:.08em}
-/* 个人中心分组（导航底部，点击 .me 展开/收起） */
-.nav-me{border-top:1px solid rgba(253,253,251,.09);margin-top:8px;padding-top:8px}
-.nav-me.closed{border:0;padding:0;margin:0}
-.nav-me.closed .nav-me-body{display:none}
-.me-top{display:flex;align-items:center;justify-content:space-between;
-  font-size:11px;letter-spacing:.14em;color:rgba(253,253,251,.45);margin-bottom:2px}
-.me-top .arr{font-size:10px;transition:transform .2s}
-#meBlock.closed .me-top .arr{transform:rotate(-90deg)}
-#meBlock{cursor:pointer;transition:background .15s;border-radius:8px;margin:0 8px}
+/* 个人中心（底部手机号/角色块改为弹出菜单） */
+#meBlock{cursor:pointer;transition:background .15s;position:relative}
 #meBlock:hover{background:rgba(253,253,251,.07)}
-#meBlock.open .me-top{color:var(--amber)}
+.me .ph{display:flex;align-items:center;justify-content:space-between}
+.me .ph .arr{font-size:10px;color:rgba(253,253,251,.5);transition:transform .2s}
+#meBlock.open .ph .arr{transform:rotate(180deg)}
+#meBlock.open .ph-label{color:var(--amber)}
+.me-menu{position:absolute;bottom:calc(100% + 10px);left:10px;right:10px;display:none;
+  background:#0d2647;border:1px solid rgba(253,253,251,.12);border-radius:12px;padding:6px;
+  box-shadow:0 -8px 28px rgba(0,0,0,.4);z-index:60}
+#meBlock.open .me-menu{display:block}
+.me-item{display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:none;border:0;
+  color:rgba(253,253,251,.85);padding:11px 12px;border-radius:8px;font-size:13.5px;cursor:pointer;
+  transition:background .15s,color .15s}
+.me-item:hover{background:rgba(253,253,251,.09);color:#fff}
+.me-item svg{flex:none}
+.me-item.me-logout{color:#ff9d95}
+.me-item.me-logout:hover{background:rgba(255,120,110,.12);color:#ffb4ad}
 /* 批量上传弹窗 */
 .up-preview{max-height:200px;overflow:auto;font-size:12px;line-height:1.7;background:#faf9f4;border:1px solid var(--line);
   border-radius:8px;padding:10px;margin-top:10px;display:none;white-space:pre-wrap;word-break:break-all}
@@ -239,7 +246,7 @@ tr:hover td{background:#fcfbf7}
   aside nav{display:flex;flex-wrap:wrap;padding:8px}
   .nav-item{width:auto;margin:0 4px 4px 0;padding:9px 13px;font-size:13.5px}
   aside .me{display:flex;align-items:center;gap:10px}
-  .nav-me{display:contents}
+  .me-menu{bottom:auto;top:calc(100% + 10px);left:0;right:auto;min-width:190px;box-shadow:0 8px 28px rgba(0,0,0,.4)}
   main{padding:20px 16px 60px}
   .hgrid{grid-template-columns:1fr}
   .hgrid .col.left{border-right:0;padding-right:0}
@@ -286,27 +293,24 @@ tr:hover td{background:#fcfbf7}
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="5" r="2.6" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="6.5" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 13.5c.5-2.4 2.2-3.7 4-3.7s3.5 1.3 4 3.7M9.5 13.5c.3-1.6 1.2-2.8 2.6-3.2 1.6-.5 3 .7 3.4 3.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         咨询师管理
       </button>
-      <div class="nav-me closed" id="navMe">
-        <div class="nav-me-body">
-          <button class="nav-item" data-view="admins" id="navAdmins" style="display:none">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 14c.6-2.7 2.8-4 5.5-4s4.9 1.3 5.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            管理员管理
-          </button>
-          <button class="nav-item" data-view="pwd">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="6.5" width="11" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6.5V5a3 3 0 016 0v1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10.2" r="1.2" fill="currentColor"/></svg>
-            修改密码
-          </button>
-          <button class="nav-item" id="logoutBtn">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.5 2.5H4A1.5 1.5 0 002.5 4v8A1.5 1.5 0 004 13.5h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 5l3 3-3 3M13 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            退出登录
-          </button>
-        </div>
-      </div>
     </nav>
-    <div class="me" id="meBlock" title="点击展开个人中心">
-      <div class="me-top"><span>个人中心</span><span class="arr">▼</span></div>
-      <div class="ph" id="mePhone">—</div>
+    <div class="me" id="meBlock" title="个人中心">
+      <div class="ph"><span class="ph-label">个人中心</span><span class="arr">▼</span></div>
       <span class="role-badge" id="meRole">管理员</span>
+      <div class="me-menu" id="meMenu">
+        <button class="me-item" data-view="admins" id="navAdmins" style="display:none">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 14c.6-2.7 2.8-4 5.5-4s4.9 1.3 5.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          管理员管理
+        </button>
+        <button class="me-item" data-view="pwd">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="6.5" width="11" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6.5V5a3 3 0 016 0v1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10.2" r="1.2" fill="currentColor"/></svg>
+          修改密码
+        </button>
+        <button class="me-item me-logout" id="logoutBtn">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M6.5 2.5H4A1.5 1.5 0 002.5 4v8A1.5 1.5 0 004 13.5h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 5l3 3-3 3M13 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          退出登录
+        </button>
+      </div>
     </div>
   </aside>
 
@@ -557,7 +561,6 @@ function showLogin(){
 function showApp(s){
   $("loginView").classList.remove("open");
   $("app").classList.add("open");
-  $("mePhone").textContent = s.phone;
   $("meRole").textContent = s.role === "super" ? "总管理员" : "管理员";
   $("navAdmins").style.display = s.role === "super" ? "" : "none";
   switchView("dash");
@@ -567,21 +570,27 @@ function switchView(v){
   ["dash","admins","pwd","consultants"].forEach(function(k){
     $("view-"+k).style.display = (k===v) ? "" : "none";
   });
-  document.querySelectorAll(".nav-item[data-view]").forEach(function(b){
+  document.querySelectorAll("[data-view]").forEach(function(b){
     b.classList.toggle("on", b.getAttribute("data-view")===v);
   });
   if(v==="admins") loadAdmins();
   if(v==="consultants") loadConsultants();
 }
-document.querySelectorAll(".nav-item[data-view]").forEach(function(b){
-  b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
+document.querySelectorAll("[data-view]").forEach(function(b){
+  b.addEventListener("click", function(){
+    switchView(b.getAttribute("data-view"));
+    closeMeMenu();
+  });
 });
-$("logoutBtn").addEventListener("click", function(){ saveSess(null); showLogin(); });
+function closeMeMenu(){ $("meBlock").classList.remove("open"); }
 $("meBlock").addEventListener("click", function(e){
-  var open = !$("navMe").classList.toggle("closed");
-  $("meBlock").classList.toggle("open", open);
-  $("meBlock").classList.toggle("closed", !open);
+  if(e.target.closest(".me-menu")) return;
+  $("meBlock").classList.toggle("open");
 });
+document.addEventListener("click", function(e){
+  if(!e.target.closest("#meBlock")) closeMeMenu();
+});
+$("logoutBtn").addEventListener("click", function(e){ e.stopPropagation(); saveSess(null); showLogin(); });
 
 /* ---------- 登录 ---------- */
 function doLogin(){

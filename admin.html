@@ -949,7 +949,11 @@ $("cSave").addEventListener("click", function(){
 function loadConsultants(){
   api("/rest/v1/consultants?select=*&order=sort.asc,created_at.asc", {}).then(function(r){
     if(r.status === 200 && Array.isArray(r.body)){ C.list = r.body; renderConsultants(); }
-  }).catch(function(){});
+    else if(r.status === 404){
+      $("consList").innerHTML = '<div class="empty">⚠️ 数据表还未创建：请先在 Supabase SQL Editor 执行 sql-copy.html 里的初始化 SQL，然后刷新本页。执行完成后这里会列出所有咨询师，可直接编辑。</div>';
+    }
+    else $("consList").innerHTML = '<div class="empty">加载失败，请刷新重试</div>';
+  }).catch(function(){ $("consList").innerHTML = '<div class="empty">加载失败，请刷新重试</div>'; });
 }
 function renderConsultants(){
   var wrap = $("consList");

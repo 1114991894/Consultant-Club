@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>最近咨询项目 — Consultant Club</title>
+<meta name="description" content="Consultant Club 最近咨询项目：FDE 前线部署陪跑与询单项目，涵盖战略规划、绩效体系、组织变革、人才发展、业绩增长与专项培训。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 44'%3E%3Ccircle cx='17' cy='22' r='11' fill='%23F0C24B'/%3E%3Ccircle cx='27' cy='22' r='10.5' fill='none' stroke='%23232457' stroke-width='2.4'/%3E%3C/svg%3E">
+<style>
+:root{
+  --ink:#181938;
+  --indigo-950:#14153a;
+  --indigo-900:#1e1f4e;
+  --indigo-800:#282a68;
+  --amber:#f0c24b;
+  --amber-deep:#c99a2e;
+  --paper:#f7f5ef;
+  --paper-2:#efebe0;
+  --white:#fdfdfb;
+  --text:#232457;
+  --muted:#63648a;
+  --line:rgba(35,36,87,.14);
+  --serif:'Playfair Display','Noto Serif SC',serif;
+  --serif-cn:'Noto Serif SC','Playfair Display',serif;
+  --sans:'Noto Sans SC',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --shadow-1:0 2px 6px rgba(24,25,56,.06);
+  --shadow-2:0 8px 24px rgba(24,25,56,.10);
+  --shadow-3:0 24px 64px rgba(24,25,56,.16);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--paper);color:var(--text);line-height:1.75;font-size:16px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--amber);color:var(--ink)}
+:focus-visible{outline:2.5px solid var(--amber);outline-offset:3px;border-radius:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(20px,4vw,48px)}
+
+/* ---------- 顶部导航 ---------- */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(247,245,239,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.topbar-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--serif-cn);font-weight:900;font-size:17px;letter-spacing:.02em}
+.brand .dot{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--amber) 58%,transparent 60%),var(--ink);flex-shrink:0}
+.back{display:inline-flex;align-items:center;gap:8px;padding:9px 20px;border-radius:99px;border:1.6px solid var(--text);background:transparent;color:var(--text);font-size:14px;font-weight:600;transition:.25s var(--ease)}
+.back:hover{background:var(--text);color:var(--paper);transform:translateX(-2px)}
+.back svg{width:15px;height:15px}
+
+/* ---------- 页头 ---------- */
+.hero{padding:clamp(48px,8vw,84px) 0 clamp(20px,3vw,34px)}
+.sec-label{font-family:var(--mono);font-size:12px;letter-spacing:.22em;color:var(--amber-deep);text-transform:uppercase;margin-bottom:14px}
+h1{font-family:var(--serif-cn);font-weight:900;font-size:clamp(30px,5.4vw,50px);line-height:1.18;letter-spacing:.01em}
+h1 em{font-style:normal;color:var(--amber-deep);position:relative}
+.hero-sub{margin-top:16px;max-width:640px;color:var(--muted);font-size:15.5px}
+.hero-meta{margin-top:22px;display:flex;gap:22px;flex-wrap:wrap;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.hero-meta b{color:var(--text);font-weight:600}
+
+/* ---------- 分类筛选 ---------- */
+.filter{display:flex;gap:10px;flex-wrap:wrap;margin:clamp(20px,3vw,30px) 0 4px}
+.filter button{border:1.4px solid var(--line);background:#fff;border-radius:99px;padding:8px 19px;
+  font-size:13.5px;color:var(--muted);font-weight:600;cursor:pointer;transition:.2s;font-family:inherit}
+.filter button:hover{border-color:var(--text);color:var(--text)}
+.filter button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* ---------- 项目卡 ---------- */
+.proj{margin:clamp(22px,3.4vw,36px) 0}
+.proj.hidden{display:none}
+.proj-card{background:var(--white);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-1);overflow:hidden}
+.proj-head{padding:clamp(24px,3.5vw,40px) clamp(22px,3.5vw,44px) 0}
+.proj-topline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.p-tag{display:inline-block;font-size:12px;font-weight:700;padding:4px 13px;border-radius:99px;background:rgba(35,36,87,.07);color:var(--text);letter-spacing:.05em}
+.p-tag.cat{background:rgba(240,194,75,.18);color:#8a6a10}
+.p-tag.teal{background:rgba(40,184,160,.13);color:#0e7a66}
+.p-status{margin-left:auto;display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;color:var(--amber-deep);font-weight:600;letter-spacing:.06em}
+.p-status .pulse{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 0 rgba(240,194,75,.55);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(240,194,75,.55)}70%{box-shadow:0 0 0 9px rgba(240,194,75,0)}100%{box-shadow:0 0 0 0 rgba(240,194,75,0)}}
+.proj-title{font-family:var(--serif-cn);font-weight:900;font-size:clamp(21px,3vw,30px);line-height:1.32;margin-bottom:10px}
+.proj-sub{color:var(--muted);font-size:14.5px;margin-bottom:4px}
+.proj-body{padding:clamp(20px,3vw,32px) clamp(22px,3.5vw,44px) clamp(26px,3.5vw,40px)}
+
+.blk{margin-top:22px}
+.blk:first-child{margin-top:0}
+.blk-h{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.blk-h .no{font-family:var(--mono);font-size:12px;color:var(--amber-deep);letter-spacing:.14em}
+.blk-h h3{font-size:16.5px;font-weight:700;letter-spacing:.02em}
+
+/* 企业画像 */
+.profile{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pf{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
+.pf .k{font-size:11.5px;color:var(--muted);letter-spacing:.08em;margin-bottom:3px}
+.pf .v{font-size:13.8px;font-weight:600;line-height:1.5}
+
+/* 挑战列表 */
+.challenges{list-style:none;display:grid;gap:10px}
+.challenges li{display:flex;gap:13px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 17px}
+.challenges .n{flex-shrink:0;width:26px;height:26px;border-radius:8px;background:var(--indigo-950);color:var(--amber);font-family:var(--mono);font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.challenges b{display:block;font-size:14.5px;margin-bottom:1px}
+.challenges p{font-size:13.5px;color:var(--muted);line-height:1.65}
+
+/* 服务路径 */
+.path{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative}
+.step{position:relative;padding:0 14px}
+.step:not(:last-child)::after{content:"";position:absolute;top:15px;right:0;width:calc(100% - 28px);transform:translateX(calc(50% + 0px));height:2px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 12px)}
+.step .sn{width:31px;height:31px;border-radius:50%;background:var(--amber);color:var(--ink);font-family:var(--mono);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin-bottom:11px;position:relative;z-index:1;box-shadow:0 0 0 5px var(--white)}
+.step h4{font-size:14px;font-weight:700;margin-bottom:4px;line-height:1.45}
+.step p{font-size:12.5px;color:var(--muted);line-height:1.6}
+
+/* 价值条 */
+.value{margin-top:24px;background:var(--indigo-950);color:#e8e9f5;border-radius:14px;padding:20px 24px;display:flex;gap:16px;align-items:flex-start}
+.value .icon{flex-shrink:0;width:38px;height:38px;border-radius:11px;background:rgba(240,194,75,.16);display:flex;align-items:center;justify-content:center}
+.value .icon svg{width:19px;height:19px}
+.value b{color:var(--amber);font-size:14.5px;display:block;margin-bottom:2px}
+.value p{font-size:13.5px;line-height:1.7;color:rgba(232,233,245,.82)}
+
+/* 感兴趣按钮 */
+.interest{margin-top:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.i-btn{display:inline-flex;align-items:center;gap:9px;border:1.6px solid;border-radius:99px;
+  padding:11px 26px;font-size:14.5px;font-weight:700;background:#fff;cursor:pointer;
+  font-family:inherit;transition:.25s var(--ease)}
+.i-btn svg{width:16px;height:16px;flex-shrink:0}
+.i-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-2)}
+.i-btn.voted{cursor:default;opacity:.92}
+.i-btn.voted:hover{transform:none;box-shadow:none}
+.i-btn.amber{border-color:var(--amber-deep);color:var(--amber-deep)}
+.i-btn.amber:hover,.i-btn.amber.voted{background:var(--amber);border-color:var(--amber);color:var(--ink)}
+.i-btn.teal{border-color:#0e7a66;color:#0e7a66}
+.i-btn.teal:hover,.i-btn.teal.voted{background:#28B8A0;border-color:#28B8A0;color:#fff}
+.i-count{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.i-count b{color:var(--text);font-size:16px;font-weight:700}
+
+/* 尾部 */
+.footnote{margin-top:8px;padding:0 4px 8px;font-size:12px;color:var(--muted)}
+.empty-tip{display:none;padding:60px 20px;text-align:center;color:var(--muted);font-size:14px}
+footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.08em}
+
+@media(max-width:860px){
+  .profile{grid-template-columns:repeat(2,1fr)}
+  .path{grid-template-columns:1fr;gap:18px}
+  .step:not(:last-child)::after{display:none}
+  .step{padding:0}
+}
+@media(max-width:520px){
+  .profile{grid-template-columns:1fr}
+  .p-status{margin-left:0}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="index.html"><span class="dot"></span>Consultant Club</a>
+    <a class="back" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+      返回首页
+    </a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="sec-label">RECENT ENGAGEMENTS · FDE 前线部署</div>
+    <h1>最近<em>咨询项目</em></h1>
+    <p class="hero-sub">我们不做纸上方案。每一个项目都从一线问题出发：从诊断到落地，和数据一起待在业务现场。</p>
+    <div class="hero-meta">
+      <span><b>07</b> 个项目跟进中</span>
+      <span>覆盖 <b>战略 · 绩效 · 组织 · 人才 · 增长 · 培训 · 数字化</b></span>
+      <span>模式：<b>诊断 → 方案 → 上线陪跑</b></span>
+    </div>
+    <div class="filter" role="tablist" aria-label="项目分类筛选" id="projFilter">
+      <button class="on" data-filter="all">全部</button>
+      <button data-filter="strategy">战略规划</button>
+      <button data-filter="perf">绩效体系</button>
+      <button data-filter="org">组织变革</button>
+      <button data-filter="talent">人才发展</button>
+      <button data-filter="growth">业绩增长</button>
+      <button data-filter="training">专项培训</button>
+    </div>
+  </section>
+
+  <!-- ============ 项目一 · 业绩增长 ============ -->
+  <article class="proj" data-cat="growth">
+    <div class="proj-card">
+      <div class="proj-head">
+        <div class="proj-topline">
+          <span class="p-tag cat">业绩增长</span>
+          <span class="p-tag">汽车零部件 / 精密制造</span>
+          <span class="p-tag teal">生产数字化</span>
+          <span class="p-status"><span class="pulse"></span>询单中 · 2026.09-2026.12</span>
+        </div>
+        <h2 class="proj-title">滚针轴承制造企业：打通生产数据链路，重建质量追溯体系</h2>
+        <p class="proj-sub">为一家主机配套 + 出口双轮驱动的轴承制造企业，破解「系统孤岛、追溯断链」的生产数字化困局</p>
+      </div>
+      <div class="proj-body">
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">01</span><h3>企业画像</h3></div>
+          <div class="profile">
+            <div class="pf"><div class="k">企业性质</div><div class="v">民营制造企业</div></div>
+            <div class="pf"><div class="k">主营产品</div><div class="v">变速箱轴承、曲轴连杆滚针轴承</div></div>
+            <div class="pf"><div class="k">业务结构</div><div class="v">主机厂配套 + 约 40% 出口</div></div>
+            <div class="pf"><div class="k">年产能</div><div class="v">3000 万套以上</div></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">02</span><h3>现场诊断出的核心挑战</h3></div>
+          <ul class="challenges">
+            <li><span class="n">1</span><div><b>两套系统各自为政，数据孤岛</b><p>管家婆管经营、快工单管生产，订单、物料、工单、产出、库存互不相通，业务流与生产流脱节。</p></div></li>
+            <li><span class="n">2</span><div><b>质量追溯停在「结果层」</b><p>不良品只能看到结果，无法定位到具体工序、设备、人员与工艺参数，改善无从下手。</p></div></li>
+            <li><span class="n">3</span><div><b>电镀工序后数据断联</b><p>关键外协工序数据缺失，一条完整生产链路被拦腰截断，全程数据靠人工补救。</p></div></li>
+            <li><span class="n">4</span><div><b>系统流程与生产实际不符</b><p>首检、巡检、提前抽检等真实质量动作无法在系统中完成，系统反而变成负担。</p></div></li>
+            <li><span class="n">5</span><div><b>设备有自动化、没数据化</b><p>机床自动化基础良好，但设备未联网，缺少 SCADA / MES 层数据采集能力。</p></div></li>
+          </ul>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">03</span><h3>FDE 实施路径</h3></div>
+          <div class="path">
+            <div class="step"><div class="sn">1</div><h4>现场调研<br>流程还原</h4><p>驻场摸清真实生产逻辑与断点，输出问题清单</p></div>
+            <div class="step"><div class="sn">2</div><h4>数据链路<br>打通方案</h4><p>双系统集成 + 电镀外协断点补齐，一次规划</p></div>
+            <div class="step"><div class="sn">3</div><h4>设备联网<br>数据采集</h4><p>机床联网改造，补齐 SCADA / MES 采集层</p></div>
+            <div class="step"><div class="sn">4</div><h4>质量追溯<br>上线陪跑</h4><p>按首检/巡检/抽检重构质检流程，陪跑到跑通</p></div>
+          </div>
+        </div>
+
+        <div class="value">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f0c24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><b>项目价值</b><p>一条完整、可追溯的数字化生产链路：从订单到工序到成品，质量责任定位到工序、设备与人员，数据不再靠人工搬运。</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="interest">
+      <button class="i-btn amber" data-project="p001" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        我有兴趣
+      </button>
+      <span class="i-count" data-count-for="p001"><b>—</b> 人对项目一感兴趣</span>
+    </div>
+  </article>
+
+  <!-- ============ 项目二 · 业绩增长 ============ -->
+  <article class="proj" data-cat="growth">
+    <div class="proj-card">
+      <div class="proj-head">
+        <div class="proj-topline">
+          <span class="p-tag cat">业绩增长</span>
+          <span class="p-tag">新材料 / 健康科技</span>
+          <span class="p-tag teal">市场增长</span>
+          <span class="p-status"><span class="pulse"></span>询单中 · 2026.10-2027.06</span>
+        </div>
+        <h2 class="proj-title">碳纳米管柔性加热科技企业：搭建精准获客与 OEM/ODM 订单转化体系</h2>
+        <p class="proj-sub">为一家手握硬核技术、却被「获客」卡住的新材料企业，补上从产品到订单的市场增长引擎</p>
+      </div>
+      <div class="proj-body">
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">01</span><h3>企业画像</h3></div>
+          <div class="profile">
+            <div class="pf"><div class="k">企业性质</div><div class="v">民营科技制造企业</div></div>
+            <div class="pf"><div class="k">核心技术</div><div class="v">碳纳米管薄膜柔性加热</div></div>
+            <div class="pf"><div class="k">业务模式</div><div class="v">自有产品 + OEM/ODM 定制</div></div>
+            <div class="pf"><div class="k">目标行业</div><div class="v">健康理疗 / 服装户外 / 家居礼品 / 消费电子</div></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">02</span><h3>现场诊断出的核心挑战</h3></div>
+          <ul class="challenges">
+            <li><span class="n">1</span><div><b>客户渠道有限，缺稳定 B2B 来源</b><p>品牌方、渠道商、采购商等精准客户开发依赖现有资源和零散机会，没有持续获客通道。</p></div></li>
+            <li><span class="n">2</span><div><b>OEM/ODM 订单零散，难成气候</b><p>研发、开模、定制能力俱全，但缺少标准化的获客、需求承接与订单转化体系。</p></div></li>
+            <li><span class="n">3</span><div><b>产品多，但产品—客户—渠道不匹配</b><p>加热眼罩、护膝、马甲、披毯、玩偶对应不同场景与客群，重点产品、重点行业、重点渠道待明确。</p></div></li>
+          </ul>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">03</span><h3>FDE 实施路径</h3></div>
+          <div class="path">
+            <div class="step"><div class="sn">1</div><h4>产品×场景×渠道<br>匹配矩阵</h4><p>梳理产品线，锁定重点产品与重点行业</p></div>
+            <div class="step"><div class="sn">2</div><h4>目标客户画像<br>获客通道搭建</h4><p>建立 B2B 精准客户持续获取的稳定通道</p></div>
+            <div class="step"><div class="sn">3</div><h4>询盘承接<br>转化 SOP</h4><p>OEM/ODM 需求承接与订单转化的标准流程</p></div>
+            <div class="step"><div class="sn">4</div><h4>AI 获客工具<br>部署陪跑</h4><p>工具上线、指标复盘，陪跑到达产</p></div>
+          </div>
+        </div>
+
+        <div class="value">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f0c24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><b>项目价值</b><p>从「等订单」到「有体系地拿订单」：清晰的重点产品、重点行业与重点渠道，加一套可复制的 OEM/ODM 转化流程。</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="interest">
+      <button class="i-btn teal" data-project="p002" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        我有兴趣
+      </button>
+      <span class="i-count" data-count-for="p002"><b>—</b> 人对项目二感兴趣</span>
+    </div>
+  </article>
+
+  <!-- ============ 项目三 · 战略规划 ============ -->
+  <article class="proj" data-cat="strategy">
+    <div class="proj-card">
+      <div class="proj-head">
+        <div class="proj-topline">
+          <span class="p-tag cat">战略规划</span>
+          <span class="p-tag">连锁餐饮 / 消费服务</span>
+          <span class="p-tag teal">多品牌扩张</span>
+          <span class="p-status"><span class="pulse"></span>询单中 · 2026.11-2027.05</span>
+        </div>
+        <h2 class="proj-title">区域连锁餐饮集团：新品牌战略定位与扩张路径设计</h2>
+        <p class="proj-sub">为一家多品牌区域连锁餐饮集团，理清「下一个五年靠什么增长」的战略命题</p>
+      </div>
+      <div class="proj-body">
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">01</span><h3>企业画像</h3></div>
+          <div class="profile">
+            <div class="pf"><div class="k">企业性质</div><div class="v">连锁餐饮管理企业</div></div>
+            <div class="pf"><div class="k">现有业务</div><div class="v">成熟西餐连锁品牌运营</div></div>
+            <div class="pf"><div class="k">区域布局</div><div class="v">区域深耕，辐射周边市场</div></div>
+            <div class="pf"><div class="k">核心诉求</div><div class="v">新品牌孵化与集团化扩张</div></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">02</span><h3>现场诊断出的核心挑战</h3></div>
+          <ul class="challenges">
+            <li><span class="n">1</span><div><b>增长依赖单品牌，第二曲线模糊</b><p>主品牌进入成熟期，新品牌方向多次试水未形成清晰定位，资源投放心里有底、手上没谱。</p></div></li>
+            <li><span class="n">2</span><div><b>单店盈利模型未跑通就谈复制</b><p>门店模型、人效与坪效标准不统一，扩张节奏缺乏数据支撑。</p></div></li>
+            <li><span class="n">3</span><div><b>集团管控跟不上多品牌节奏</b><p>总部与门店权责不清，供应链与人才供给难以支撑多线扩张。</p></div></li>
+          </ul>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">03</span><h3>FDE 实施路径</h3></div>
+          <div class="path">
+            <div class="step"><div class="sn">1</div><h4>战略诊断<br>增长意图澄清</h4><p>盘点资源禀赋，聚焦战略方向</p></div>
+            <div class="step"><div class="sn">2</div><h4>新品牌定位<br>单店模型验证</h4><p>锁定细分赛道，打磨可复制盈利模型</p></div>
+            <div class="step"><div class="sn">3</div><h4>扩张路径<br>与节奏设计</h4><p>分阶段增长路径与资源投放组合</p></div>
+            <div class="step"><div class="sn">4</div><h4>集团管控<br>落地陪跑</h4><p>总部—门店权责与人才供给体系搭好</p></div>
+          </div>
+        </div>
+
+        <div class="value">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f0c24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><b>项目价值</b><p>一套「定位—模型—复制」的扩张操作系统：新品牌有据可依，扩张节奏有数可算，集团管控有人可用。</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="interest">
+      <button class="i-btn amber" data-project="p003" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        我有兴趣
+      </button>
+      <span class="i-count" data-count-for="p003"><b>—</b> 人对项目三感兴趣</span>
+    </div>
+  </article>
+
+  <!-- ============ 项目四 · 绩效体系 ============ -->
+  <article class="proj" data-cat="perf">
+    <div class="proj-card">
+      <div class="proj-head">
+        <div class="proj-topline">
+          <span class="p-tag cat">绩效体系</span>
+          <span class="p-tag">产业园区运营</span>
+          <span class="p-tag teal">全国多园区</span>
+          <span class="p-status"><span class="pulse"></span>询单中 · 2026.10-2026.12</span>
+        </div>
+        <h2 class="proj-title">产业园区运营服务商：全国园区全维度绩效管理体系设计</h2>
+        <p class="proj-sub">为一家布局全国多个园区的运营服务商，把「招商转化、租金收缴、空置控制」装进一套考核体系</p>
+      </div>
+      <div class="proj-body">
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">01</span><h3>企业画像</h3></div>
+          <div class="profile">
+            <div class="pf"><div class="k">企业性质</div><div class="v">产业园区运营服务商</div></div>
+            <div class="pf"><div class="k">业务规模</div><div class="v">全国多城市园区布局</div></div>
+            <div class="pf"><div class="k">核心业务</div><div class="v">园区开发运营 + 企业服务</div></div>
+            <div class="pf"><div class="k">核心诉求</div><div class="v">统一考核，激活招商</div></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">02</span><h3>现场诊断出的核心挑战</h3></div>
+          <ul class="challenges">
+            <li><span class="n">1</span><div><b>考核「走形式」，指标与业务脱节</b><p>现有考核停留在出勤与主观评价，招商转化率、租金收缴率、空置率等关键结果未进入指标体系。</p></div></li>
+            <li><span class="n">2</span><div><b>园区间差异大，一把尺子量不准</b><p>不同园区处于入驻周期不同阶段，统一标准失真、分园标准难服众。</p></div></li>
+            <li><span class="n">3</span><div><b>考核结果与激励脱钩</b><p>干好干坏差别不大，招商骨干动力不足，目标达成缺少机制保障。</p></div></li>
+          </ul>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">03</span><h3>FDE 实施路径</h3></div>
+          <div class="path">
+            <div class="step"><div class="sn">1</div><h4>业务指标<br>体系梳理</h4><p>从园区经营结果倒推考核指标</p></div>
+            <div class="step"><div class="sn">2</div><h4>分园差异化<br>指标设计</h4><p>按园区周期阶段定制权重与基线</p></div>
+            <div class="step"><div class="sn">3</div><h4>考核激励<br>联动机制</h4><p>结果与奖金、晋升强挂钩</p></div>
+            <div class="step"><div class="sn">4</div><h4>试运行<br>复盘校准</h4><p>小范围试点后全国推广</p></div>
+          </div>
+        </div>
+
+        <div class="value">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f0c24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><b>项目价值</b><p>一套覆盖全国园区的绩效操作系统：关键指标进考核、考核结果进激励，招商目标达成有机制兜底。</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="interest">
+      <button class="i-btn amber" data-project="p004" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        我有兴趣
+      </button>
+      <span class="i-count" data-count-for="p004"><b>—</b> 人对项目四感兴趣</span>
+    </div>
+  </article>
+
+  <!-- ============ 项目五 · 组织变革 ============ -->
+  <article class="proj" data-cat="org">
+    <div class="proj-card">
+      <div class="proj-head">
+        <div class="proj-topline">
+          <span class="p-tag cat">组织变革</span>
+          <span class="p-tag">电商零售</span>
+          <span class="p-tag teal">组织效能</span>
+          <span class="p-status"><span class="pulse"></span>询单中 · 2026.12-2027.06</span>
+        </div>
+        <h2 class="proj-title">电商企业：业绩扩张期的组织架构重塑与人才梯队建设</h2>
+        <p class="proj-sub">为一家处于规模跃升期的电商企业，解决「业务翻倍、组织没跟上」的扩张阵痛</p>
+      </div>
+      <div class="proj-body">
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">01</span><h3>企业画像</h3></div>
+          <div class="profile">
+            <div class="pf"><div class="k">企业性质</div><div class="v">综合电商企业</div></div>
+            <div class="pf"><div class="k">业务规模</div><div class="v">多仓布局、全国发货</div></div>
+            <div class="pf"><div class="k">团队规模</div><div class="v">数百人，一线为主</div></div>
+            <div class="pf"><div class="k">核心诉求</div><div class="v">组织先于业务准备好</div></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">02</span><h3>现场诊断出的核心挑战</h3></div>
+          <ul class="challenges">
+            <li><span class="n">1</span><div><b>架构随业务长歪，权责含糊</b><p>部门设置沿革多于设计，跨部门协作靠人情，关键流程无人端到端负责。</p></div></li>
+            <li><span class="n">2</span><div><b>一线人才选拔培训不成体系</b><p>业务扩张快于人才供给，新人合格率波动大，执行质量不稳定。</p></div></li>
+            <li><span class="n">3</span><div><b>人效看不见、算不清</b><p>缺少人效模型与数据看板，人力成本增长快于营收增长。</p></div></li>
+          </ul>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">03</span><h3>FDE 实施路径</h3></div>
+          <div class="path">
+            <div class="step"><div class="sn">1</div><h4>组织诊断<br>架构再设计</h4><p>按业务价值链重排部门与权责</p></div>
+            <div class="step"><div class="sn">2</div><h4>岗位梳理<br>人效模型</h4><p>关键岗位再设计，建立人效基线</p></div>
+            <div class="step"><div class="sn">3</div><h4>人才选拔<br>培训体系</h4><p>标准化选育用留，稳定一线质量</p></div>
+            <div class="step"><div class="sn">4</div><h4>流程优化<br>数据看板</h4><p>流程提效上线，人效月度复盘</p></div>
+          </div>
+        </div>
+
+        <div class="value">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f0c24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><b>项目价值</b><p>在不扩张人力成本的前提下托住业绩跃升：架构清晰、人效可算、一线执行质量稳定。</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="interest">
+      <button class="i-btn teal" data-project="p005" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        我有兴趣
+      </button>
+      <span class="i-count" data-count-for="p005"><b>—</b> 人对项目五感兴趣</span>
+    </div>
+  </article>
+
+  <!-- ============ 项目六 · 人才发展 ============ -->
+  <article class="proj" data-cat="talent">
+    <div class="proj-card">
+      <div class="proj-head">
+        <div class="proj-topline">
+          <span class="p-tag cat">人才发展</span>
+          <span class="p-tag">新能源材料</span>
+          <span class="p-tag teal">人才体系</span>
+          <span class="p-status"><span class="pulse"></span>询单中 · 2027.01-2027.06</span>
+        </div>
+        <h2 class="proj-title">新能源材料企业：关键岗位胜任力模型与人才画像体系搭建</h2>
+        <p class="proj-sub">为一家快速扩张的新材料企业，把「招不准、育不出、留不住」的人才难题变成一套标准</p>
+      </div>
+      <div class="proj-body">
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">01</span><h3>企业画像</h3></div>
+          <div class="profile">
+            <div class="pf"><div class="k">企业性质</div><div class="v">新能源电池材料企业</div></div>
+            <div class="pf"><div class="k">产业布局</div><div class="v">国内外多基地运营</div></div>
+            <div class="pf"><div class="k">发展阶段</div><div class="v">产能与技术双扩张期</div></div>
+            <div class="pf"><div class="k">核心诉求</div><div class="v">关键岗位选人有标准</div></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">02</span><h3>现场诊断出的核心挑战</h3></div>
+          <ul class="challenges">
+            <li><span class="n">1</span><div><b>关键岗位没有人才标准</b><p>选人靠面试官个人经验，同一岗位不同面试官结论迥异，错招成本高。</p></div></li>
+            <li><span class="n">2</span><div><b>招聘合格率不稳定</b><p>到岗后表现与面试评估偏差大，试用期淘汰消耗团队精力。</p></div></li>
+            <li><span class="n">3</span><div><b>梯队断层，晋升无路径</b><p>骨干晋升靠资历排队，高潜人才看不到成长地图，流失风险积聚。</p></div></li>
+          </ul>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">03</span><h3>FDE 实施路径</h3></div>
+          <div class="path">
+            <div class="step"><div class="sn">1</div><h4>人才定位<br>标准共创</h4><p>与业务共定关键岗位人才标准</p></div>
+            <div class="step"><div class="sn">2</div><h4>胜任力模型<br>人才画像</h4><p>能力项行为化，画像可评估</p></div>
+            <div class="step"><div class="sn">3</div><h4>嵌入招聘<br>合格率验证</h4><p>画像落地招聘流程，跟踪合格率</p></div>
+            <div class="step"><div class="sn">4</div><h4>发展路径<br>梯队地图</h4><p>晋升路径与培养计划成体系</p></div>
+          </div>
+        </div>
+
+        <div class="value">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f0c24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><b>项目价值</b><p>让关键岗位「选人有尺、育人有梯、晋升有图」：招聘合格率可验证，高潜人才看得见未来。</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="interest">
+      <button class="i-btn teal" data-project="p006" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        我有兴趣
+      </button>
+      <span class="i-count" data-count-for="p006"><b>—</b> 人对项目六感兴趣</span>
+    </div>
+  </article>
+
+  <!-- ============ 项目七 · 专项培训 ============ -->
+  <article class="proj" data-cat="training">
+    <div class="proj-card">
+      <div class="proj-head">
+        <div class="proj-topline">
+          <span class="p-tag cat">专项培训</span>
+          <span class="p-tag">服饰零售</span>
+          <span class="p-tag teal">销售铁军</span>
+          <span class="p-status"><span class="pulse"></span>询单中 · 2026.10-2026.12</span>
+        </div>
+        <h2 class="proj-title">服饰集团销售分公司：「百万销冠」高绩效训练营</h2>
+        <p class="proj-sub">为一家服饰集团区域分公司，把「靠个别高手出单」变成「人人有打法、店店有销冠」</p>
+      </div>
+      <div class="proj-body">
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">01</span><h3>企业画像</h3></div>
+          <div class="profile">
+            <div class="pf"><div class="k">企业性质</div><div class="v">服饰集团区域分公司</div></div>
+            <div class="pf"><div class="k">团队构成</div><div class="v">多门店一线销售团队</div></div>
+            <div class="pf"><div class="k">业务特征</div><div class="v">线下成交为主、客单差异大</div></div>
+            <div class="pf"><div class="k">核心诉求</div><div class="v">销售业绩整体拉升</div></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">02</span><h3>现场诊断出的核心挑战</h3></div>
+          <ul class="challenges">
+            <li><span class="n">1</span><div><b>业绩靠高手，不靠体系</b><p>少数销冠贡献大半业绩，打法沉淀不下来，人一走业绩就塌。</p></div></li>
+            <li><span class="n">2</span><div><b>中间层能力断档</b><p>大量一线销售停留在「等客上门」，缺乏主动成交与连单能力。</p></div></li>
+            <li><span class="n">3</span><div><b>培训听过就忘，落不了地</b><p>过往培训缺少实战演练与后续跟踪，行为改变几乎为零。</p></div></li>
+          </ul>
+        </div>
+
+        <div class="blk">
+          <div class="blk-h"><span class="no">03</span><h3>FDE 实施路径</h3></div>
+          <div class="path">
+            <div class="step"><div class="sn">1</div><h4>销冠打法<br>萃取建模</h4><p>把高手经验变成可教的打法库</p></div>
+            <div class="step"><div class="sn">2</div><h4>实战训练营<br>分组对抗</h4><p>场景演练 + 通关考核，练到会为止</p></div>
+            <div class="step"><div class="sn">3</div><h4>AI 陪练<br>日常固化</h4><p>智能体陪练嵌入日常，持续练兵</p></div>
+            <div class="step"><div class="sn">4</div><h4>业绩追踪<br>复盘迭代</h4><p>训练期业绩对比复盘，打法迭代</p></div>
+          </div>
+        </div>
+
+        <div class="value">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f0c24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><b>项目价值</b><p>销冠经验资产化、训练日常化：团队整体成交能力上台阶，业绩不再系于个别人。</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="interest">
+      <button class="i-btn amber" data-project="p007" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        我有兴趣
+      </button>
+      <span class="i-count" data-count-for="p007"><b>—</b> 人对项目七感兴趣</span>
+    </div>
+  </article>
+
+  <p class="empty-tip" id="emptyTip">该分类下暂无项目</p>
+
+  <p class="footnote">* 应客户要求，项目案例均做脱敏处理，细节以现场交付版本为准。</p>
+</main>
+
+<footer>CONSULTANT CLUB · 深入一线 · 管理进化 · 陪伴成长 · 驱动增长</footer>
+
+<script>
+(function(){
+"use strict";
+/* ---------- 分类筛选 ---------- */
+var tabs = document.querySelectorAll("#projFilter button");
+var cards = document.querySelectorAll(".proj");
+var emptyTip = document.getElementById("emptyTip");
+tabs.forEach(function(t){
+  t.addEventListener("click", function(){
+    tabs.forEach(function(x){ x.classList.remove("on"); });
+    t.classList.add("on");
+    var f = t.getAttribute("data-filter");
+    var visible = 0;
+    cards.forEach(function(c){
+      var show = f === "all" || c.getAttribute("data-cat") === f;
+      c.classList.toggle("hidden", !show);
+      if(show) visible++;
+    });
+    emptyTip.style.display = visible ? "none" : "block";
+  });
+});
+
+/* ---------- 「我有兴趣」计数（每 IP 每项目限一次） ---------- */
+var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
+var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
+
+function rpc(fn, body){
+  return fetch(SB_URL + "/rest/v1/rpc/" + fn, {
+    method: "POST",
+    headers: { "apikey": SB_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  }).then(function(r){
+    return r.json().then(function(j){ return { status: r.status, body: j }; });
+  });
+}
+function votedKey(id){ return "cc_interest_" + id; }
+function hasVoted(id){
+  try { return localStorage.getItem(votedKey(id)) === "1"; } catch(e){ return false; }
+}
+function markVoted(id){
+  try { localStorage.setItem(votedKey(id), "1"); } catch(e){}
+}
+function paint(id, count, voted){
+  var btn = document.querySelector('.i-btn[data-project="' + id + '"]');
+  var cnt = document.querySelector('[data-count-for="' + id + '"] b');
+  if(cnt) cnt.textContent = count;
+  if(btn && voted){
+    btn.classList.add("voted");
+    btn.innerHTML = btn.innerHTML.replace("我有兴趣", "已表示兴趣");
+  }
+}
+var IDS = ["p001","p002","p003","p004","p005","p006","p007"];
+
+IDS.forEach(function(id){
+  rpc("project_interest_count", { p_project_id: id }).then(function(r){
+    if(r.body && r.body.ok) paint(id, r.body.count, hasVoted(id));
+    else paint(id, 0, hasVoted(id));
+  }).catch(function(){ paint(id, 0, hasVoted(id)); });
+});
+
+document.querySelectorAll(".i-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var id = btn.getAttribute("data-project");
+    if(hasVoted(id)){
+      btn.classList.add("voted");
+      btn.innerHTML = btn.innerHTML.replace("我有兴趣", "已表示兴趣");
+      return;
+    }
+    btn.disabled = true;
+    rpc("project_interest_vote", { p_project_id: id }).then(function(r){
+      btn.disabled = false;
+      var j = r.body;
+      if(j && j.ok){
+        markVoted(id);
+        paint(id, j.count, true);
+      } else if(j && j.error){
+        alert(j.error);
+      } else {
+        alert("统计功能部署中，请稍后再试");
+      }
+    }).catch(function(){
+      btn.disabled = false;
+      alert("网络异常，请稍后再试");
+    });
+  });
+});
+})();
+</script>
+
+</body>
+</html>

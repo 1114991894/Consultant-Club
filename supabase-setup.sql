@@ -212,6 +212,51 @@ begin
 end;
 $$;
 
+-- ---------- 5. 项目「感兴趣」计数（每个 IP 每个项目限一次） ----------
+create table if not exists public.project_interest (
+  id         uuid primary key default gen_random_uuid(),
+  project_id text not null,
+  ip_hash    text not null,
+  created_at timestamptz not null default now(),
+  unique (project_id, ip_hash)
+);
+alter table public.project_interest enable row level security;
+-- 不开放直接访问，仅通过安全函数操作
+
+-- 查询某项目的感兴趣人数
+create or replace function public.project_interest_count(p_project_id text)
+returns json
+language sql stable security definer set search_path = public as $$
+  select json_build_object('ok', true, 'count', (
+    select count(*) from public.project_interest where project_id = p_project_id
+  ));
+$$;
+
+-- 点击：按 IP 去重（IP 哈希脱敏存储，重复点击不增减计数）
+create or replace function public.project_interest_vote(p_project_id text)
+returns json
+language plpgsql security definer set search_path = public as $$
+declare
+  v_raw_ip text;
+  v_ip     text;
+  v_hash   text;
+begin
+  v_raw_ip := coalesce(
+    current_setting('request.headers', true)::json->>'x-forwarded-for', '');
+  v_ip := btrim(split_part(v_raw_ip, ',', 1));
+  if v_ip is null or v_ip = '' then
+    v_ip := 'unknown';
+  end if;
+  v_hash := encode(digest('cc_salt_2026:' || v_ip, 'sha256'), 'hex');
+  insert into public.project_interest (project_id, ip_hash)
+  values (p_project_id, v_hash)
+  on conflict (project_id, ip_hash) do nothing;
+  return json_build_object('ok', true,
+    'count', (select count(*) from public.project_interest where project_id = p_project_id),
+    'first', found);
+end;
+$$;
+
 -- ---------- 5. 初始化总管理员 ----------
 -- 手机号：13634169539    初始密码：liu123456
 insert into public.admins (phone, password_hash, name, role)

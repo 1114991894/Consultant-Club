@@ -112,22 +112,21 @@ section{position:relative}
 }
 .nav-cta:hover{background:#f6cf63;transform:translateY(-1px);box-shadow:0 6px 18px rgba(240,194,75,.35)}
 /* ---------- 悬浮快捷按钮 ---------- */
-.float-actions{position:fixed;right:14px;bottom:20px;z-index:900;display:flex;flex-direction:column;gap:8px}
-.float-btn{display:flex;align-items:center;gap:6px;border:1px solid rgba(8,62,120,.18);cursor:pointer;
-  background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
-  color:var(--ink);border-radius:99px;padding:7px 13px 7px 10px;
-  font-size:12px;font-weight:600;line-height:1;letter-spacing:.02em;
-  box-shadow:0 4px 14px rgba(6,42,80,.12);transition:.22s var(--ease)}
-.float-btn svg{width:14px;height:14px;flex:none}
-.float-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(6,42,80,.18)}
-.float-btn.fb-book{color:var(--indigo-950)}
-.float-btn.fb-book:hover{border-color:var(--amber);background:#fffbef}
-.float-btn.fb-apply{color:#0b5f52}
-.float-btn.fb-apply:hover{border-color:#28b8a0;background:#f2fbf9}
+.float-actions{position:fixed;right:16px;bottom:22px;z-index:900;display:flex;flex-direction:column;gap:10px}
+.float-btn{display:flex;align-items:center;gap:9px;border:none;cursor:pointer;
+  border-radius:99px;padding:14px 22px 14px 18px;
+  font-size:15px;font-weight:700;line-height:1;letter-spacing:.02em;
+  box-shadow:0 6px 20px rgba(6,42,80,.22);transition:.22s var(--ease)}
+.float-btn svg{width:20px;height:20px;flex:none}
+.float-btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(6,42,80,.28)}
+.float-btn.fb-book{background:linear-gradient(135deg,#f6cf63,#e8a93a);color:#3a2a05}
+.float-btn.fb-book:hover{box-shadow:0 10px 26px rgba(240,194,75,.45)}
+.float-btn.fb-apply{background:linear-gradient(135deg,#35c9b0,#189e88);color:#fff}
+.float-btn.fb-apply:hover{box-shadow:0 10px 26px rgba(40,184,160,.45)}
 @media (max-width:640px){
-  .float-actions{right:10px;bottom:14px;gap:6px}
-  .float-btn{padding:6px 10px 6px 8px;font-size:11px}
-  .float-btn svg{width:13px;height:13px}
+  .float-actions{right:12px;bottom:16px;gap:8px}
+  .float-btn{padding:12px 18px 12px 14px;font-size:13.5px}
+  .float-btn svg{width:17px;height:17px}
 }
 .nav-burger{
   display:none;background:none;border:0;width:44px;height:44px;color:#fff;

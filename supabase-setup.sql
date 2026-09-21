@@ -235,7 +235,7 @@ $$;
 -- 点击：按 IP 去重（IP 哈希脱敏存储，重复点击不增减计数）
 create or replace function public.project_interest_vote(p_project_id text)
 returns json
-language plpgsql security definer set search_path = public as $$
+language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_raw_ip text;
   v_ip     text;

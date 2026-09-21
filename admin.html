@@ -63,6 +63,19 @@ aside .me{padding:16px 20px;border-top:1px solid rgba(253,253,251,.09);font-size
 aside .me .ph{font-weight:600;letter-spacing:.03em}
 .role-badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;margin-top:5px;
   background:rgba(240,194,75,.18);color:var(--amber);letter-spacing:.08em}
+/* 个人中心分组（导航底部） */
+.nav-me{margin-top:auto;border-top:1px solid rgba(253,253,251,.09);padding-top:8px}
+.nav-me-head{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:0;
+  color:rgba(253,253,251,.45);font-size:11.5px;letter-spacing:.14em;padding:8px 12px 6px;cursor:pointer}
+.nav-me-head .arr{transition:transform .2s;font-size:10px}
+.nav-me.closed .nav-me-head .arr{transform:rotate(-90deg)}
+.nav-me.closed .nav-me-body{display:none}
+/* 批量上传弹窗 */
+.up-preview{max-height:200px;overflow:auto;font-size:12px;line-height:1.7;background:#faf9f4;border:1px solid var(--line);
+  border-radius:8px;padding:10px;margin-top:10px;display:none;white-space:pre-wrap;word-break:break-all}
+.up-stats{margin-top:10px;font-size:13px;line-height:1.8}
+.up-stats b{color:var(--amber-d)}
+.up-stats .warn{color:#b0621d}
 main{flex:1;padding:30px 36px 60px;min-width:0}
 .mhead{display:flex;align-items:baseline;gap:14px;margin-bottom:22px;flex-wrap:wrap}
 .mhead h2{font-size:21px;font-weight:900}
@@ -222,6 +235,7 @@ tr:hover td{background:#fcfbf7}
   aside nav{display:flex;flex-wrap:wrap;padding:8px}
   .nav-item{width:auto;margin:0 4px 4px 0;padding:9px 13px;font-size:13.5px}
   aside .me{display:flex;align-items:center;gap:10px}
+  .nav-me{display:contents}
   main{padding:20px 16px 60px}
   .hgrid{grid-template-columns:1fr}
   .hgrid .col.left{border-right:0;padding-right:0}
@@ -264,22 +278,29 @@ tr:hover td{background:#fcfbf7}
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.4" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5.5" height="5.5" rx="1.4" stroke="currentColor" stroke-width="1.5"/></svg>
         数据总览
       </button>
-      <button class="nav-item" data-view="admins" id="navAdmins" style="display:none">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 14c.6-2.7 2.8-4 5.5-4s4.9 1.3 5.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        管理员管理
-      </button>
       <button class="nav-item" data-view="consultants">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="5" r="2.6" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="6.5" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 13.5c.5-2.4 2.2-3.7 4-3.7s3.5 1.3 4 3.7M9.5 13.5c.3-1.6 1.2-2.8 2.6-3.2 1.6-.5 3 .7 3.4 3.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         咨询师管理
       </button>
-      <button class="nav-item" data-view="pwd">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="6.5" width="11" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6.5V5a3 3 0 016 0v1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10.2" r="1.2" fill="currentColor"/></svg>
-        修改密码
-      </button>
-      <button class="nav-item" id="logoutBtn">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.5 2.5H4A1.5 1.5 0 002.5 4v8A1.5 1.5 0 004 13.5h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 5l3 3-3 3M13 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        退出登录
-      </button>
+      <div class="nav-me" id="navMe">
+        <button class="nav-me-head" id="navMeToggle" type="button">
+          个人中心 <span class="arr">▼</span>
+        </button>
+        <div class="nav-me-body">
+          <button class="nav-item" data-view="admins" id="navAdmins" style="display:none">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 14c.6-2.7 2.8-4 5.5-4s4.9 1.3 5.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            管理员管理
+          </button>
+          <button class="nav-item" data-view="pwd">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="6.5" width="11" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6.5V5a3 3 0 016 0v1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10.2" r="1.2" fill="currentColor"/></svg>
+            修改密码
+          </button>
+          <button class="nav-item" id="logoutBtn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.5 2.5H4A1.5 1.5 0 002.5 4v8A1.5 1.5 0 004 13.5h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 5l3 3-3 3M13 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            退出登录
+          </button>
+        </div>
+      </div>
     </nav>
     <div class="me">
       <div class="ph" id="mePhone">—</div>
@@ -303,6 +324,7 @@ tr:hover td{background:#fcfbf7}
           <button data-f="apply">咨询师申请<span class="badge" id="badgeApply" style="display:none">0</span></button>
         </div>
         <input class="search" id="searchInput" type="text" placeholder="搜索公司 / 姓名 / 手机号…">
+        <button class="pbtn ghost" id="uploadBtn" style="display:none">批量上传</button>
         <button class="pbtn ghost" id="searchBtn">搜索</button>
       </div>
       <div class="tblwrap">
@@ -427,6 +449,27 @@ tr:hover td{background:#fcfbf7}
   </div>
 </div>
 
+<!-- 批量上传弹窗 -->
+<div class="ndrawer" id="upDrawer">
+  <div class="nm" data-upclose></div>
+  <div class="nc">
+    <h4>批量上传 · 咨询师申请</h4>
+    <div style="font-size:12.5px;color:#777;line-height:1.8;margin-top:6px">
+      支持 .txt / .poc / .pcx / .cls / .clsx 等文本格式。<br>
+      按「字段名: 值」逐行书写，多条记录用空行或 <b>---</b> 分隔。<br>
+      手机号/联系方式相同的记录自动合并（已有信息保留，补充空缺项）；<br>
+      无法识别的字段内容将写入<b>备注</b>。
+    </div>
+    <input type="file" id="upFile" accept=".txt,.poc,.pcx,.cls,.clsx,.csv,.json,text/*" style="display:none">
+    <div class="up-preview" id="upPreview"></div>
+    <div class="up-stats" id="upStats"></div>
+    <div class="nfoot">
+      <button class="pbtn ghost" id="upPick">选择文件</button>
+      <button class="pbtn" id="upImport" disabled>开始导入</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -445,6 +488,31 @@ var LABELS = {
   freelance:"Freelancer 经验", start:"开始接项目时间", salary:"期待薪资", unit:"计薪单位"
 };
 var TYPE_NAME = { book:"预约诊断", apply:"咨询师申请" };
+
+/* 详情弹窗固定字段顺序（与首页表单一致，缺失显示 —） */
+var FIELD_ORDER = {
+  book: ["company","contact","title","phone","city","size","needs","cycle","budget"],
+  apply: ["name","phone","company","employers","location","age","experience","education","school","industry","field","status","freelance","start","salary","unit"]
+};
+/* 批量上传：字段别名 → 标准字段（key 已做规范化） */
+var ALIAS = {
+  "姓名":"name","名字":"name","名称":"name","联系人":"name","称呼":"name",
+  "手机":"phone","手机号":"phone","电话":"phone","联系方式":"phone","联系电话":"phone","tel":"phone","phone":"phone","mobile":"phone",
+  "公司":"company","公司名称":"company","公司全称":"company","单位":"company","任职公司":"company","当前公司":"company","目前公司":"company","最近任职公司":"company","最近任职的公司":"company",
+  "过往雇主":"employers","历史雇主":"employers","曾任职":"employers","雇主":"employers","曾任职公司":"employers",
+  "开始接项目时间":"start","开始接项目的时间":"start","接单时间":"start","开始时间":"start","接项目时间":"start",
+  "咨询行业经历":"experience","行业经历":"experience","咨询经历":"experience","咨询经验":"experience","经历":"experience","经验":"experience","工作经历":"experience",
+  "最高学历":"education","学历":"education",
+  "毕业学校":"school","毕业的学校":"school","毕业院校":"school","学校":"school",
+  "年龄":"age",
+  "所在国家/城市":"location","所在国家城市":"location","国家/城市":"location","所在城市":"location","城市":"location","所在地":"location","地点":"location","所在地区":"location",
+  "擅长的行业":"industry","擅长行业":"industry","行业":"industry",
+  "擅长的领域":"field","擅长领域":"field","领域":"field","专业领域":"field","专业":"field",
+  "目前状态":"status","当前状态":"status","状态":"status",
+  "freelancer经验":"freelance","freelancer":"freelance","自由职业经验":"freelance","自由职业":"freelance","自由职业者经验":"freelance",
+  "期待的薪资":"salary","期望薪资":"salary","期待薪资":"salary","薪资":"salary","薪资期望":"salary",
+  "计薪单位":"unit","薪资单位":"unit"
+};
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
@@ -507,6 +575,9 @@ document.querySelectorAll(".nav-item[data-view]").forEach(function(b){
   b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
 });
 $("logoutBtn").addEventListener("click", function(){ saveSess(null); showLogin(); });
+$("navMeToggle").addEventListener("click", function(){
+  $("navMe").classList.toggle("closed");
+});
 
 /* ---------- 登录 ---------- */
 function doLogin(){
@@ -562,6 +633,7 @@ document.querySelectorAll(".tabs button").forEach(function(b){
   b.addEventListener("click", function(){
     document.querySelectorAll(".tabs button").forEach(function(x){ x.classList.remove("on"); });
     b.classList.add("on"); state.filter = b.getAttribute("data-f"); render();
+    $("uploadBtn").style.display = state.filter === "apply" ? "" : "none";
   });
 });
 
@@ -701,6 +773,188 @@ $("noteSave").addEventListener("click", function(){
   });
 });
 
+/* ---------- 批量上传（咨询师申请） ---------- */
+var upState = { records: [] };
+
+function normKey(k){ return String(k || "").toLowerCase().replace(/[\s　]/g, ""); }
+function mapKey(raw){
+  var k = normKey(raw);
+  if(ALIAS[k]) return ALIAS[k];
+  for(var a in ALIAS){ if(k.indexOf(a) !== -1 && a.length >= 2) return ALIAS[a]; }
+  return null;
+}
+function digits(v){ return String(v || "").replace(/\D/g, ""); }
+
+function parseRecords(text){
+  text = String(text || "").replace(/^\uFEFF/, "");
+  /* JSON 格式直接解析 */
+  var t = text.trim();
+  if((t.charAt(0) === "[" || t.charAt(0) === "{")){
+    try {
+      var j = JSON.parse(t), arr = Array.isArray(j) ? j : [j], out = [];
+      arr.forEach(function(o){
+        var rec = { data:{}, extra:[] };
+        Object.keys(o).forEach(function(k){
+          var c = mapKey(k);
+          if(c && o[k] != null && String(o[k]).trim() !== "") rec.data[c] = String(o[k]).trim();
+          else if(o[k] != null && String(o[k]).trim() !== "") rec.extra.push(k + ": " + String(o[k]).trim());
+        });
+        if(Object.keys(rec.data).length || rec.extra.length) out.push(rec);
+      });
+      return out;
+    } catch(e){ /* 转普通文本解析 */ }
+  }
+  var lines = text.replace(/\r\n?/g, "\n").split("\n");
+  var recs = [], cur = null, lastField = null;
+  function flush(){ if(cur && (Object.keys(cur.data).length || cur.extra.length)) recs.push(cur); cur = null; lastField = null; }
+  for(var i = 0; i < lines.length; i++){
+    var t2 = lines[i], s = t2.trim();
+    if(!s || /^(-{3,}|={3,}|\*{3,}|#{3,})$/.test(s)){ flush(); continue; }
+    var m = s.match(/^([^:：=]{1,24}?)\s*[::=]\s*(.*)$/);
+    if(m){
+      var canonical = mapKey(m[1]), val = m[2].trim();
+      /* 同一记录再次出现 姓名/手机 → 视为新记录开始 */
+      if(cur && (canonical === "name" || canonical === "phone") && cur.data[canonical]) flush();
+      if(!cur) cur = { data:{}, extra:[] };
+      if(canonical){
+        cur.data[canonical] = cur.data[canonical] ? cur.data[canonical] + "\n" + val : val;
+        lastField = canonical;
+      } else {
+        cur.extra.push(m[1].trim() + ": " + val);
+        lastField = null;
+      }
+    } else {
+      if(!cur) cur = { data:{}, extra:[] };
+      if(lastField) cur.data[lastField] += "\n" + s;
+      else cur.extra.push(s);
+    }
+  }
+  flush();
+  return recs;
+}
+
+function readFileText(file, cb){
+  var fr = new FileReader();
+  fr.onload = function(){
+    var buf = fr.result, txt;
+    try { txt = new TextDecoder("utf-8", { fatal:true }).decode(buf); }
+    catch(e){
+      try { txt = new TextDecoder("gbk").decode(buf); }
+      catch(e2){ txt = new TextDecoder("utf-8").decode(buf); }
+    }
+    cb(txt);
+  };
+  fr.readAsArrayBuffer(file);
+}
+
+function openUploader(){
+  upState.records = [];
+  $("upPreview").style.display = "none";
+  $("upPreview").textContent = "";
+  $("upStats").innerHTML = "";
+  $("upImport").disabled = true;
+  $("upDrawer").classList.add("open");
+}
+$("uploadBtn").addEventListener("click", openUploader);
+$("upPick").addEventListener("click", function(){ $("upFile").click(); });
+document.querySelectorAll("[data-upclose]").forEach(function(el){
+  el.addEventListener("click", function(){ $("upDrawer").classList.remove("open"); });
+});
+$("upFile").addEventListener("change", function(){
+  var f = this.files && this.files[0];
+  if(!f) return;
+  readFileText(f, function(txt){
+    var recs = parseRecords(txt);
+    upState.records = recs;
+    var pv = $("upPreview");
+    pv.style.display = "";
+    if(recs.length === 0){
+      pv.textContent = "⚠️ 未识别出任何记录，请检查文件内容格式（字段名: 值，记录间用空行分隔）";
+      $("upStats").innerHTML = "";
+      $("upImport").disabled = true;
+      return;
+    }
+    pv.textContent = recs.map(function(r, i){
+      var head = r.data.name || r.data.company || ("记录 " + (i+1));
+      var phone = r.data.phone ? "（" + r.data.phone + "）" : "";
+      return "▶ " + head + phone + "\n" +
+        Object.keys(r.data).map(function(k){ return "  " + (LABELS[k] || k) + ": " + String(r.data[k]).replace(/\n/g, " / "); }).join("\n") +
+        (r.extra.length ? "\n  [写入备注] " + r.extra.join(" | ") : "");
+    }).join("\n\n");
+    /* 与现有申请按手机号比对 */
+    var byPhone = {};
+    state.list.forEach(function(s){
+      if(s.type !== "apply") return;
+      var p = digits(s.data && s.data.phone);
+      if(p) byPhone[p] = true;
+    });
+    var hit = 0, newr = 0;
+    recs.forEach(function(r){
+      var p = digits(r.data.phone);
+      if(p && byPhone[p]) hit++; else newr++;
+    });
+    $("upStats").innerHTML = "共识别 <b>" + recs.length + "</b> 条记录：" +
+      "新增 <b>" + newr + "</b> 条，与现有申请手机号匹配将<b>合并 " + hit + "</b> 条" +
+      (recs.some(function(r){ return r.extra.length; }) ? '<br><span class="warn">部分无法识别的字段将写入备注</span>' : "");
+    $("upImport").disabled = false;
+  });
+  this.value = "";
+});
+
+$("upImport").addEventListener("click", function(){
+  var recs = upState.records;
+  if(!recs.length) return toast("请先选择文件", true);
+  var btn = this; btn.disabled = true; btn.textContent = "导入中…";
+  var byPhone = {};
+  state.list.forEach(function(s){
+    if(s.type !== "apply") return;
+    var p = digits(s.data && s.data.phone);
+    if(p) byPhone[p] = s;
+  });
+  var created = 0, merged = 0, failed = 0;
+  var seq = Promise.resolve();
+  recs.forEach(function(rec){
+    seq = seq.then(function(){
+      var p = digits(rec.data.phone);
+      var hit = p && byPhone[p];
+      if(hit){
+        var fill = {}, conflict = [];
+        Object.keys(rec.data).forEach(function(k){
+          var nv = rec.data[k], ov = hit.data ? hit.data[k] : undefined;
+          if(ov === undefined || ov === null || String(ov).trim() === "") fill[k] = nv;
+          else if(String(ov).trim() !== String(nv).trim()) conflict.push((LABELS[k] || k) + ": " + nv);
+        });
+        var note = [rec.extra.join("\n"), conflict.length ? "批量上传补充信息：" + conflict.join("；") : ""]
+          .filter(Boolean).join("\n");
+        if(!Object.keys(fill).length && !note){ merged++; return; }
+        return rpc("admin_merge_submission", {
+          p_token: sess().token, p_submission_id: hit.id, p_data: fill, p_note: note
+        }).then(function(r){
+          if(r.body && r.body.ok) merged++; else failed++;
+        });
+      }
+      var payload = { type: "apply", data: rec.data };
+      if(rec.extra.length) payload.notes = "批量上传 · 附加信息：\n" + rec.extra.join("\n");
+      return api("/rest/v1/submissions", { method:"POST", body: JSON.stringify(payload) })
+        .then(function(r){
+          if(r.status >= 200 && r.status < 300){
+            created++;
+            if(p) byPhone[p] = { id: (r.body && r.body.id), data: rec.data };
+          } else failed++;
+        });
+    });
+  });
+  seq.then(function(){
+    btn.disabled = false; btn.textContent = "开始导入";
+    if(failed) toast("导入完成：新增 " + created + "、合并 " + merged + "、失败 " + failed, true);
+    else { toast("导入完成：新增 " + created + " 条、合并 " + merged + " 条"); $("upDrawer").classList.remove("open"); }
+    loadList();
+  }).catch(function(){
+    btn.disabled = false; btn.textContent = "开始导入";
+    toast("导入过程出错，请重试", true);
+  });
+});
+
 /* ---------- 横向详情弹窗 ---------- */
 function openDetail(s){
   state.current = s;
@@ -714,12 +968,18 @@ function openDetail(s){
   $("mMeta").textContent = meta;
 
   var d = s.data || {};
-  var keys = Object.keys(d).filter(function(k){ return d[k] !== "" && d[k] != null; });
+  /* 固定字段顺序（与首页表单一致），数据里没有的显示 —；额外字段排在最后 */
+  var order = FIELD_ORDER[s.type] || [];
+  var extraKeys = Object.keys(d).filter(function(k){
+    return order.indexOf(k) === -1 && d[k] !== "" && d[k] != null;
+  });
+  var keys = order.concat(extraKeys);
   var half = Math.ceil(keys.length / 2);
   var left = keys.slice(0, half), right = keys.slice(half);
   function makeCol(arr){
     return arr.map(function(k){
-      return "<div class='row'><div class='hk'>" + esc(LABELS[k] || k) + "</div><div class='hv'>" + esc(d[k]) + "</div></div>";
+      var v = (d[k] === "" || d[k] == null) ? "—" : d[k];
+      return "<div class='row'><div class='hk'>" + esc(LABELS[k] || k) + "</div><div class='hv'>" + esc(v) + "</div></div>";
     }).join("");
   }
   var htm = "<div class='col left'>" + makeCol(left) + "</div>" +

@@ -212,6 +212,33 @@ begin
 end;
 $$;
 
+-- 批量上传合并：管理员将新字段补入现有提交（p_data 仅含需补入的键），并追加备注
+create or replace function public.admin_merge_submission(
+  p_token text, p_submission_id uuid, p_data jsonb, p_note text
+)
+returns json
+language plpgsql security definer set search_path = public as $$
+declare v_admin public.admins;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期');
+  end if;
+  update public.submissions
+     set data = case when p_data is not null and p_data <> '{}'::jsonb
+                     then data || p_data else data end,
+         notes = case when coalesce(p_note, '') <> ''
+                      then coalesce(notes, '') ||
+                           case when coalesce(notes, '') <> '' then chr(10) else '' end || p_note
+                      else notes end
+   where id = p_submission_id;
+  if not found then
+    return json_build_object('ok', false, 'error', '记录不存在');
+  end if;
+  return json_build_object('ok', true);
+end;
+$$;
+
 -- ---------- 5. 项目「感兴趣」计数（每个 IP 每个项目限一次） ----------
 create table if not exists public.project_interest (
   id         uuid primary key default gen_random_uuid(),

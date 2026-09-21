@@ -104,12 +104,14 @@ main{flex:1;padding:30px 36px 60px;min-width:0}
 
 /* 工具条 */
 .bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.tabs{display:flex;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative}
+.tabs{display:flex;background:#fff;border:1px solid var(--line);border-radius:10px;position:relative}
 .tabs button{border:0;background:none;padding:9px 20px;font-size:13.5px;color:var(--muted);position:relative}
+.tabs button:first-child{border-radius:9px 0 0 9px}
+.tabs button:last-child{border-radius:0 9px 9px 0}
 .tabs button.on{background:var(--ink);color:#fff}
-.tabs button .badge{position:absolute;top:-6px;right:10px;min-width:18px;height:18px;padding:0 5px;
+.tabs button .badge{position:absolute;top:-7px;right:10px;min-width:18px;height:18px;padding:0 5px;
   border-radius:20px;background:var(--bad);color:#fff;font-size:11px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;line-height:1}
+  display:flex;align-items:center;justify-content:center;line-height:1;z-index:2}
 .tabs button.on .badge{background:var(--amber);color:var(--ink)}
 /* ---------- 咨询师管理 ---------- */
 .cform{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start}

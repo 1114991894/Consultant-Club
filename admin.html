@@ -461,8 +461,9 @@ tr:hover td{background:#fcfbf7}
   <div class="nc">
     <h4>批量上传 · 咨询师申请</h4>
     <div style="font-size:12.5px;color:#777;line-height:1.8;margin-top:6px">
-      支持 .txt / .poc / .pcx / .cls / .clsx 等文本格式。<br>
-      按「字段名: 值」逐行书写，多条记录用空行或 <b>---</b> 分隔。<br>
+      支持 .txt / .poc / .pcx / .xls / .xlsx 等格式。<br>
+      Excel 文件请将字段名放<b>首行表头</b>，每行一条记录；<br>
+      文本文件按「字段名: 值」逐行书写，多条记录用空行或 <b>---</b> 分隔。<br>
       手机号/联系方式相同的记录自动合并（已有信息保留，补充空缺项）；<br>
       无法识别的字段内容将写入<b>备注</b>。
     </div>
@@ -478,6 +479,7 @@ tr:hover td{background:#fcfbf7}
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
 "use strict";
@@ -873,45 +875,85 @@ $("upPick").addEventListener("click", function(){ $("upFile").click(); });
 document.querySelectorAll("[data-upclose]").forEach(function(el){
   el.addEventListener("click", function(){ $("upDrawer").classList.remove("open"); });
 });
+/* Excel(.xls/.xlsx)：首行表头 → 逐行解析为记录 */
+function parseRows(rows){
+  if(!rows || !rows.length) return [];
+  var header = rows[0].map(function(h){ return String(h || "").trim(); });
+  var recs = [];
+  for(var i = 1; i < rows.length; i++){
+    var row = rows[i];
+    if(!row || row.every(function(c){ return String(c == null ? "" : c).trim() === ""; })) continue;
+    var rec = { data:{}, extra:[] };
+    for(var j = 0; j < header.length; j++){
+      var v = String(row[j] == null ? "" : row[j]).trim();
+      if(!v || !header[j]) continue;
+      var c = mapKey(header[j]);
+      if(c) rec.data[c] = rec.data[c] ? rec.data[c] + "\n" + v : v;
+      else rec.extra.push(header[j] + ": " + v);
+    }
+    if(Object.keys(rec.data).length || rec.extra.length) recs.push(rec);
+  }
+  return recs;
+}
+
+function showRecs(recs){
+  upState.records = recs;
+  var pv = $("upPreview");
+  pv.style.display = "";
+  if(recs.length === 0){
+    pv.textContent = "⚠️ 未识别出任何记录，请检查文件内容格式（Excel：首行为表头、每行一条记录；文本：字段名: 值，记录间用空行分隔）";
+    $("upStats").innerHTML = "";
+    $("upImport").disabled = true;
+    return;
+  }
+  pv.textContent = recs.map(function(r, i){
+    var head = r.data.name || r.data.company || ("记录 " + (i+1));
+    var phone = r.data.phone ? "（" + r.data.phone + "）" : "";
+    return "▶ " + head + phone + "\n" +
+      Object.keys(r.data).map(function(k){ return "  " + (LABELS[k] || k) + ": " + String(r.data[k]).replace(/\n/g, " / "); }).join("\n") +
+      (r.extra.length ? "\n  [写入备注] " + r.extra.join(" | ") : "");
+  }).join("\n\n");
+  /* 与现有申请按手机号比对 */
+  var byPhone = {};
+  state.list.forEach(function(s){
+    if(s.type !== "apply") return;
+    var p = digits(s.data && s.data.phone);
+    if(p) byPhone[p] = true;
+  });
+  var hit = 0, newr = 0;
+  recs.forEach(function(r){
+    var p = digits(r.data.phone);
+    if(p && byPhone[p]) hit++; else newr++;
+  });
+  $("upStats").innerHTML = "共识别 <b>" + recs.length + "</b> 条记录：" +
+    "新增 <b>" + newr + "</b> 条，与现有申请手机号匹配将<b>合并 " + hit + "</b> 条" +
+    (recs.some(function(r){ return r.extra.length; }) ? '<br><span class="warn">部分无法识别的字段将写入备注</span>' : "");
+  $("upImport").disabled = false;
+}
+
 $("upFile").addEventListener("change", function(){
   var f = this.files && this.files[0];
+  this.value = "";
   if(!f) return;
-  readFileText(f, function(txt){
-    var recs = parseRecords(txt);
-    upState.records = recs;
-    var pv = $("upPreview");
-    pv.style.display = "";
-    if(recs.length === 0){
-      pv.textContent = "⚠️ 未识别出任何记录，请检查文件内容格式（字段名: 值，记录间用空行分隔）";
-      $("upStats").innerHTML = "";
-      $("upImport").disabled = true;
+  if(/\.(xlsx|xls)$/i.test(f.name)){
+    if(typeof XLSX === "undefined"){
+      toast("Excel 解析组件加载失败，请检查网络后重试，或改用 .csv / .txt 文件", true);
       return;
     }
-    pv.textContent = recs.map(function(r, i){
-      var head = r.data.name || r.data.company || ("记录 " + (i+1));
-      var phone = r.data.phone ? "（" + r.data.phone + "）" : "";
-      return "▶ " + head + phone + "\n" +
-        Object.keys(r.data).map(function(k){ return "  " + (LABELS[k] || k) + ": " + String(r.data[k]).replace(/\n/g, " / "); }).join("\n") +
-        (r.extra.length ? "\n  [写入备注] " + r.extra.join(" | ") : "");
-    }).join("\n\n");
-    /* 与现有申请按手机号比对 */
-    var byPhone = {};
-    state.list.forEach(function(s){
-      if(s.type !== "apply") return;
-      var p = digits(s.data && s.data.phone);
-      if(p) byPhone[p] = true;
-    });
-    var hit = 0, newr = 0;
-    recs.forEach(function(r){
-      var p = digits(r.data.phone);
-      if(p && byPhone[p]) hit++; else newr++;
-    });
-    $("upStats").innerHTML = "共识别 <b>" + recs.length + "</b> 条记录：" +
-      "新增 <b>" + newr + "</b> 条，与现有申请手机号匹配将<b>合并 " + hit + "</b> 条" +
-      (recs.some(function(r){ return r.extra.length; }) ? '<br><span class="warn">部分无法识别的字段将写入备注</span>' : "");
-    $("upImport").disabled = false;
-  });
-  this.value = "";
+    var fr = new FileReader();
+    fr.onload = function(){
+      try {
+        var wb = XLSX.read(fr.result, { type:"array" });
+        var rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, defval:"" });
+        showRecs(parseRows(rows));
+      } catch(e){
+        toast("Excel 解析失败，请确认文件为有效表格且首行为表头", true);
+      }
+    };
+    fr.readAsArrayBuffer(f);
+    return;
+  }
+  readFileText(f, function(txt){ showRecs(parseRecords(txt)); });
 });
 
 $("upImport").addEventListener("click", function(){

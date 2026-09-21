@@ -112,7 +112,8 @@ section{position:relative}
 }
 .nav-cta:hover{background:#f6cf63;transform:translateY(-1px);box-shadow:0 6px 18px rgba(240,194,75,.35)}
 /* ---------- 悬浮快捷按钮 ---------- */
-.float-actions{position:fixed;right:16px;bottom:22px;z-index:900;display:flex;flex-direction:column;gap:10px}
+.float-actions{position:fixed;right:16px;bottom:22px;z-index:900;display:flex;flex-direction:column;gap:10px;transition:opacity .25s var(--ease)}
+body.nav-open .float-actions{opacity:0;visibility:hidden;pointer-events:none}
 .float-btn{display:flex;align-items:center;gap:9px;border:none;cursor:pointer;
   border-radius:99px;padding:14px 22px 14px 18px;
   font-size:15px;font-weight:700;line-height:1;letter-spacing:.02em;
@@ -503,7 +504,8 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
   }
   .nav-links.open{transform:none}
   .nav-links a{padding:15px 10px;border-bottom:1px solid rgba(253,253,251,.08);border-radius:0;font-size:16px}
-  .nav-links a:last-child{border-bottom:0;text-align:center;margin-top:14px}
+  .nav-links li:last-child{border-bottom:0;margin-top:14px;display:flex;justify-content:center}
+  .nav-links li:last-child .nav-cta{margin-left:0;min-width:60%;justify-content:center}
   .nav-burger{display:flex}
   .nav-burger.x span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav-burger.x span:nth-child(2){opacity:0}
@@ -1147,18 +1149,21 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
   burger.addEventListener("click", function(){
     var open = links.classList.toggle("open");
     burger.classList.toggle("x", open);
+    document.body.classList.toggle("nav-open", open);
     burger.setAttribute("aria-expanded", open);
     burger.setAttribute("aria-label", open ? "关闭菜单" : "打开菜单");
   });
   links.addEventListener("click", function(e){
     if(e.target.tagName === "A" && links.classList.contains("open")){
       links.classList.remove("open"); burger.classList.remove("x");
+      document.body.classList.remove("nav-open");
       burger.setAttribute("aria-expanded", "false");
     }
   });
   /* 导航「预约诊断」按钮：打开弹窗时顺手收起移动端菜单 */
   document.getElementById("navBookBtn").addEventListener("click", function(){
     links.classList.remove("open"); burger.classList.remove("x");
+    document.body.classList.remove("nav-open");
     burger.setAttribute("aria-expanded", "false");
   });
 

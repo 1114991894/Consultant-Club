@@ -244,6 +244,62 @@ tr:hover td{background:#fcfbf7}
 .ndrawer textarea:focus{border-color:var(--amber-d)}
 .ndrawer .nfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 
+/* ---------- 项目管理 ---------- */
+.sw{position:relative;display:inline-block;width:40px;height:22px;flex:none;vertical-align:middle}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw i{position:absolute;inset:0;background:#ddd9cd;border-radius:99px;transition:.2s;cursor:pointer}
+.sw i::after{content:"";position:absolute;left:2.5px;top:2.5px;width:17px;height:17px;border-radius:50%;
+  background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw input:checked + i{background:var(--ok)}
+.sw input:checked + i::after{transform:translateX(18px)}
+.pub-cell{display:flex;align-items:center;gap:8px}
+.pub-cell small{font-size:12px;color:var(--muted);white-space:nowrap}
+.pub-cell small.on{color:var(--ok);font-weight:700}
+.pj-id{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--muted);white-space:nowrap}
+.pj-title b{display:block;font-size:13.6px;line-height:1.45}
+.pj-title small{color:var(--muted);font-size:12px}
+.mv-btn{border:1px solid var(--line);background:#fff;border-radius:7px;width:26px;height:26px;font-size:12px;color:var(--muted);padding:0}
+.mv-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
+
+/* 项目编辑弹窗 */
+#pModal .mc{max-width:1040px}
+.pjgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;align-items:start}
+.pjsec{border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;background:#fff}
+.pjsec > h4{font-size:13.5px;font-weight:800;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.pjsec > h4 .no{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--amber-d);letter-spacing:.1em}
+.pjsec > .d{font-size:11.5px;color:var(--muted);margin-bottom:13px;line-height:1.6}
+.pjrow{display:grid;grid-template-columns:80px 1fr;gap:10px;align-items:center;margin-bottom:9px}
+.pjrow > label{font-size:12.5px;font-weight:600;color:#3c3d5c;text-align:right}
+.pjrow input,.pjrow select,.pjrow textarea{width:100%;padding:8px 11px;border:1.4px solid var(--line);
+  border-radius:8px;outline:none;font-family:inherit;font-size:13.2px;color:var(--ink);background:#fff}
+.pjrow input:focus,.pjrow select:focus,.pjrow textarea:focus{border-color:var(--amber-d)}
+.pjrow textarea{resize:vertical;min-height:56px;line-height:1.6}
+.pjrow.full{grid-template-columns:80px 1fr}
+.pjpair{display:grid;grid-template-columns:1fr 1.35fr 28px;gap:7px;margin-bottom:7px}
+.pjpair input{padding:7px 10px;border:1.4px solid var(--line);border-radius:8px;outline:none;font-family:inherit;font-size:12.8px;width:100%}
+.pjpair input:focus{border-color:var(--amber-d)}
+.pjlist{border:1px solid var(--line);border-radius:10px;padding:10px 11px;margin-bottom:8px;background:#faf9f4}
+.pjlist .h{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.pjlist .h .n{width:23px;height:23px;border-radius:7px;background:var(--ink);color:var(--amber);
+  font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.pjlist .h input{flex:1;padding:7px 10px;border:1.4px solid var(--line);border-radius:8px;outline:none;font-family:inherit;font-size:12.8px;font-weight:600}
+.pjlist textarea{width:100%;padding:7px 10px;border:1.4px solid var(--line);border-radius:8px;outline:none;font-family:inherit;font-size:12.5px;resize:vertical;min-height:44px;line-height:1.6}
+.pjlist input:focus,.pjlist textarea:focus{border-color:var(--amber-d)}
+.pjsteps{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.pjsteps .pjlist{margin-bottom:0}
+.rowx{border:0;background:#fff;color:#b9b6a6;border-radius:7px;font-size:15px;line-height:1;width:28px;height:30px;flex:none;padding:0;border:1px solid var(--line)}
+.rowx:hover{background:#fdf3f1;color:var(--bad);border-color:#f0d9d5}
+.addr{border:1.3px dashed var(--line);background:#fff;border-radius:8px;padding:6px 13px;font-size:12.3px;color:var(--muted)}
+.addr:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.pjfoot{font-size:12px;color:var(--muted);margin-left:auto}
+@media (max-width:820px){
+  #pModal .mc{width:96%;max-height:92vh}
+  .pjgrid{grid-template-columns:1fr}
+  .pjsteps{grid-template-columns:1fr}
+  .pjrow{grid-template-columns:1fr;gap:4px}
+  .pjrow > label{text-align:left}
+}
+
 /* 响应式 */
 @media (max-width:960px){
   .stats{grid-template-columns:repeat(2,1fr)}
@@ -316,6 +372,10 @@ tr:hover td{background:#fcfbf7}
       <button class="nav-item" data-view="consultants">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="5" r="2.6" stroke="currentColor" stroke-width="1.5"/><circle cx="11" cy="6.5" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 13.5c.5-2.4 2.2-3.7 4-3.7s3.5 1.3 4 3.7M9.5 13.5c.3-1.6 1.2-2.8 2.6-3.2 1.6-.5 3 .7 3.4 3.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         咨询师管理
+      </button>
+      <button class="nav-item" data-view="projects">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="2.5" width="13" height="11" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M1.5 6.5h13M5.8 6.5V13.5" stroke="currentColor" stroke-width="1.5"/></svg>
+        项目管理
       </button>
     </nav>
     <div class="me" id="meBlock" title="个人中心">
@@ -426,6 +486,29 @@ tr:hover td{background:#fcfbf7}
       <div class="conslist" id="consList"></div>
     </section>
 
+    <!-- 项目管理 -->
+    <section id="view-projects" style="display:none">
+      <div class="mhead"><h2>项目管理</h2><span class="sub">格式与官网「最近咨询项目」一致 · 发布后前端自动同步，无需重新部署</span><a class="home-btn" href="https://1114991894.github.io/Consultant-Club/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 6.5L8 2l5.5 4.5V13a1 1 0 01-1 1h-3v-4h-3v4h-3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>进入首页</a></div>
+      <div class="stats">
+        <div class="stat hl"><div class="n" id="pjTotal">–</div><div class="l">项目总数</div></div>
+        <div class="stat"><div class="n" id="pjPub">–</div><div class="l">已发布（前端可见）</div></div>
+        <div class="stat"><div class="n" id="pjDraft">–</div><div class="l">草稿未发布</div></div>
+      </div>
+      <div class="bar">
+        <input class="search" id="pjSearch" type="text" placeholder="搜索项目标题 / 项目ID / 行业…">
+        <select id="pjFilter" style="padding:9px 12px;border:1.4px solid var(--line);border-radius:10px;outline:none;font-family:inherit;font-size:13.5px;color:var(--ink);background:#fff"></select>
+        <button class="pbtn amber" id="pjNew">＋ 新建项目</button>
+      </div>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:78px">项目ID</th><th>项目标题</th><th style="width:94px">分类</th><th style="width:176px">行业 / 方向</th><th style="width:136px">时间</th><th style="width:86px">状态</th><th style="width:128px">发布</th><th style="width:190px">操作</th></tr></thead>
+          <tbody id="pjBody"></tbody>
+        </table>
+        <div class="empty" id="pjEmpty" style="display:none">暂无项目 · 点「＋ 新建项目」添加</div>
+        <div class="tblfoot" id="pjCount"></div>
+      </div>
+    </section>
+
     <!-- 修改密码 -->
     <section id="view-pwd" style="display:none">
       <div class="mhead"><h2>修改密码</h2><span class="sub">修改后其他设备需重新登录</span><a class="home-btn" href="https://1114991894.github.io/Consultant-Club/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 6.5L8 2l5.5 4.5V13a1 1 0 01-1 1h-3v-4h-3v4h-3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>进入首页</a></div>
@@ -497,6 +580,82 @@ tr:hover td{background:#fcfbf7}
     <div class="nfoot">
       <button class="pbtn ghost" id="upPick">选择文件</button>
       <button class="pbtn" id="upImport" disabled>开始导入</button>
+    </div>
+  </div>
+</div>
+
+<!-- 项目编辑弹窗 -->
+<div class="modal" id="pModal">
+  <div class="mm" data-pjclose></div>
+  <div class="mc">
+    <div class="close" data-pjclose>✕</div>
+    <div class="mh">
+      <h3 id="pmHead">新建项目</h3>
+      <span class="meta" id="pmMeta"></span>
+    </div>
+    <div class="mb">
+      <div class="pjgrid">
+        <div>
+          <div class="pjsec">
+            <h4><span class="no">01</span>基础信息</h4>
+            <div class="d">对应前端卡片顶部的标签行</div>
+            <div class="pjrow"><label>项目ID *</label><input id="pmPid" type="text" maxlength="20" placeholder="如 p008"></div>
+            <div class="pjrow"><label>分类 *</label><select id="pmCat"></select></div>
+            <div class="pjrow"><label>行业标签</label><input id="pmIndustry" type="text" maxlength="30" placeholder="如 汽车零部件 / 精密制造"></div>
+            <div class="pjrow"><label>方向标签</label><input id="pmTech" type="text" maxlength="20" placeholder="如 生产数字化"></div>
+            <div class="pjrow"><label>时间范围</label><input id="pmPeriod" type="text" maxlength="30" placeholder="如 2026.09-2026.12"></div>
+            <div class="pjrow"><label>状态文案</label><input id="pmStatus" type="text" maxlength="10" placeholder="询单中"></div>
+          </div>
+          <div class="pjsec">
+            <h4><span class="no">02</span>标题与副标题</h4>
+            <div class="d">标题为卡片主视觉，副标题限一句话</div>
+            <div class="pjrow"><label>项目标题 *</label><input id="pmTitleIn" type="text" maxlength="60" placeholder="某类企业：要解决的核心问题"></div>
+            <div class="pjrow" style="align-items:start"><label style="padding-top:9px">副标题</label><textarea id="pmSub" maxlength="120" placeholder="为一家……的企业，解决……"></textarea></div>
+          </div>
+          <div class="pjsec">
+            <h4><span class="no">03</span>企业画像</h4>
+            <div class="d">前端以 4 列宫格展示，建议保留 4 行</div>
+            <div id="pmProfile"></div>
+            <button class="addr" data-pjadd="profile">＋ 增加一行</button>
+          </div>
+          <div class="pjsec">
+            <h4><span class="no">04</span>核心挑战</h4>
+            <div class="d">前端按序号列表展示：小标题 + 一句话说明</div>
+            <div id="pmChallenges"></div>
+            <button class="addr" data-pjadd="challenges">＋ 增加一条挑战</button>
+          </div>
+        </div>
+        <div>
+          <div class="pjsec">
+            <h4><span class="no">05</span>FDE 实施路径</h4>
+            <div class="d">前端为水平时间轴；标题中用「／」可换行，建议 2–6 步</div>
+            <div class="pjsteps" id="pmSteps"></div>
+            <button class="addr" data-pjadd="steps" style="margin-top:9px">＋ 增加一步</button>
+          </div>
+          <div class="pjsec">
+            <h4><span class="no">06</span>项目价值</h4>
+            <div class="d">前端为卡片底部深色横条</div>
+            <div class="pjrow"><label>价值标题</label><input id="pmVt" type="text" maxlength="12" placeholder="项目价值"></div>
+            <div class="pjrow" style="align-items:start"><label style="padding-top:9px">价值描述</label><textarea id="pmVd" maxlength="160" placeholder="一句话讲清项目带来什么改变"></textarea></div>
+          </div>
+          <div class="pjsec">
+            <h4><span class="no">07</span>发布设置</h4>
+            <div class="d">发布后约 1 分钟内自动出现在官网「最近咨询项目」</div>
+            <div class="pjrow"><label>发布状态</label>
+              <div style="display:flex;align-items:center;gap:10px">
+                <label class="sw"><input type="checkbox" id="pmPub"><i></i></label>
+                <span id="pmPubText" style="font-size:13px;font-weight:600;color:var(--muted)">未发布 · 前端隐藏</span>
+              </div>
+            </div>
+            <div class="d" style="margin:12px 0 0">项目ID 用于前端「我有兴趣」计数，发布后修改会导致原有计数对不上，请谨慎。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="pbtn amber" id="pmSave">保存</button>
+      <button class="pbtn ghost" data-pjclose>取消</button>
+      <span class="pjfoot" id="pmFoot"></span>
     </div>
   </div>
 </div>
@@ -593,7 +752,7 @@ function showApp(s){
   loadList();
 }
 function switchView(v){
-  ["dash","admins","pwd","consultants"].forEach(function(k){
+  ["dash","admins","pwd","consultants","projects"].forEach(function(k){
     $("view-"+k).style.display = (k===v) ? "" : "none";
   });
   document.querySelectorAll("[data-view]").forEach(function(b){
@@ -601,6 +760,7 @@ function switchView(v){
   });
   if(v==="admins") loadAdmins();
   if(v==="consultants") loadConsultants();
+  if(v==="projects") loadProjects();
 }
 document.querySelectorAll("[data-view]").forEach(function(b){
   b.addEventListener("click", function(){
@@ -1344,6 +1504,317 @@ function renderConsultants(){
     });
   });
 }
+
+/* ---------- 项目管理 ---------- */
+var PJ_CATS = [
+  ["growth","业绩增长"],["strategy","战略规划"],["perf","绩效体系"],
+  ["org","组织变革"],["talent","人才发展"],["training","专项培训"]
+];
+var PJ = { list:[], q:"", cat:"all", editId:null, draft:null };
+
+$("pmCat").innerHTML = PJ_CATS.map(function(c){
+  return '<option value="' + c[0] + '">' + c[1] + '</option>';
+}).join("");
+$("pjFilter").innerHTML = '<option value="all">全部分类</option>' + PJ_CATS.map(function(c){
+  return '<option value="' + c[0] + '">' + c[1] + '</option>';
+}).join("");
+
+function pjCatName(k){
+  for(var i=0;i<PJ_CATS.length;i++){ if(PJ_CATS[i][0]===k) return PJ_CATS[i][1]; }
+  return k || "未分类";
+}
+function pjIsMissingTable(r){
+  var j = r.body || {};
+  return r.status === 404 || j.code === "PGRST202" || j.code === "42P01";
+}
+
+function loadProjects(){
+  var sn = sess(); if(!sn) return showLogin();
+  rpc("project_list", { p_token: sn.token }).then(function(r){
+    var j = r.body;
+    if(j && j.ok){
+      PJ.list = j.projects || [];
+      renderProjects();
+    } else if(pjIsMissingTable(r)){
+      $("pjBody").innerHTML = "";
+      $("pjCount").textContent = "";
+      var e = $("pjEmpty"); e.style.display = "";
+      e.innerHTML = "⚠️ 数据表还未创建：请先在 Supabase SQL Editor 执行 sql-copy.html 里的最新 SQL（含第 7、8 节），再刷新本页。";
+    } else {
+      toast((j && (j.error || j.message)) || "加载失败", true);
+    }
+  }).catch(function(){ toast("加载失败，请检查网络", true); });
+}
+
+function pjMatches(p){
+  if(PJ.cat !== "all" && p.category !== PJ.cat) return false;
+  if(!PJ.q) return true;
+  var q = PJ.q.toLowerCase();
+  var hay = [p.project_id, p.title, p.subtitle, p.industry, p.tech_tag, p.period, pjCatName(p.category)]
+    .join(" ").toLowerCase();
+  return hay.indexOf(q) > -1;
+}
+
+function renderProjects(){
+  var list = PJ.list, pub = 0;
+  list.forEach(function(p){ if(p.published) pub++; });
+  $("pjTotal").textContent = list.length;
+  $("pjPub").textContent = pub;
+  $("pjDraft").textContent = list.length - pub;
+
+  var rows = list.filter(pjMatches);
+  var tb = $("pjBody");
+  var e = $("pjEmpty");
+  e.style.display = rows.length ? "none" : "";
+  if(!rows.length) e.textContent = list.length ? "没有符合条件的项目" : "暂无项目 · 点「＋ 新建项目」添加";
+
+  var sn = sess() || {};
+  tb.innerHTML = rows.map(function(p){
+    var tagHtml = '<span class="t-type apply">' + esc(p.industry || "—") + '</span>' +
+      (p.tech_tag ? ' <span class="t-type apply">' + esc(p.tech_tag) + '</span>' : '');
+    return '<tr data-id="' + p.id + '">' +
+      '<td class="pj-id">' + esc(p.project_id) + '</td>' +
+      '<td class="pj-title"><b>' + esc(p.title) + '</b><small>' + esc(p.subtitle || "") + '</small></td>' +
+      '<td><span class="t-type book">' + esc(pjCatName(p.category)) + '</span></td>' +
+      '<td>' + tagHtml + '</td>' +
+      '<td class="t-time">' + esc(p.period || "—") + '</td>' +
+      '<td class="t-time">' + esc(p.status_text || "—") + '</td>' +
+      '<td><div class="pub-cell"><label class="sw"><input type="checkbox" data-act="pub"' +
+        (p.published ? " checked" : "") + '><i></i></label><small class="' + (p.published ? "on" : "") + '">' +
+        (p.published ? "已发布" : "未发布") + '</small></div></td>' +
+      '<td><div class="t-actions">' +
+        '<button class="mv-btn" data-act="up" title="上移">↑</button>' +
+        '<button class="mv-btn" data-act="down" title="下移">↓</button>' +
+        '<button class="view-btn" data-act="edit">编辑</button>' +
+        (sn.role === "super" ? '<button class="del-btn" data-act="del">删除</button>' : '') +
+      '</div></td></tr>';
+  }).join("");
+
+  tb.querySelectorAll("tr").forEach(function(tr){
+    var id = tr.getAttribute("data-id");
+    var p = null;
+    list.forEach(function(x){ if(x.id === id) p = x; });
+    if(!p) return;
+    tr.querySelectorAll("[data-act]").forEach(function(el){
+      var act = el.getAttribute("data-act");
+      if(act === "pub"){
+        el.addEventListener("change", function(){ setPublish(p, el.checked, el); });
+      } else {
+        el.addEventListener("click", function(){
+          if(act === "edit") openProject(p.id);
+          else if(act === "del") deleteProject(p);
+          else moveProject(p, act);
+        });
+      }
+    });
+  });
+  $("pjCount").textContent = rows.length ? ("共 " + rows.length + " 个项目") : "";
+}
+
+function setPublish(p, val, el){
+  var sn = sess(); if(!sn) return showLogin();
+  el.disabled = true;
+  rpc("project_set_publish", { p_token: sn.token, p_id: p.id, p_pub: !!val }).then(function(r){
+    el.disabled = false;
+    if(r.body && r.body.ok){
+      p.published = !!r.body.published;
+      toast(p.published ? "已发布，前端约 1 分钟内同步" : "已从前端撤下");
+      renderProjects();
+    } else {
+      el.checked = !val;
+      toast((r.body && r.body.error) || "操作失败", true);
+    }
+  }).catch(function(){ el.disabled = false; el.checked = !val; toast("网络异常", true); });
+}
+
+function moveProject(p, dir){
+  var sn = sess(); if(!sn) return showLogin();
+  rpc("project_move", { p_token: sn.token, p_id: p.id, p_dir: dir }).then(function(r){
+    if(r.body && r.body.ok){ if(r.body.moved === false) toast("已经到头了"); loadProjects(); }
+    else toast((r.body && r.body.error) || "操作失败", true);
+  });
+}
+
+function deleteProject(p){
+  var sn = sess(); if(!sn) return showLogin();
+  if(!confirm("确定删除项目「" + p.title + "」？\n删除后官网不再展示，操作不可撤销。")) return;
+  rpc("project_delete", { p_token: sn.token, p_id: p.id }).then(function(r){
+    if(r.body && r.body.ok){ toast("已删除"); loadProjects(); }
+    else toast((r.body && r.body.error) || "删除失败", true);
+  });
+}
+
+/* ---------- 项目编辑弹窗 ---------- */
+function pjBlank(){
+  return {
+    project_id:"", category:"growth", industry:"", tech_tag:"", period:"",
+    status_text:"询单中", title:"", subtitle:"",
+    profile:[{k:"",v:""},{k:"",v:""},{k:"",v:""},{k:"",v:""}],
+    challenges:[{t:"",d:""},{t:"",d:""},{t:"",d:""}],
+    steps:[{t:"",d:""},{t:"",d:""},{t:"",d:""},{t:"",d:""}],
+    value_title:"项目价值", value_desc:"", published:false
+  };
+}
+function pjNextId(){
+  var mx = 0;
+  PJ.list.forEach(function(p){
+    var m = /^p(\d+)$/i.exec(p.project_id || "");
+    if(m) mx = Math.max(mx, parseInt(m[1], 10));
+  });
+  var n = String(mx + 1);
+  while(n.length < 3) n = "0" + n;
+  return "p" + n;
+}
+function openProject(id){
+  var seed;
+  if(id){
+    var p = null;
+    PJ.list.forEach(function(x){ if(x.id === id) p = x; });
+    if(!p) return;
+    seed = JSON.parse(JSON.stringify(p));
+  } else {
+    seed = pjBlank();
+    seed.project_id = pjNextId();
+  }
+  seed.profile = (seed.profile && seed.profile.length) ? seed.profile : pjBlank().profile;
+  seed.challenges = seed.challenges || [];
+  seed.steps = seed.steps || [];
+  PJ.editId = id || null;
+  PJ.draft = seed;
+
+  $("pmHead").textContent = id ? "编辑项目" : "新建项目";
+  $("pmMeta").textContent = id ? seed.project_id : "项目ID 建议保留默认值";
+  $("pmPid").value = seed.project_id || "";
+  $("pmCat").value = seed.category || "growth";
+  $("pmIndustry").value = seed.industry || "";
+  $("pmTech").value = seed.tech_tag || "";
+  $("pmPeriod").value = seed.period || "";
+  $("pmStatus").value = seed.status_text || "询单中";
+  $("pmTitleIn").value = seed.title || "";
+  $("pmSub").value = seed.subtitle || "";
+  $("pmVt").value = seed.value_title || "项目价值";
+  $("pmVd").value = seed.value_desc || "";
+  $("pmPub").checked = !!seed.published;
+  syncPubText();
+  $("pmFoot").textContent = "";
+  renderPjProfile(); renderPjChallenges(); renderPjSteps();
+  $("pModal").classList.add("open");
+}
+function closeProjectModal(){
+  $("pModal").classList.remove("open");
+  PJ.editId = null; PJ.draft = null;
+}
+function syncPubText(){
+  var on = $("pmPub").checked, el = $("pmPubText");
+  el.textContent = on ? "已发布 · 前端可见" : "未发布 · 前端隐藏";
+  el.style.color = on ? "#2e8b57" : "#6b6d85";
+}
+function renderPjProfile(){
+  $("pmProfile").innerHTML = PJ.draft.profile.map(function(r,i){
+    return '<div class="pjpair">' +
+      '<input type="text" maxlength="12" value="' + esc(r.k) + '" data-pj="profile" data-i="' + i + '" data-f="k" placeholder="字段名，如 企业性质">' +
+      '<input type="text" maxlength="40" value="' + esc(r.v) + '" data-pj="profile" data-i="' + i + '" data-f="v" placeholder="字段值">' +
+      '<button class="rowx" data-pjdel="profile" data-i="' + i + '" title="删除此行">×</button></div>';
+  }).join("");
+}
+function renderPjChallenges(){
+  $("pmChallenges").innerHTML = PJ.draft.challenges.map(function(c,i){
+    return '<div class="pjlist"><div class="h"><span class="n">' + (i+1) + '</span>' +
+      '<input type="text" maxlength="30" value="' + esc(c.t) + '" data-pj="challenges" data-i="' + i + '" data-f="t" placeholder="挑战小标题">' +
+      '<button class="rowx" data-pjdel="challenges" data-i="' + i + '" title="删除此条">×</button></div>' +
+      '<textarea maxlength="120" data-pj="challenges" data-i="' + i + '" data-f="d" placeholder="一句话说明具体表现">' + esc(c.d) + '</textarea></div>';
+  }).join("");
+}
+function renderPjSteps(){
+  $("pmSteps").innerHTML = PJ.draft.steps.map(function(s,i){
+    return '<div class="pjlist"><div class="h"><span class="n">' + (i+1) + '</span>' +
+      '<input type="text" maxlength="24" value="' + esc(String(s.t||"").replace(/\n/g,"／")) + '" data-pj="steps" data-i="' + i + '" data-f="t" placeholder="标题，用／换行">' +
+      '<button class="rowx" data-pjdel="steps" data-i="' + i + '" title="删除此步">×</button></div>' +
+      '<textarea maxlength="80" data-pj="steps" data-i="' + i + '" data-f="d" placeholder="这一步做什么">' + esc(s.d) + '</textarea></div>';
+  }).join("");
+}
+$("pModal").addEventListener("input", function(e){
+  var el = e.target, grp = el && el.getAttribute ? el.getAttribute("data-pj") : null;
+  if(!grp || !PJ.draft) return;
+  PJ.draft[grp][+el.getAttribute("data-i")][el.getAttribute("data-f")] = el.value;
+});
+$("pModal").addEventListener("click", function(e){
+  var t = e.target;
+  var del = t.closest ? t.closest("[data-pjdel]") : null;
+  if(del){
+    var g = del.getAttribute("data-pjdel");
+    PJ.draft[g].splice(+del.getAttribute("data-i"), 1);
+    if(g === "profile") renderPjProfile();
+    else if(g === "challenges") renderPjChallenges();
+    else renderPjSteps();
+    return;
+  }
+  var add = t.closest ? t.closest("[data-pjadd]") : null;
+  if(add){
+    var k = add.getAttribute("data-pjadd");
+    if(k === "profile"){
+      if(PJ.draft.profile.length >= 8) return toast("画像最多 8 行", true);
+      PJ.draft.profile.push({k:"",v:""}); renderPjProfile();
+    } else if(k === "challenges"){
+      if(PJ.draft.challenges.length >= 10) return toast("挑战最多 10 条", true);
+      PJ.draft.challenges.push({t:"",d:""}); renderPjChallenges();
+    } else {
+      if(PJ.draft.steps.length >= 6) return toast("实施路径最多 6 步", true);
+      PJ.draft.steps.push({t:"",d:""}); renderPjSteps();
+    }
+    return;
+  }
+  if(t.closest && t.closest("[data-pjclose]")) closeProjectModal();
+});
+$("pmPub").addEventListener("change", syncPubText);
+$("pjNew").addEventListener("click", function(){ openProject(null); });
+$("pjSearch").addEventListener("input", function(){ PJ.q = this.value.trim(); renderProjects(); });
+$("pjFilter").addEventListener("change", function(){ PJ.cat = this.value; renderProjects(); });
+$("pmSave").addEventListener("click", function(){
+  var sn = sess(); if(!sn) return showLogin();
+  var d = PJ.draft; if(!d) return;
+  d.project_id = $("pmPid").value.trim();
+  d.category   = $("pmCat").value;
+  d.industry   = $("pmIndustry").value.trim();
+  d.tech_tag   = $("pmTech").value.trim();
+  d.period     = $("pmPeriod").value.trim();
+  d.status_text= $("pmStatus").value.trim() || "询单中";
+  d.title      = $("pmTitleIn").value.trim();
+  d.subtitle   = $("pmSub").value.trim();
+  d.value_title= $("pmVt").value.trim() || "项目价值";
+  d.value_desc = $("pmVd").value.trim();
+  d.published  = $("pmPub").checked;
+
+  if(!d.project_id) return toast("请填写项目ID", true);
+  if(!/^[A-Za-z0-9_-]{1,20}$/.test(d.project_id)) return toast("项目ID 只能用字母、数字、下划线或横线", true);
+  if(!d.title) return toast("请填写项目标题", true);
+
+  var payload = JSON.parse(JSON.stringify(d));
+  payload.profile    = payload.profile.filter(function(r){ return (r.k||"").trim() || (r.v||"").trim(); });
+  payload.challenges = payload.challenges.filter(function(c){ return (c.t||"").trim() || (c.d||"").trim(); });
+  payload.steps      = payload.steps.filter(function(s){ return (s.t||"").trim() || (s.d||"").trim(); });
+  payload.steps.forEach(function(s){ s.t = String(s.t||"").replace(/／/g, "\n"); });
+
+  var btn = this;
+  btn.disabled = true; btn.textContent = "保存中…";
+  $("pmFoot").textContent = "";
+  rpc("project_save", { p_token: sn.token, p_id: PJ.editId || null, p_data: payload }).then(function(r){
+    btn.disabled = false; btn.textContent = "保存";
+    var j = r.body;
+    if(j && j.ok){
+      toast(payload.published ? "已保存并发布，前端约 1 分钟内同步" : "已保存（未发布，前端不显示）");
+      closeProjectModal();
+      loadProjects();
+    } else {
+      var msg = (j && (j.error || j.message)) || "保存失败";
+      $("pmFoot").textContent = msg;
+      toast(msg, true);
+    }
+  }).catch(function(){
+    btn.disabled = false; btn.textContent = "保存";
+    toast("网络异常，请稍后重试", true);
+  });
+});
 
 /* ---------- 启动 ---------- */
 var s = sess();

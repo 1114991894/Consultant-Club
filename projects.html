@@ -165,7 +165,7 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
     <h1>最近<em>咨询项目</em></h1>
     <p class="hero-sub">我们不做纸上方案。每一个项目都从一线问题出发：从诊断到落地，和数据一起待在业务现场。</p>
     <div class="hero-meta">
-      <span><b>07</b> 个项目跟进中</span>
+      <span><b id="projCount">07</b> 个项目跟进中</span>
       <span>覆盖 <b>战略 · 绩效 · 组织 · 人才 · 增长 · 培训 · 数字化</b></span>
       <span>模式：<b>诊断 → 方案 → 上线陪跑</b></span>
     </div>
@@ -605,29 +605,13 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
 <script>
 (function(){
 "use strict";
-/* ---------- 分类筛选 ---------- */
-var tabs = document.querySelectorAll("#projFilter button");
-var cards = document.querySelectorAll(".proj");
-var emptyTip = document.getElementById("emptyTip");
-tabs.forEach(function(t){
-  t.addEventListener("click", function(){
-    tabs.forEach(function(x){ x.classList.remove("on"); });
-    t.classList.add("on");
-    var f = t.getAttribute("data-filter");
-    var visible = 0;
-    cards.forEach(function(c){
-      var show = f === "all" || c.getAttribute("data-cat") === f;
-      c.classList.toggle("hidden", !show);
-      if(show) visible++;
-    });
-    emptyTip.style.display = visible ? "none" : "block";
-  });
-});
-
-/* ---------- 「我有兴趣」计数（每 IP 每项目限一次） ---------- */
 var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
 var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
+var CAT_NAME = { growth:"业绩增长", strategy:"战略规划", perf:"绩效体系",
+                 org:"组织变革", talent:"人才发展", training:"专项培训" };
 
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 function rpc(fn, body){
   return fetch(SB_URL + "/rest/v1/rpc/" + fn, {
     method: "POST",
@@ -653,41 +637,169 @@ function paint(id, count, voted){
     btn.innerHTML = btn.innerHTML.replace("我有兴趣", "已表示兴趣");
   }
 }
-var IDS = ["p001","p002","p003","p004","p005","p006","p007"];
 
-IDS.forEach(function(id){
-  rpc("project_interest_count", { p_project_id: id }).then(function(r){
-    if(r.body && r.body.ok) paint(id, r.body.count, hasVoted(id));
-    else paint(id, 0, hasVoted(id));
-  }).catch(function(){ paint(id, 0, hasVoted(id)); });
-});
-
-document.querySelectorAll(".i-btn").forEach(function(btn){
-  btn.addEventListener("click", function(){
-    var id = btn.getAttribute("data-project");
-    if(hasVoted(id)){
-      btn.classList.add("voted");
-      btn.innerHTML = btn.innerHTML.replace("我有兴趣", "已表示兴趣");
-      return;
-    }
-    btn.disabled = true;
-    rpc("project_interest_vote", { p_project_id: id }).then(function(r){
-      btn.disabled = false;
-      var j = r.body;
-      if(j && j.ok){
-        markVoted(id);
-        paint(id, j.count, true);
-      } else if(j && j.error){
-        alert(j.error);
-      } else {
-        alert("统计功能部署中，请稍后再试");
-      }
-    }).catch(function(){
-      btn.disabled = false;
-      alert("网络异常，请稍后再试");
-    });
+/* ---------- 分类筛选 ---------- */
+function initFilter(){
+  var tabs = document.querySelectorAll("#projFilter button");
+  var emptyTip = document.getElementById("emptyTip");
+  tabs.forEach(function(t){
+    t.onclick = function(){
+      tabs.forEach(function(x){ x.classList.remove("on"); });
+      t.classList.add("on");
+      var f = t.getAttribute("data-filter");
+      var visible = 0;
+      document.querySelectorAll(".proj").forEach(function(c){
+        var show = f === "all" || c.getAttribute("data-cat") === f;
+        c.classList.toggle("hidden", !show);
+        if(show) visible++;
+      });
+      emptyTip.style.display = visible ? "none" : "block";
+    };
   });
-});
+}
+
+/* ---------- 「我有兴趣」计数（每 IP 每项目限一次） ---------- */
+function initInterest(){
+  var btns = document.querySelectorAll(".i-btn");
+  var ids = [];
+  btns.forEach(function(b){
+    var id = b.getAttribute("data-project");
+    if(id && ids.indexOf(id) < 0) ids.push(id);
+  });
+  ids.forEach(function(id){
+    rpc("project_interest_count", { p_project_id: id }).then(function(r){
+      if(r.body && r.body.ok) paint(id, r.body.count, hasVoted(id));
+      else paint(id, 0, hasVoted(id));
+    }).catch(function(){ paint(id, 0, hasVoted(id)); });
+  });
+  btns.forEach(function(btn){
+    btn.onclick = function(){
+      var id = btn.getAttribute("data-project");
+      if(hasVoted(id)){
+        btn.classList.add("voted");
+        btn.innerHTML = btn.innerHTML.replace("我有兴趣", "已表示兴趣");
+        return;
+      }
+      btn.disabled = true;
+      rpc("project_interest_vote", { p_project_id: id }).then(function(r){
+        btn.disabled = false;
+        var j = r.body;
+        if(j && j.ok){
+          markVoted(id);
+          paint(id, j.count, true);
+        } else if(j && j.error){
+          alert(j.error);
+        } else {
+          alert("统计功能部署中，请稍后再试");
+        }
+      }).catch(function(){
+        btn.disabled = false;
+        alert("网络异常，请稍后再试");
+      });
+    };
+  });
+}
+
+/* ---------- 由后台数据渲染项目卡（结构与静态版完全一致） ---------- */
+function renderProject(p, idx){
+  var cat  = CAT_NAME[p.category] || "未分类";
+  var cls  = (idx % 2 === 0) ? "amber" : "teal";
+  var prof = p.profile    || [];
+  var chs  = p.challenges || [];
+  var sts  = p.steps      || [];
+  var blocks = [];
+  function head(no, title){
+    return '<div class="blk-h"><span class="no">' + ("0" + no).slice(-2) + '</span><h3>' + title + '</h3></div>';
+  }
+  if(prof.length){
+    blocks.push('<div class="blk">' + head(blocks.length + 1, "企业画像") +
+      '<div class="profile" style="grid-template-columns:repeat(' + Math.min(prof.length, 4) + ',1fr)">' +
+      prof.map(function(r){
+        return '<div class="pf"><div class="k">' + esc(r.k) + '</div><div class="v">' + esc(r.v) + '</div></div>';
+      }).join("") + '</div></div>');
+  }
+  if(chs.length){
+    blocks.push('<div class="blk">' + head(blocks.length + 1, "现场诊断出的核心挑战") +
+      '<ul class="challenges">' + chs.map(function(c, i){
+        return '<li><span class="n">' + (i+1) + '</span><div><b>' + esc(c.t) + '</b><p>' + esc(c.d) + '</p></div></li>';
+      }).join("") + '</ul></div>');
+  }
+  if(sts.length){
+    blocks.push('<div class="blk">' + head(blocks.length + 1, "FDE 实施路径") +
+      '<div class="path">' + sts.map(function(s, i){
+        return '<div class="step"><div class="sn">' + (i+1) + '</div><h4>' +
+          esc(s.t).split("\n").join("<br>") + '</h4><p>' + esc(s.d) + '</p></div>';
+      }).join("") + '</div></div>');
+  }
+
+  var valueHtml = (p.value_desc || "").trim() ? (
+    '<div class="value"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="#f0c24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+    '<div><b>' + esc(p.value_title || "项目价值") + '</b><p>' + esc(p.value_desc) + '</p></div></div>'
+  ) : "";
+
+  var pid = esc(p.project_id);
+  return '<article class="proj" data-cat="' + esc(p.category) + '">' +
+    '<div class="proj-card">' +
+      '<div class="proj-head">' +
+        '<div class="proj-topline">' +
+          '<span class="p-tag cat">' + esc(cat) + '</span>' +
+          (p.industry ? '<span class="p-tag">' + esc(p.industry) + '</span>' : '') +
+          (p.tech_tag ? '<span class="p-tag teal">' + esc(p.tech_tag) + '</span>' : '') +
+          '<span class="p-status"><span class="pulse"></span>' +
+            esc(p.status_text || "询单中") + (p.period ? ' · ' + esc(p.period) : '') + '</span>' +
+        '</div>' +
+        '<h2 class="proj-title">' + esc(p.title) + '</h2>' +
+        (p.subtitle ? '<p class="proj-sub">' + esc(p.subtitle) + '</p>' : '') +
+      '</div>' +
+      '<div class="proj-body">' + blocks.join("") + valueHtml + '</div>' +
+    '</div>' +
+    '<div class="interest">' +
+      '<button class="i-btn ' + cls + '" data-project="' + pid + '" type="button">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' +
+        '我有兴趣</button>' +
+      '<span class="i-count" data-count-for="' + pid + '"><b>—</b> 人对该项目感兴趣</span>' +
+    '</div>' +
+  '</article>';
+}
+
+function syncFilters(list){
+  var wrap = document.getElementById("projFilter");
+  var known = [];
+  wrap.querySelectorAll("button").forEach(function(b){ known.push(b.getAttribute("data-filter")); });
+  list.forEach(function(p){
+    if(known.indexOf(p.category) > -1) return;
+    known.push(p.category);
+    var b = document.createElement("button");
+    b.setAttribute("data-filter", p.category);
+    b.textContent = CAT_NAME[p.category] || p.category;
+    wrap.appendChild(b);
+  });
+}
+
+function applyDbProjects(list){
+  var tip = document.getElementById("emptyTip");
+  var all = document.querySelectorAll(".proj");
+  for(var i = all.length - 1; i >= 0; i--){ all[i].parentNode.removeChild(all[i]); }
+  tip.insertAdjacentHTML("beforebegin", list.map(renderProject).join(""));
+  var cnt = document.getElementById("projCount");
+  if(cnt) cnt.textContent = (list.length < 10 ? "0" : "") + list.length;
+  syncFilters(list);
+  initFilter();
+  initInterest();
+}
+
+/* ---------- 启动：优先读后台已发布项目，读不到则保留页面原有内容 ---------- */
+function boot(){
+  initFilter();
+  initInterest();
+  var url = SB_URL + "/rest/v1/projects?select=*&published=eq.true&order=sort.desc,created_at.desc";
+  fetch(url, { headers: { "apikey": SB_KEY } }).then(function(r){
+    return r.ok ? r.json() : [];
+  }).then(function(list){
+    if(Array.isArray(list) && list.length){ applyDbProjects(list); }
+  }).catch(function(){ /* 静默：保持静态内容 */ });
+}
+boot();
 })();
 </script>
 

@@ -686,6 +686,46 @@ function paint(id, count, voted){
     btn.innerHTML = btn.innerHTML.replace("我有兴趣", "已表示兴趣");
   }
 }
+/* 计数读取失败时：先重试，再退回本地最近一次已知数值，最差才显示「—」。
+   绝不把「取不到」画成 0 —— 0 会让人误以为数据丢了。 */
+var CNT_TRIES = 3;
+function cntCacheKey(id){ return "cc_count_" + id; }
+function cntCacheGet(id){
+  try {
+    var v = localStorage.getItem(cntCacheKey(id));
+    return (v === null || v === "") ? null : v;
+  } catch(e){ return null; }
+}
+function cntCacheSet(id, n){
+  try { localStorage.setItem(cntCacheKey(id), String(n)); } catch(e){}
+}
+function markVotedUI(id, voted){
+  var btn = document.querySelector('.i-btn[data-project="' + id + '"]');
+  if(btn && voted){
+    btn.classList.add("voted");
+    btn.innerHTML = btn.innerHTML.replace("我有兴趣", "已表示兴趣");
+  }
+}
+function paintUnknown(id, voted){
+  var cnt = document.querySelector('[data-count-for="' + id + '"] b');
+  var cached = cntCacheGet(id);
+  if(cnt) cnt.textContent = (cached === null) ? "—" : cached;
+  markVotedUI(id, voted);
+}
+function loadCount(id, tries){
+  rpc("project_interest_count", { p_project_id: id }).then(function(r){
+    if(r.body && r.body.ok){
+      cntCacheSet(id, r.body.count);
+      paint(id, r.body.count, hasVoted(id));
+      return;
+    }
+    if(tries > 0) setTimeout(function(){ loadCount(id, tries - 1); }, 900);
+    else paintUnknown(id, hasVoted(id));
+  }).catch(function(){
+    if(tries > 0) setTimeout(function(){ loadCount(id, tries - 1); }, 900);
+    else paintUnknown(id, hasVoted(id));
+  });
+}
 
 /* ---------- 分类筛选 ---------- */
 function initFilter(){
@@ -715,11 +755,9 @@ function initInterest(){
     var id = b.getAttribute("data-project");
     if(id && ids.indexOf(id) < 0) ids.push(id);
   });
-  ids.forEach(function(id){
-    rpc("project_interest_count", { p_project_id: id }).then(function(r){
-      if(r.body && r.body.ok) paint(id, r.body.count, hasVoted(id));
-      else paint(id, 0, hasVoted(id));
-    }).catch(function(){ paint(id, 0, hasVoted(id)); });
+  /* 逐个错开 120ms 请求，避免一上来 7 个并发被限流 */
+  ids.forEach(function(id, i){
+    setTimeout(function(){ loadCount(id, CNT_TRIES); }, i * 120);
   });
   btns.forEach(function(btn){
     btn.onclick = function(){
@@ -735,6 +773,7 @@ function initInterest(){
         var j = r.body;
         if(j && j.ok){
           markVoted(id);
+          cntCacheSet(id, j.count);
           paint(id, j.count, true);
         } else if(j && j.error){
           alert(j.error);

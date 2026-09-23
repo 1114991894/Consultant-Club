@@ -429,6 +429,23 @@ create table if not exists public.projects (
 
 create index if not exists projects_pub_sort_idx on public.projects (published, sort desc);
 
+-- 首次发布时间 / 最近一次再次发布时间：决定前端排序与 NEW / 更新 角标
+--   first_pub_at 为空  = 从未发布过
+--   last_pub_at > first_pub_at = 修改后再次发布过（前端显示「更新」）
+alter table public.projects add column if not exists first_pub_at timestamptz;
+alter table public.projects add column if not exists last_pub_at  timestamptz;
+
+-- 回填历史数据：已发布但缺发布时间的，按项目编号给出递增的首发时间
+--   p001 = 1 天前、p002 = 2 天前 …… 编号越大首发越早
+--   前端按「首发时间倒序」排列 → p001 排最前，与原静态页顺序完全一致
+update public.projects
+   set first_pub_at = now() - greatest(coalesce(nullif(regexp_replace(project_id, '\D', '', 'g'), '')::int, 1), 1) * interval '1 day'
+ where published = true and first_pub_at is null;
+
+update public.projects set last_pub_at = first_pub_at where last_pub_at is null;
+
+create index if not exists projects_first_pub_idx on public.projects (published, first_pub_at desc nulls last);
+
 alter table public.projects enable row level security;
 
 -- 公开读：前端只读「已发布」的项目
@@ -454,21 +471,30 @@ begin
       'profile', pr.profile, 'challenges', pr.challenges, 'steps', pr.steps,
       'value_title', pr.value_title, 'value_desc', pr.value_desc,
       'sort', pr.sort, 'published', pr.published,
+      'first_pub_at', pr.first_pub_at, 'last_pub_at', pr.last_pub_at,
       'created_at', pr.created_at, 'updated_at', pr.updated_at
-    ) order by pr.sort desc, pr.created_at desc), '[]'::json)
+    ) order by pr.first_pub_at desc nulls last, pr.created_at desc), '[]'::json)
     from public.projects pr
   ));
 end;
 $$;
 
 -- 保存（p_id 为空=新建，否则=编辑）；所有管理员可操作
+--   编号唯一：只要编号已被任何项目占用（前端存在且未删除），就拒绝保存/发布
+--   首发时间：第一次发布时写入，之后不再变
+--   最近发布：内容有改动且处于已发布状态时刷新 → 前端显示「更新」
 create or replace function public.project_save(p_token text, p_id uuid, p_data jsonb)
 returns json
 language plpgsql security definer set search_path = public, extensions as $$
 declare
-  v_admin public.admins;
-  v_row   public.projects;
-  v_pid   text;
+  v_admin   public.admins;
+  v_row     public.projects;
+  v_old     public.projects;
+  v_pid     text;
+  v_pub     boolean;
+  v_oldcon  jsonb;
+  v_newcon  jsonb;
+  v_changed boolean := false;
 begin
   v_admin := admin_from_token(p_token);
   if v_admin.id is null then
@@ -479,20 +505,22 @@ begin
   end if;
   v_pid := btrim(coalesce(p_data->>'project_id', ''));
   if v_pid = '' then
-    return json_build_object('ok', false, 'error', '项目ID不能为空');
+    return json_build_object('ok', false, 'error', '项目编号不能为空');
   end if;
   if btrim(coalesce(p_data->>'title', '')) = '' then
     return json_build_object('ok', false, 'error', '项目标题不能为空');
   end if;
+  v_pub := coalesce((p_data->>'published')::boolean, false);
 
   if p_id is null then
-    if exists (select 1 from public.projects where project_id = v_pid) then
-      return json_build_object('ok', false, 'error', '项目ID「' || v_pid || '」已存在');
+    if exists (select 1 from public.projects where lower(project_id) = lower(v_pid)) then
+      return json_build_object('ok', false,
+        'error', '编号「' || v_pid || '」已被占用（该项目仍在前端展示，未删除），请换一个编号');
     end if;
     insert into public.projects (
       project_id, category, industry, tech_tag, period, status_text,
       title, subtitle, profile, challenges, steps,
-      value_title, value_desc, published
+      value_title, value_desc, published, first_pub_at, last_pub_at
     ) values (
       v_pid,
       coalesce(nullif(p_data->>'category', ''), 'growth'),
@@ -507,12 +535,44 @@ begin
       coalesce(p_data->'steps', '[]'::jsonb),
       coalesce(nullif(p_data->>'value_title', ''), '项目价值'),
       coalesce(p_data->>'value_desc', ''),
-      coalesce((p_data->>'published')::boolean, false)
+      v_pub,
+      case when v_pub then now() end,
+      case when v_pub then now() end
     ) returning * into v_row;
   else
-    if exists (select 1 from public.projects where project_id = v_pid and id <> p_id) then
-      return json_build_object('ok', false, 'error', '项目ID「' || v_pid || '」已被其他项目占用');
+    select * into v_old from public.projects where id = p_id;
+    if v_old.id is null then
+      return json_build_object('ok', false, 'error', '记录不存在');
     end if;
+    if exists (select 1 from public.projects
+                where lower(project_id) = lower(v_pid) and id <> p_id) then
+      return json_build_object('ok', false,
+        'error', '编号「' || v_pid || '」已被其他项目使用，编号不可重复，请更换后再保存');
+    end if;
+
+    -- 内容是否真的改过（用于判断「修改后再次发布」）
+    v_oldcon := jsonb_build_object(
+      'category',    v_old.category,    'industry',    v_old.industry,
+      'tech_tag',    v_old.tech_tag,    'period',      v_old.period,
+      'status_text', v_old.status_text, 'title',       v_old.title,
+      'subtitle',    v_old.subtitle,    'profile',     v_old.profile,
+      'challenges',  v_old.challenges,  'steps',       v_old.steps,
+      'value_title', v_old.value_title, 'value_desc',  v_old.value_desc);
+    v_newcon := jsonb_build_object(
+      'category',    coalesce(nullif(p_data->>'category', ''), v_old.category),
+      'industry',    coalesce(p_data->>'industry', v_old.industry),
+      'tech_tag',    coalesce(p_data->>'tech_tag', v_old.tech_tag),
+      'period',      coalesce(p_data->>'period', v_old.period),
+      'status_text', coalesce(nullif(p_data->>'status_text', ''), v_old.status_text),
+      'title',       btrim(p_data->>'title'),
+      'subtitle',    coalesce(p_data->>'subtitle', v_old.subtitle),
+      'profile',     coalesce(p_data->'profile', v_old.profile),
+      'challenges',  coalesce(p_data->'challenges', v_old.challenges),
+      'steps',       coalesce(p_data->'steps', v_old.steps),
+      'value_title', coalesce(nullif(p_data->>'value_title', ''), v_old.value_title),
+      'value_desc',  coalesce(p_data->>'value_desc', v_old.value_desc));
+    v_changed := v_oldcon is distinct from v_newcon;
+
     update public.projects set
       project_id  = v_pid,
       category    = coalesce(nullif(p_data->>'category', ''), category),
@@ -527,13 +587,18 @@ begin
       steps       = coalesce(p_data->'steps', steps),
       value_title = coalesce(nullif(p_data->>'value_title', ''), value_title),
       value_desc  = coalesce(p_data->>'value_desc', value_desc),
-      published   = coalesce((p_data->>'published')::boolean, published),
+      published   = v_pub,
+      first_pub_at = case
+        when v_pub and first_pub_at is null then now()
+        else first_pub_at end,
+      last_pub_at  = case
+        when v_pub and first_pub_at is null then now()   -- 首次发布
+        when v_pub and v_changed           then now()    -- 修改后再次发布
+        when v_pub and not v_old.published then now()    -- 撤下后重新发布
+        else last_pub_at end,
       updated_at  = now()
     where id = p_id
     returning * into v_row;
-    if v_row.id is null then
-      return json_build_object('ok', false, 'error', '记录不存在');
-    end if;
   end if;
   return json_build_object('ok', true, 'id', v_row.id, 'project_id', v_row.project_id);
 end;
@@ -560,7 +625,7 @@ begin
 end;
 $$;
 
--- 发布 / 取消发布
+-- 发布 / 取消发布（同步维护首发时间与最近发布时间）
 create or replace function public.project_set_publish(p_token text, p_id uuid, p_pub boolean)
 returns json
 language plpgsql security definer set search_path = public, extensions as $$
@@ -573,7 +638,15 @@ begin
     return json_build_object('ok', false, 'error', '登录已过期');
   end if;
   update public.projects
-     set published = coalesce(p_pub, published), updated_at = now()
+     set published = coalesce(p_pub, published),
+         first_pub_at = case
+           when coalesce(p_pub, published) and first_pub_at is null then now()
+           else first_pub_at end,
+         last_pub_at  = case
+           when coalesce(p_pub, published) and first_pub_at is null then now()  -- 首次发布
+           when coalesce(p_pub, published) and not published then now()         -- 撤下后重新发布
+           else last_pub_at end,
+         updated_at = now()
    where id = p_id
    returning * into v_row;
   if v_row.id is null then
@@ -583,45 +656,18 @@ begin
 end;
 $$;
 
--- 上移 / 下移（与相邻记录交换 sort；前端按 sort 倒序，越靠上越前）
-create or replace function public.project_move(p_token text, p_id uuid, p_dir text)
-returns json
-language plpgsql security definer set search_path = public, extensions as $$
-declare
-  v_admin public.admins;
-  v_cur   public.projects;
-  v_nb    public.projects;
-begin
-  v_admin := admin_from_token(p_token);
-  if v_admin.id is null then
-    return json_build_object('ok', false, 'error', '登录已过期');
-  end if;
-  select * into v_cur from public.projects where id = p_id;
-  if v_cur.id is null then
-    return json_build_object('ok', false, 'error', '记录不存在');
-  end if;
-  if p_dir = 'up' then
-    select * into v_nb from public.projects
-      where sort > v_cur.sort order by sort asc limit 1;
-  else
-    select * into v_nb from public.projects
-      where sort < v_cur.sort order by sort desc limit 1;
-  end if;
-  if v_nb.id is null then
-    return json_build_object('ok', true, 'moved', false);
-  end if;
-  update public.projects set sort = v_nb.sort where id = v_cur.id;
-  update public.projects set sort = v_cur.sort where id = v_nb.id;
-  return json_build_object('ok', true, 'moved', true);
-end;
-$$;
+-- 手动排序已废弃：前端顺序改为「首次发布时间倒序」自动决定（越晚首发越靠前）
+drop function if exists public.project_move(text, uuid, text);
 
 -- ---------- 8. 现有 7 个项目种子（幂等：project_id 已存在则跳过） ----------
 -- 目的：让前端从「写死在 HTML」平滑切到「读数据库」时视觉零变化
+-- 首发时间按编号递增往前推（p001 最新 → 排最前），与原静态页顺序一致
+-- 注意：last_pub_at 与 first_pub_at 相等 → 首装不带「更新」角标
 
 insert into public.projects
   (project_id, category, industry, tech_tag, period, status_text, title, subtitle,
-   profile, challenges, steps, value_title, value_desc, sort, published)
+   profile, challenges, steps, value_title, value_desc, sort, published,
+   first_pub_at, last_pub_at)
 values
 ('p001', 'growth', '汽车零部件 / 精密制造', '生产数字化', '2026.09-2026.12', '询单中',
  '滚针轴承制造企业：打通生产数据链路，重建质量追溯体系',
@@ -631,12 +677,13 @@ values
  '[{"t":"现场调研／流程还原","d":"驻场摸清真实生产逻辑与断点，输出问题清单"},{"t":"数据链路／打通方案","d":"双系统集成 + 电镀外协断点补齐，一次规划"},{"t":"设备联网／数据采集","d":"机床联网改造，补齐 SCADA / MES 采集层"},{"t":"质量追溯／上线陪跑","d":"按首检/巡检/抽检重构质检流程，陪跑到跑通"}]'::jsonb,
  '项目价值',
  '一条完整、可追溯的数字化生产链路：从订单到工序到成品，质量责任定位到工序、设备与人员，数据不再靠人工搬运。',
- 7000, true)
+ 7000, true, now() - interval '1 day', now() - interval '1 day')
 on conflict (project_id) do nothing;
 
 insert into public.projects
   (project_id, category, industry, tech_tag, period, status_text, title, subtitle,
-   profile, challenges, steps, value_title, value_desc, sort, published)
+   profile, challenges, steps, value_title, value_desc, sort, published,
+   first_pub_at, last_pub_at)
 values
 ('p002', 'growth', '新材料 / 健康科技', '市场增长', '2026.10-2027.06', '询单中',
  '碳纳米管柔性加热科技企业：搭建精准获客与 OEM/ODM 订单转化体系',
@@ -646,12 +693,13 @@ values
  '[{"t":"产品×场景×渠道／匹配矩阵","d":"梳理产品线，锁定重点产品与重点行业"},{"t":"目标客户画像／获客通道搭建","d":"建立 B2B 精准客户持续获取的稳定通道"},{"t":"询盘承接／转化 SOP","d":"OEM/ODM 需求承接与订单转化的标准流程"},{"t":"AI 获客工具／部署陪跑","d":"工具上线、指标复盘，陪跑到达产"}]'::jsonb,
  '项目价值',
  '从「等订单」到「有体系地拿订单」：清晰的重点产品、重点行业与重点渠道，加一套可复制的 OEM/ODM 转化流程。',
- 6000, true)
+ 6000, true, now() - interval '2 days', now() - interval '2 days')
 on conflict (project_id) do nothing;
 
 insert into public.projects
   (project_id, category, industry, tech_tag, period, status_text, title, subtitle,
-   profile, challenges, steps, value_title, value_desc, sort, published)
+   profile, challenges, steps, value_title, value_desc, sort, published,
+   first_pub_at, last_pub_at)
 values
 ('p003', 'strategy', '连锁餐饮 / 消费服务', '多品牌扩张', '2026.11-2027.05', '询单中',
  '区域连锁餐饮集团：新品牌战略定位与扩张路径设计',
@@ -661,12 +709,13 @@ values
  '[{"t":"战略诊断／增长意图澄清","d":"盘点资源禀赋，聚焦战略方向"},{"t":"新品牌定位／单店模型验证","d":"锁定细分赛道，打磨可复制盈利模型"},{"t":"扩张路径／与节奏设计","d":"分阶段增长路径与资源投放组合"},{"t":"集团管控／落地陪跑","d":"总部—门店权责与人才供给体系搭好"}]'::jsonb,
  '项目价值',
  '一套「定位—模型—复制」的扩张操作系统：新品牌有据可依，扩张节奏有数可算，集团管控有人可用。',
- 5000, true)
+ 5000, true, now() - interval '3 days', now() - interval '3 days')
 on conflict (project_id) do nothing;
 
 insert into public.projects
   (project_id, category, industry, tech_tag, period, status_text, title, subtitle,
-   profile, challenges, steps, value_title, value_desc, sort, published)
+   profile, challenges, steps, value_title, value_desc, sort, published,
+   first_pub_at, last_pub_at)
 values
 ('p004', 'perf', '产业园区运营', '全国多园区', '2026.10-2026.12', '询单中',
  '产业园区运营服务商：全国园区全维度绩效管理体系设计',
@@ -676,12 +725,13 @@ values
  '[{"t":"业务指标／体系梳理","d":"从园区经营结果倒推考核指标"},{"t":"分园差异化／指标设计","d":"按园区周期阶段定制权重与基线"},{"t":"考核激励／联动机制","d":"结果与奖金、晋升强挂钩"},{"t":"试运行／复盘校准","d":"小范围试点后全国推广"}]'::jsonb,
  '项目价值',
  '一套覆盖全国园区的绩效操作系统：关键指标进考核、考核结果进激励，招商目标达成有机制兜底。',
- 4000, true)
+ 4000, true, now() - interval '4 days', now() - interval '4 days')
 on conflict (project_id) do nothing;
 
 insert into public.projects
   (project_id, category, industry, tech_tag, period, status_text, title, subtitle,
-   profile, challenges, steps, value_title, value_desc, sort, published)
+   profile, challenges, steps, value_title, value_desc, sort, published,
+   first_pub_at, last_pub_at)
 values
 ('p005', 'org', '电商零售', '组织效能', '2026.12-2027.06', '询单中',
  '电商企业：业绩扩张期的组织架构重塑与人才梯队建设',
@@ -691,12 +741,13 @@ values
  '[{"t":"组织诊断／架构再设计","d":"按业务价值链重排部门与权责"},{"t":"岗位梳理／人效模型","d":"关键岗位再设计，建立人效基线"},{"t":"人才选拔／培训体系","d":"标准化选育用留，稳定一线质量"},{"t":"流程优化／数据看板","d":"流程提效上线，人效月度复盘"}]'::jsonb,
  '项目价值',
  '在不扩张人力成本的前提下托住业绩跃升：架构清晰、人效可算、一线执行质量稳定。',
- 3000, true)
+ 3000, true, now() - interval '5 days', now() - interval '5 days')
 on conflict (project_id) do nothing;
 
 insert into public.projects
   (project_id, category, industry, tech_tag, period, status_text, title, subtitle,
-   profile, challenges, steps, value_title, value_desc, sort, published)
+   profile, challenges, steps, value_title, value_desc, sort, published,
+   first_pub_at, last_pub_at)
 values
 ('p006', 'talent', '新能源材料', '人才体系', '2027.01-2027.06', '询单中',
  '新能源材料企业：关键岗位胜任力模型与人才画像体系搭建',
@@ -706,12 +757,13 @@ values
  '[{"t":"人才定位／标准共创","d":"与业务共定关键岗位人才标准"},{"t":"胜任力模型／人才画像","d":"能力项行为化，画像可评估"},{"t":"嵌入招聘／合格率验证","d":"画像落地招聘流程，跟踪合格率"},{"t":"发展路径／梯队地图","d":"晋升路径与培养计划成体系"}]'::jsonb,
  '项目价值',
  '让关键岗位「选人有尺、育人有梯、晋升有图」：招聘合格率可验证，高潜人才看得见未来。',
- 2000, true)
+ 2000, true, now() - interval '6 days', now() - interval '6 days')
 on conflict (project_id) do nothing;
 
 insert into public.projects
   (project_id, category, industry, tech_tag, period, status_text, title, subtitle,
-   profile, challenges, steps, value_title, value_desc, sort, published)
+   profile, challenges, steps, value_title, value_desc, sort, published,
+   first_pub_at, last_pub_at)
 values
 ('p007', 'training', '服饰零售', '销售铁军', '2026.10-2026.12', '询单中',
  '服饰集团销售分公司：「百万销冠」高绩效训练营',
@@ -721,5 +773,5 @@ values
  '[{"t":"销冠打法／萃取建模","d":"把高手经验变成可教的打法库"},{"t":"实战训练营／分组对抗","d":"场景演练 + 通关考核，练到会为止"},{"t":"AI 陪练／日常固化","d":"智能体陪练嵌入日常，持续练兵"},{"t":"业绩追踪／复盘迭代","d":"训练期业绩对比复盘，打法迭代"}]'::jsonb,
  '项目价值',
  '销冠经验资产化、训练日常化：团队整体成交能力上台阶，业绩不再系于个别人。',
- 1000, true)
+ 1000, true, now() - interval '7 days', now() - interval '7 days')
 on conflict (project_id) do nothing;

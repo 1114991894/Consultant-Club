@@ -258,8 +258,17 @@ tr:hover td{background:#fcfbf7}
 .pj-id{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--muted);white-space:nowrap}
 .pj-title b{display:block;font-size:13.6px;line-height:1.45}
 .pj-title small{color:var(--muted);font-size:12px}
-.mv-btn{border:1px solid var(--line);background:#fff;border-radius:7px;width:26px;height:26px;font-size:12px;color:var(--muted);padding:0}
-.mv-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.pj-flag{display:inline-block;margin-left:7px;padding:1.5px 8px;border-radius:99px;font-size:10.5px;
+  font-weight:800;letter-spacing:.1em;vertical-align:1.5px;color:#fff;white-space:nowrap}
+.pj-flag.new{background:linear-gradient(135deg,#e0402a,#f0761f)}
+.pj-flag.upd{background:linear-gradient(135deg,#0f8f78,#28B8A0)}
+.pj-pub{font-size:11.5px;color:var(--muted);line-height:1.6;white-space:nowrap}
+.pj-pub b{color:var(--ink);font-weight:600;font-family:ui-monospace,Consolas,monospace}
+.pj-pub .re{color:var(--amber-d);font-weight:600}
+.pjtip{font-size:11.8px;line-height:1.55;color:var(--muted);margin:-3px 0 10px;padding-left:90px}
+.pjtip.bad{color:var(--bad);font-weight:600}
+.pjtip.good{color:var(--ok);font-weight:600}
+.pjtip code{font-family:ui-monospace,Consolas,monospace;background:rgba(35,36,87,.07);padding:0 4px;border-radius:4px}
 
 /* 项目编辑弹窗 */
 #pModal .mc{max-width:1040px}
@@ -488,7 +497,7 @@ tr:hover td{background:#fcfbf7}
 
     <!-- 项目管理 -->
     <section id="view-projects" style="display:none">
-      <div class="mhead"><h2>项目管理</h2><span class="sub">格式与官网「最近咨询项目」一致 · 发布后前端自动同步，无需重新部署</span><a class="home-btn" href="https://1114991894.github.io/Consultant-Club/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 6.5L8 2l5.5 4.5V13a1 1 0 01-1 1h-3v-4h-3v4h-3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>进入首页</a></div>
+      <div class="mhead"><h2>项目管理</h2><span class="sub">与官网「最近咨询项目」实时同步 · 顺序按首次发布时间自动排列（越新越靠前）</span><a class="home-btn" href="https://1114991894.github.io/Consultant-Club/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 6.5L8 2l5.5 4.5V13a1 1 0 01-1 1h-3v-4h-3v4h-3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>进入首页</a></div>
       <div class="stats">
         <div class="stat hl"><div class="n" id="pjTotal">–</div><div class="l">项目总数</div></div>
         <div class="stat"><div class="n" id="pjPub">–</div><div class="l">已发布（前端可见）</div></div>
@@ -501,7 +510,7 @@ tr:hover td{background:#fcfbf7}
       </div>
       <div class="tblwrap">
         <table>
-          <thead><tr><th style="width:78px">项目ID</th><th>项目标题</th><th style="width:94px">分类</th><th style="width:176px">行业 / 方向</th><th style="width:136px">时间</th><th style="width:86px">状态</th><th style="width:128px">发布</th><th style="width:190px">操作</th></tr></thead>
+          <thead><tr><th style="width:76px">编号</th><th>项目标题</th><th style="width:92px">分类</th><th style="width:168px">行业 / 方向</th><th style="width:134px">项目周期</th><th style="width:82px">状态</th><th style="width:118px">首次发布</th><th style="width:124px">发布</th><th style="width:146px">操作</th></tr></thead>
           <tbody id="pjBody"></tbody>
         </table>
         <div class="empty" id="pjEmpty" style="display:none">暂无项目 · 点「＋ 新建项目」添加</div>
@@ -599,7 +608,8 @@ tr:hover td{background:#fcfbf7}
           <div class="pjsec">
             <h4><span class="no">01</span>基础信息</h4>
             <div class="d">对应前端卡片顶部的标签行</div>
-            <div class="pjrow"><label>项目ID *</label><input id="pmPid" type="text" maxlength="20" placeholder="如 p008"></div>
+            <div class="pjrow"><label>项目编号 *</label><input id="pmPid" type="text" maxlength="20" placeholder="如 p008"></div>
+            <div class="pjtip" id="pmPidTip"></div>
             <div class="pjrow"><label>分类 *</label><select id="pmCat"></select></div>
             <div class="pjrow"><label>行业标签</label><input id="pmIndustry" type="text" maxlength="30" placeholder="如 汽车零部件 / 精密制造"></div>
             <div class="pjrow"><label>方向标签</label><input id="pmTech" type="text" maxlength="20" placeholder="如 生产数字化"></div>
@@ -647,7 +657,9 @@ tr:hover td{background:#fcfbf7}
                 <span id="pmPubText" style="font-size:13px;font-weight:600;color:var(--muted)">未发布 · 前端隐藏</span>
               </div>
             </div>
-            <div class="d" style="margin:12px 0 0">项目ID 用于前端「我有兴趣」计数，发布后修改会导致原有计数对不上，请谨慎。</div>
+            <div class="d" style="margin:12px 0 0">编号是项目的唯一身份，前端每个编号只对应一个项目。<b>已被占用的编号无法保存或发布</b>，删除项目后该编号才会释放。</div>
+            <div class="d" style="margin:8px 0 0">前端排序按<b>首次发布时间</b>自动排列，越晚发布越靠前。当天首次发布显示「NEW」，修改后再次发布显示「更新」。</div>
+            <div class="d" style="margin:8px 0 0">本项目编号同时用于「我有兴趣」计数，发布后改动编号会导致原有计数对不上，请谨慎。</div>
           </div>
         </div>
       </div>
@@ -1528,6 +1540,77 @@ function pjIsMissingTable(r){
   return r.status === 404 || j.code === "PGRST202" || j.code === "42P01";
 }
 
+/* ---------- 编号 / 发布时间 ---------- */
+var PJ_UPD_DAYS = 7;   /* 修改后再次发布 → 前端「更新」角标保留天数 */
+/* 官网现有 7 个项目占用的编号：数据表尚未建立时也要拦住复用 */
+var PJ_RESERVED = ["p001","p002","p003","p004","p005","p006","p007"];
+
+function pjDate(s){
+  if(!s) return null;
+  var d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+function pjFmt(s){
+  var d = pjDate(s);
+  if(!d) return "—";
+  var p = function(n){ return (n < 10 ? "0" : "") + n; };
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
+}
+function pjSameDay(a, b){
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+/* 角标判定：与前端 projects.html 规则保持一致 */
+function pjFlag(p){
+  var f = pjDate(p.first_pub_at), l = pjDate(p.last_pub_at);
+  if(f && pjSameDay(f, new Date())) return { k:"new", t:"NEW" };
+  if(f && l && (l - f) > 1000 && (Date.now() - l.getTime()) <= PJ_UPD_DAYS * 86400000){
+    return { k:"upd", t:"更新" };
+  }
+  return null;
+}
+/* 编号是否已被占用（ignoreId 指定的记录自身不算占用） */
+function pjIdTaken(id, ignoreId){
+  var v = String(id || "").trim().toLowerCase();
+  if(!v) return null;
+  var ig = (ignoreId === undefined) ? PJ.editId : ignoreId;
+  var self = null;
+  for(var i = 0; i < PJ.list.length; i++){
+    var p = PJ.list[i];
+    if(ig && p.id === ig){ self = p; continue; }
+    if(String(p.project_id || "").toLowerCase() === v){
+      return { pid: p.project_id, title: p.title || "未命名项目" };
+    }
+  }
+  var selfPid = self ? String(self.project_id || "").toLowerCase() : "";
+  if(PJ_RESERVED.indexOf(v) > -1 && selfPid !== v){
+    return { pid: v, title: "官网现有项目（未入库）" };
+  }
+  return null;
+}
+function pjCheckId(showTip){
+  var el = $("pmPid"), tip = $("pmPidTip");
+  if(!el || !tip) return true;
+  var v = el.value.trim();
+  if(!v){
+    if(showTip){ tip.className = "pjtip bad"; tip.textContent = "编号不能为空，无法保存或发布"; }
+    return false;
+  }
+  if(!/^[A-Za-z0-9_-]{1,20}$/.test(v)){
+    if(showTip){ tip.className = "pjtip bad"; tip.textContent = "编号只能用字母、数字、下划线或横线（如 p008）"; }
+    return false;
+  }
+  var t = pjIdTaken(v);
+  if(t){
+    tip.className = "pjtip bad";
+    tip.innerHTML = "编号「<code>" + esc(v) + "</code>」已被 <b>" + esc(t.pid) + "｜" + esc(t.title) +
+      "</b> 占用，编号不可重复，无法保存或发布，请更换。";
+    return false;
+  }
+  tip.className = "pjtip good";
+  tip.textContent = "编号「" + v + "」可用";
+  return true;
+}
+
 function loadProjects(){
   var sn = sess(); if(!sn) return showLogin();
   rpc("project_list", { p_token: sn.token }).then(function(r){
@@ -1539,7 +1622,7 @@ function loadProjects(){
       $("pjBody").innerHTML = "";
       $("pjCount").textContent = "";
       var e = $("pjEmpty"); e.style.display = "";
-      e.innerHTML = "⚠️ 数据表还未创建：请先在 Supabase SQL Editor 执行 sql-copy.html 里的最新 SQL（含第 7、8 节），再刷新本页。";
+      e.innerHTML = "⚠️ 数据表还未创建：官网现有 7 个项目暂时无法同步到后台。请先在 Supabase SQL Editor 执行 sql-copy.html 里的最新 SQL（含第 7、8 节），执行完刷新本页，官网项目会自动出现在列表里，编号 p001–p007 随即被占用，不可重复使用。";
     } else {
       toast((j && (j.error || j.message)) || "加载失败", true);
     }
@@ -1572,20 +1655,26 @@ function renderProjects(){
   tb.innerHTML = rows.map(function(p){
     var tagHtml = '<span class="t-type apply">' + esc(p.industry || "—") + '</span>' +
       (p.tech_tag ? ' <span class="t-type apply">' + esc(p.tech_tag) + '</span>' : '');
+    var fl = pjFlag(p);
+    var pubCell = p.first_pub_at
+      ? '<b>' + pjFmt(p.first_pub_at) + '</b>' +
+        (fl && fl.k === "upd" ? '<br><span class="re">已更新 ' + pjFmt(p.last_pub_at) + '</span>' : '')
+      : '<span style="color:var(--muted)">尚未发布</span>';
     return '<tr data-id="' + p.id + '">' +
       '<td class="pj-id">' + esc(p.project_id) + '</td>' +
-      '<td class="pj-title"><b>' + esc(p.title) + '</b><small>' + esc(p.subtitle || "") + '</small></td>' +
+      '<td class="pj-title"><b>' + esc(p.title) +
+        (fl ? '<span class="pj-flag ' + fl.k + '">' + fl.t + '</span>' : '') +
+        '</b><small>' + esc(p.subtitle || "") + '</small></td>' +
       '<td><span class="t-type book">' + esc(pjCatName(p.category)) + '</span></td>' +
       '<td>' + tagHtml + '</td>' +
       '<td class="t-time">' + esc(p.period || "—") + '</td>' +
       '<td class="t-time">' + esc(p.status_text || "—") + '</td>' +
+      '<td class="pj-pub">' + pubCell + '</td>' +
       '<td><div class="pub-cell"><label class="sw"><input type="checkbox" data-act="pub"' +
         (p.published ? " checked" : "") + '><i></i></label><small class="' + (p.published ? "on" : "") + '">' +
         (p.published ? "已发布" : "未发布") + '</small></div></td>' +
       '<td><div class="t-actions">' +
-        '<button class="mv-btn" data-act="up" title="上移">↑</button>' +
-        '<button class="mv-btn" data-act="down" title="下移">↓</button>' +
-        '<button class="view-btn" data-act="edit">编辑</button>' +
+        '<button class="view-btn" data-act="edit">修改</button>' +
         (sn.role === "super" ? '<button class="del-btn" data-act="del">删除</button>' : '') +
       '</div></td></tr>';
   }).join("");
@@ -1599,40 +1688,37 @@ function renderProjects(){
       var act = el.getAttribute("data-act");
       if(act === "pub"){
         el.addEventListener("change", function(){ setPublish(p, el.checked, el); });
-      } else {
-        el.addEventListener("click", function(){
-          if(act === "edit") openProject(p.id);
-          else if(act === "del") deleteProject(p);
-          else moveProject(p, act);
-        });
+      } else if(act === "edit"){
+        el.addEventListener("click", function(){ openProject(p.id); });
+      } else if(act === "del"){
+        el.addEventListener("click", function(){ deleteProject(p); });
       }
     });
   });
-  $("pjCount").textContent = rows.length ? ("共 " + rows.length + " 个项目") : "";
+  $("pjCount").textContent = rows.length ? ("共 " + rows.length + " 个项目 · 顺序按首次发布时间排列") : "";
 }
 
 function setPublish(p, val, el){
   var sn = sess(); if(!sn) return showLogin();
+  /* 编号被占用时不允许发布 */
+  if(val){
+    var t = pjIdTaken(p.project_id, p.id);
+    if(t){
+      el.checked = false;
+      return toast("编号「" + p.project_id + "」已被 " + t.pid + " 占用，无法发布，请先修改编号", true);
+    }
+  }
   el.disabled = true;
   rpc("project_set_publish", { p_token: sn.token, p_id: p.id, p_pub: !!val }).then(function(r){
     el.disabled = false;
     if(r.body && r.body.ok){
-      p.published = !!r.body.published;
-      toast(p.published ? "已发布，前端约 1 分钟内同步" : "已从前端撤下");
-      renderProjects();
+      toast(r.body.published ? "已发布，前端约 1 分钟内同步" : "已从前端撤下");
+      loadProjects();
     } else {
       el.checked = !val;
       toast((r.body && r.body.error) || "操作失败", true);
     }
   }).catch(function(){ el.disabled = false; el.checked = !val; toast("网络异常", true); });
-}
-
-function moveProject(p, dir){
-  var sn = sess(); if(!sn) return showLogin();
-  rpc("project_move", { p_token: sn.token, p_id: p.id, p_dir: dir }).then(function(r){
-    if(r.body && r.body.ok){ if(r.body.moved === false) toast("已经到头了"); loadProjects(); }
-    else toast((r.body && r.body.error) || "操作失败", true);
-  });
 }
 
 function deleteProject(p){
@@ -1655,13 +1741,19 @@ function pjBlank(){
     value_title:"项目价值", value_desc:"", published:false
   };
 }
-function pjNextId(){
+/* 自动编号：取「已用编号最大值 + 1」，官网现存编号也计入，保证不复用 */
+function pjUsedNums(){
   var mx = 0;
-  PJ.list.forEach(function(p){
-    var m = /^p(\d+)$/i.exec(p.project_id || "");
+  function scan(pid){
+    var m = /^p(\d+)$/i.exec(pid || "");
     if(m) mx = Math.max(mx, parseInt(m[1], 10));
-  });
-  var n = String(mx + 1);
+  }
+  PJ.list.forEach(function(p){ scan(p.project_id); });
+  PJ_RESERVED.forEach(scan);
+  return mx;
+}
+function pjNextId(){
+  var n = String(pjUsedNums() + 1);
   while(n.length < 3) n = "0" + n;
   return "p" + n;
 }
@@ -1682,9 +1774,15 @@ function openProject(id){
   PJ.editId = id || null;
   PJ.draft = seed;
 
-  $("pmHead").textContent = id ? "编辑项目" : "新建项目";
-  $("pmMeta").textContent = id ? seed.project_id : "项目ID 建议保留默认值";
+  $("pmHead").textContent = id ? "修改项目" : "新建项目";
+  var fl0 = pjFlag(seed);
+  $("pmMeta").textContent = id
+    ? ("编号 " + seed.project_id + " · " + (seed.first_pub_at
+        ? ("首发 " + pjFmt(seed.first_pub_at) + (fl0 && fl0.k === "upd" ? " · 最近更新 " + pjFmt(seed.last_pub_at) : ""))
+        : "尚未发布"))
+    : "编号已自动分配，可手动改（不可与现有编号重复）";
   $("pmPid").value = seed.project_id || "";
+  pjCheckId(true);
   $("pmCat").value = seed.category || "growth";
   $("pmIndustry").value = seed.industry || "";
   $("pmTech").value = seed.tech_tag || "";
@@ -1703,6 +1801,8 @@ function openProject(id){
 function closeProjectModal(){
   $("pModal").classList.remove("open");
   PJ.editId = null; PJ.draft = null;
+  var tip = $("pmPidTip");
+  if(tip){ tip.className = "pjtip"; tip.textContent = ""; }
 }
 function syncPubText(){
   var on = $("pmPub").checked, el = $("pmPubText");
@@ -1767,6 +1867,7 @@ $("pModal").addEventListener("click", function(e){
   if(t.closest && t.closest("[data-pjclose]")) closeProjectModal();
 });
 $("pmPub").addEventListener("change", syncPubText);
+$("pmPid").addEventListener("input", function(){ pjCheckId(true); });
 $("pjNew").addEventListener("click", function(){ openProject(null); });
 $("pjSearch").addEventListener("input", function(){ PJ.q = this.value.trim(); renderProjects(); });
 $("pjFilter").addEventListener("change", function(){ PJ.cat = this.value; renderProjects(); });
@@ -1785,8 +1886,9 @@ $("pmSave").addEventListener("click", function(){
   d.value_desc = $("pmVd").value.trim();
   d.published  = $("pmPub").checked;
 
-  if(!d.project_id) return toast("请填写项目ID", true);
-  if(!/^[A-Za-z0-9_-]{1,20}$/.test(d.project_id)) return toast("项目ID 只能用字母、数字、下划线或横线", true);
+  if(!d.project_id) return toast("请填写项目编号", true);
+  if(!/^[A-Za-z0-9_-]{1,20}$/.test(d.project_id)) return toast("编号只能用字母、数字、下划线或横线", true);
+  if(!pjCheckId(true)) return toast("编号已被占用或不可用，无法保存与发布", true);
   if(!d.title) return toast("请填写项目标题", true);
 
   var payload = JSON.parse(JSON.stringify(d));
@@ -1798,11 +1900,17 @@ $("pmSave").addEventListener("click", function(){
   var btn = this;
   btn.disabled = true; btn.textContent = "保存中…";
   $("pmFoot").textContent = "";
+  var wasPub = !!d.first_pub_at;
   rpc("project_save", { p_token: sn.token, p_id: PJ.editId || null, p_data: payload }).then(function(r){
     btn.disabled = false; btn.textContent = "保存";
     var j = r.body;
     if(j && j.ok){
-      toast(payload.published ? "已保存并发布，前端约 1 分钟内同步" : "已保存（未发布，前端不显示）");
+      if(payload.published){
+        toast(wasPub ? "已保存并重新发布，前端显示「更新」角标，约 1 分钟内同步"
+                     : "已发布，前端显示 NEW 角标，约 1 分钟内同步");
+      } else {
+        toast("已保存（未发布，前端不显示）");
+      }
       closeProjectModal();
       loadProjects();
     } else {

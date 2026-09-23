@@ -67,9 +67,22 @@ h1 em{font-style:normal;color:var(--amber-deep);position:relative}
 /* ---------- 项目卡 ---------- */
 .proj{margin:clamp(22px,3.4vw,36px) 0}
 .proj.hidden{display:none}
-.proj-card{background:var(--white);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-1);overflow:hidden}
+.proj-card{background:var(--white);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow-1);overflow:hidden;position:relative}
 .proj-head{padding:clamp(24px,3.5vw,40px) clamp(22px,3.5vw,44px) 0}
 .proj-topline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+
+/* 自动编号 */
+.p-num{display:inline-flex;align-items:center;font-family:var(--mono);font-size:11.5px;font-weight:600;
+  letter-spacing:.12em;padding:4px 11px;border-radius:99px;background:var(--indigo-950);color:var(--amber)}
+/* NEW / 更新 角标：贴卡片左上角，压在留白里，不遮任何文字 */
+.p-badge{position:absolute;left:0;top:0;z-index:5;display:inline-flex;align-items:center;gap:7px;
+  padding:8px 20px 9px;border-radius:20px 0 20px 0;color:#fff;
+  font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;
+  box-shadow:0 8px 22px rgba(24,25,56,.20)}
+.p-badge i{width:6px;height:6px;border-radius:50%;background:#fff;opacity:.95;animation:pulse 1.6s infinite}
+.p-badge.new{background:linear-gradient(135deg,#e0402a 0%,#f0761f 100%)}
+.p-badge.upd{background:linear-gradient(135deg,#0f8f78 0%,#28B8A0 100%)}
+.proj-card.has-badge .proj-head{padding-top:calc(clamp(24px,3.5vw,40px) + 38px)}
 .p-tag{display:inline-block;font-size:12px;font-weight:700;padding:4px 13px;border-radius:99px;background:rgba(35,36,87,.07);color:var(--text);letter-spacing:.05em}
 .p-tag.cat{background:rgba(240,194,75,.18);color:#8a6a10}
 .p-tag.teal{background:rgba(40,184,160,.13);color:#0e7a66}
@@ -144,6 +157,8 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
 @media(max-width:520px){
   .profile{grid-template-columns:1fr}
   .p-status{margin-left:0}
+  .p-badge{padding:7px 15px 8px;font-size:11.5px;letter-spacing:.14em;border-radius:20px 0 16px 0}
+  .proj-card.has-badge .proj-head{padding-top:calc(clamp(24px,3.5vw,40px) + 32px)}
 }
 </style>
 </head>
@@ -612,6 +627,40 @@ var CAT_NAME = { growth:"业绩增长", strategy:"战略规划", perf:"绩效体
 
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+/* ---------- 自动编号 / NEW·更新 角标 ---------- */
+var UPD_DAYS = 7;      /* 修改后再次发布，「更新」角标保留天数 */
+function numOf(pid){
+  var m = /(\d+)/.exec(String(pid || ""));
+  if(!m) return "";
+  var n = String(parseInt(m[1], 10));
+  while(n.length < 2) n = "0" + n;
+  return n;
+}
+function pDate(s){
+  if(!s) return null;
+  var d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
+}
+function sameDay(a, b){
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function badgeOf(p){
+  var f = pDate(p.first_pub_at), l = pDate(p.last_pub_at);
+  if(f && sameDay(f, new Date())) return { k:"new", t:"NEW" };
+  if(f && l && (l - f) > 1000 && (Date.now() - l.getTime()) <= UPD_DAYS * 86400000){
+    return { k:"upd", t:"更新" };
+  }
+  return null;
+}
+function badgeHtml(p){
+  var b = badgeOf(p);
+  return b ? '<span class="p-badge ' + b.k + '"><i></i>' + b.t + '</span>' : "";
+}
+function numHtml(pid){
+  var n = numOf(pid);
+  return n ? '<span class="p-num">NO.' + n + '</span>' : "";
+}
 function rpc(fn, body){
   return fetch(SB_URL + "/rest/v1/rpc/" + fn, {
     method: "POST",
@@ -738,10 +787,13 @@ function renderProject(p, idx){
   ) : "";
 
   var pid = esc(p.project_id);
+  var bh = badgeHtml(p);
   return '<article class="proj" data-cat="' + esc(p.category) + '">' +
-    '<div class="proj-card">' +
+    '<div class="proj-card' + (bh ? ' has-badge' : '') + '">' +
+      bh +
       '<div class="proj-head">' +
         '<div class="proj-topline">' +
+          numHtml(p.project_id) +
           '<span class="p-tag cat">' + esc(cat) + '</span>' +
           (p.industry ? '<span class="p-tag">' + esc(p.industry) + '</span>' : '') +
           (p.tech_tag ? '<span class="p-tag teal">' + esc(p.tech_tag) + '</span>' : '') +
@@ -757,7 +809,8 @@ function renderProject(p, idx){
       '<button class="i-btn ' + cls + '" data-project="' + pid + '" type="button">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' +
         '我有兴趣</button>' +
-      '<span class="i-count" data-count-for="' + pid + '"><b>—</b> 人对该项目感兴趣</span>' +
+      '<span class="i-count" data-count-for="' + pid + '"><b>—</b> 人对项目' +
+        (numOf(p.project_id) ? ' ' + numOf(p.project_id) : '') + ' 感兴趣</span>' +
     '</div>' +
   '</article>';
 }
@@ -788,11 +841,32 @@ function applyDbProjects(list){
   initInterest();
 }
 
+/* 数据表尚未就绪时：给页面原有的静态卡片补上自动编号（无发布时间，不带角标） */
+function decorateStatic(){
+  document.querySelectorAll(".proj").forEach(function(card){
+    var btn = card.querySelector(".i-btn[data-project]");
+    if(!btn) return;
+    var pid = btn.getAttribute("data-project");
+    var num = numOf(pid);
+    if(!num) return;
+    var top = card.querySelector(".proj-topline");
+    if(top && !top.querySelector(".p-num")){
+      var s = document.createElement("span");
+      s.className = "p-num";
+      s.textContent = "NO." + num;
+      top.insertBefore(s, top.firstChild);
+    }
+    var cnt = card.querySelector(".i-count");
+    if(cnt) cnt.innerHTML = "<b>—</b> 人对项目 " + num + " 感兴趣";
+  });
+}
+
 /* ---------- 启动：优先读后台已发布项目，读不到则保留页面原有内容 ---------- */
 function boot(){
   initFilter();
   initInterest();
-  var url = SB_URL + "/rest/v1/projects?select=*&published=eq.true&order=sort.desc,created_at.desc";
+  decorateStatic();
+  var url = SB_URL + "/rest/v1/projects?select=*&published=eq.true&order=first_pub_at.desc.nullslast,created_at.desc";
   fetch(url, { headers: { "apikey": SB_KEY } }).then(function(r){
     return r.ok ? r.json() : [];
   }).then(function(list){

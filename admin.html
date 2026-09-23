@@ -741,9 +741,20 @@ function api(path, opts){
     "apikey": SB_KEY,
     "Content-Type": "application/json"
   }, s && s.token ? { "x-admin-token": s.token } : {}, opts.headers || {});
-  return fetch(SB_URL + path, opts).then(function(r){ return r.json().then(function(j){
-    return { status: r.status, body: j };
-  }); });
+  var tries = 2;
+  function once(){
+    return fetch(SB_URL + path, opts).then(function(r){ return r.json().then(function(j){
+      return { status: r.status, body: j };
+    }); }).catch(function(e){
+      /* 网络被重置/中断时自动重试，避免一进后台就弹「加载失败」 */
+      if(tries > 0){
+        tries--;
+        return new Promise(function(res){ setTimeout(res, 900); }).then(once);
+      }
+      throw e;
+    });
+  }
+  return once();
 }
 function rpc(fn, body){ return api("/rest/v1/rpc/" + fn, { method:"POST", body: JSON.stringify(body) }); }
 
@@ -823,7 +834,7 @@ function loadList(){
     state.list = Array.isArray(r.body) ? r.body : [];
     loadBadges();
     render();
-  }).catch(function(){ toast("加载失败，请检查网络", true); });
+  }).catch(function(){ toast("加载失败：连不上服务器，请检查网络（或代理 / VPN）后重试", true); });
 }
 function loadBadges(){
   rpc("admin_unread_counts", { p_token: sess().token }).then(function(r){
@@ -1625,7 +1636,7 @@ function loadProjects(){
     } else {
       toast((j && (j.error || j.message)) || "加载失败", true);
     }
-  }).catch(function(){ toast("加载失败，请检查网络", true); });
+  }).catch(function(){ toast("加载失败：连不上服务器，请检查网络（或代理 / VPN）后重试", true); });
 }
 
 function pjMatches(p){

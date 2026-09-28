@@ -1086,5 +1086,40 @@ grant execute on function
   public.resume_delete(text, uuid)
 to anon, authenticated;
 
+-- ---------- 10. 管理员密码重置（总管理员在「管理员管理」里重设任意管理员密码） ----------
+
+-- 10.1 重置密码：仅 super；重置后该管理员所有会话立即失效，须用新密码重新登录
+create or replace function public.admin_reset_password(p_token text, p_admin_id uuid, p_new_password text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_admin  public.admins;
+  v_target public.admins;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  if v_admin.role <> 'super' then
+    return json_build_object('ok', false, 'error', '仅总管理员可操作');
+  end if;
+  if p_new_password is null or length(p_new_password) < 6 then
+    return json_build_object('ok', false, 'error', '新密码至少 6 位');
+  end if;
+  select * into v_target from public.admins where id = p_admin_id limit 1;
+  if v_target.id is null then
+    return json_build_object('ok', false, 'error', '管理员不存在或已被删除');
+  end if;
+  update public.admins set password_hash = crypt(p_new_password, gen_salt('bf'))
+  where id = p_admin_id;
+  delete from public.sessions where admin_id = p_admin_id;
+  return json_build_object('ok', true, 'phone', v_target.phone, 'name', v_target.name);
+end;
+$$;
+
+-- 10.2 调用权限：与其它后台函数一致
+grant execute on function public.admin_reset_password(text, uuid, text)
+to anon, authenticated;
+
 -- 让 PostgREST 立刻认识这些新函数（避免刚执行完调用报「找不到函数」）
 notify pgrst, 'reload schema';

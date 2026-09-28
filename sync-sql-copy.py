@@ -10,11 +10,11 @@
   1. <div class="sub">…</div>                说明文字
   2. <pre id="sql">…</pre>                   全量脚本 · 高亮展示（HTML 转义）
   3. var SQL = "…";                         全量脚本 · 一键复制（json.dumps 转义）
-  4. <pre id="sqlInc">…</pre>                「简历投递」增量段 · 高亮展示
-  5. var SQL_INC = "…";                      「简历投递」增量段 · 一键复制
+  4. <pre id="sqlInc">…</pre>                「本次新增」增量段 · 高亮展示
+  5. var SQL_INC = "…";                      「本次新增」增量段 · 一键复制
 
 同时另外写出 supabase-resume.sql（只含增量段，方便单独执行）。
-增量段 = 从 "-- ---------- 9." 开始到文件末尾。
+增量段 = 从 "-- ---------- 9." 开始到文件末尾（简历投递 + 管理员密码重置）。
 """
 import html
 import io
@@ -33,7 +33,7 @@ INC_MARK = "-- ---------- 9."
 SUB_HTML = (
     '用途：为 Consultant Club 管理后台建表（<b>admins / sessions / submissions / '
     'consultants / project_interest / projects / resumes / resume_parts / resume_downloads</b>）'
-    '+ RLS 安全策略 + 登录/管理/项目/简历投递函数 + 初始总管理员 + 现有 7 个项目种子数据。'
+    '+ RLS 安全策略 + 登录/管理/项目/简历投递/密码重置函数 + 初始总管理员 + 现有 7 个项目种子数据。'
     '脚本幂等，重复执行无副作用（不会 update / delete 任何已有数据）。'
 )
 

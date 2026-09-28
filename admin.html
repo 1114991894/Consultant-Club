@@ -223,6 +223,9 @@ tr:hover td{background:#fcfbf7}
 .adm-row td .del{border:1.3px solid #f0d9d5;background:#fff;color:var(--bad);border-radius:8px;
   padding:5px 12px;font-size:12.5px}
 .adm-row td .del:hover{background:#fdf3f1}
+.adm-row td .reset{border:1.3px solid #dfe3ee;background:#fff;color:#3c3d5c;border-radius:8px;
+  padding:5px 12px;font-size:12.5px;margin-right:8px}
+.adm-row td .reset:hover{background:#f2f4fa;border-color:var(--amber-d)}
 .tag-super{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;margin-left:8px;
   background:rgba(20,21,58,.08);color:var(--ink);letter-spacing:.06em}
 
@@ -1406,6 +1409,8 @@ function loadAdmins(){
     var tb = $("admBody");
     tb.innerHTML = j.admins.map(function(a){
       var isSelf = a.phone === sess().phone;
+      var reset = (!isSelf)
+        ? '<button class="reset" data-id="' + a.id + '" data-label="' + esc(a.name || a.phone) + '">重置密码</button>' : "";
       var del = (!isSelf && a.role !== "super")
         ? '<button class="del" data-id="' + a.id + '">删除</button>' : "";
       return "<tr class='adm-row'>" +
@@ -1413,8 +1418,23 @@ function loadAdmins(){
         "<td>" + esc(a.name || "—") + "</td>" +
         "<td>" + (a.role === "super" ? "总管理员<span class='tag-super'>SUPER</span>" : "管理员") + "</td>" +
         '<td class="t-time">' + esc(fmtTime(a.created_at)) + "</td>" +
-        "<td>" + del + "</td></tr>";
+        "<td>" + reset + del + "</td></tr>";
     }).join("");
+    tb.querySelectorAll(".reset").forEach(function(b){
+      b.addEventListener("click", function(){
+        var label = b.getAttribute("data-label");
+        var np = prompt("为「" + label + "」设置新密码（至少 6 位）：");
+        if(np === null) return;
+        np = String(np).trim();
+        if(!np || np.length < 6) return toast("新密码至少 6 位", true);
+        rpc("admin_reset_password", { p_token: sess().token, p_admin_id: b.getAttribute("data-id"), p_new_password: np })
+          .then(function(r){
+            var j = r.body;
+            if(j && j.ok) toast("密码已重置，请把新密码告知「" + label + "」");
+            else toast((j && j.error) || "重置失败", true);
+          });
+      });
+    });
     tb.querySelectorAll(".del").forEach(function(b){
       b.addEventListener("click", function(){
         if(!confirm("确定删除该管理员？删除后其账号立即失效。")) return;

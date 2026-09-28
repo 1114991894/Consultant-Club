@@ -308,6 +308,41 @@ tr:hover td{background:#fcfbf7}
   .pjrow > label{text-align:left}
 }
 
+/* ---------- 简历投递（后台） ---------- */
+.res-btn{border:1.3px solid var(--line);background:#fff;border-radius:8px;padding:5px 11px;font-size:12.5px;
+  display:inline-flex;align-items:center;gap:6px;font-family:inherit;cursor:pointer;transition:.18s;color:var(--ink)}
+.res-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.res-btn i{font-style:normal;font-family:ui-monospace,Consolas,monospace;font-size:11px;font-weight:800;
+  background:var(--ink);color:var(--amber);border-radius:99px;padding:1px 6px;line-height:1.5}
+.res-btn.zero{color:var(--muted)}
+.res-btn.zero i{background:#eceae2;color:var(--muted)}
+.res-btn.zero:hover{color:var(--amber-d)}
+
+#resModal .mc{max-width:960px}
+.rl-bar{display:flex;gap:10px;align-items:center;margin-bottom:13px}
+.rl-bar input{flex:1;padding:9px 12px;border:1.4px solid var(--line);border-radius:10px;outline:none;
+  font-family:inherit;font-size:13.2px;color:var(--ink)}
+.rl-bar input:focus{border-color:var(--amber-d)}
+.rl-bar .n{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.rl-empty{padding:46px 20px;text-align:center;color:var(--muted);font-size:13.5px;line-height:1.9}
+.rl-empty b{display:block;color:var(--ink);font-size:14.5px;margin-bottom:6px}
+.res-name b{display:block;font-size:13.4px}
+.res-name small{color:var(--muted);font-size:11.5px;font-family:ui-monospace,Consolas,monospace}
+.res-file{font-size:11.5px;color:var(--muted);font-family:ui-monospace,Consolas,monospace;word-break:break-all}
+.dl-cell{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
+.dl-trace{font-size:11px;line-height:1.5}
+.dl-trace.none{color:var(--muted)}
+.dl-trace.warn{color:var(--bad);font-weight:700;cursor:pointer;text-decoration:underline dotted}
+.res-info{font-size:12px;color:var(--muted);line-height:1.75;background:#faf9f4;border:1px solid var(--line);
+  border-radius:10px;padding:11px 14px;margin-top:14px}
+.res-info b{color:var(--ink)}
+#resPrev .mc{max-width:900px}
+.pv-wrap{background:#f1f0ea;border-radius:12px;padding:12px;display:flex;justify-content:center;min-height:260px}
+.pv-wrap iframe{width:100%;height:62vh;border:0;border-radius:8px;background:#fff}
+.pv-wrap img{max-width:100%;max-height:62vh;border-radius:8px;background:#fff;object-fit:contain}
+.pv-none{text-align:center;padding:70px 20px;color:var(--muted);font-size:13.5px;line-height:1.9}
+.pv-none b{display:block;color:var(--ink);font-size:15px;margin-bottom:8px}
+
 /* 响应式 */
 @media (max-width:960px){
   .stats{grid-template-columns:repeat(2,1fr)}
@@ -509,7 +544,7 @@ tr:hover td{background:#fcfbf7}
       </div>
       <div class="tblwrap">
         <table>
-          <thead><tr><th style="width:76px">编号</th><th>项目标题</th><th style="width:92px">分类</th><th style="width:168px">行业 / 方向</th><th style="width:134px">项目周期</th><th style="width:82px">状态</th><th style="width:118px">首次发布</th><th style="width:124px">发布</th><th style="width:146px">操作</th></tr></thead>
+          <thead><tr><th style="width:76px">编号</th><th>项目标题</th><th style="width:92px">分类</th><th style="width:168px">行业 / 方向</th><th style="width:134px">项目周期</th><th style="width:82px">状态</th><th style="width:118px">首次发布</th><th style="width:124px">发布</th><th style="width:232px">操作</th></tr></thead>
           <tbody id="pjBody"></tbody>
         </table>
         <div class="empty" id="pjEmpty" style="display:none">暂无项目 · 点「＋ 新建项目」添加</div>
@@ -667,6 +702,62 @@ tr:hover td{background:#fcfbf7}
       <button class="pbtn amber" id="pmSave">保存</button>
       <button class="pbtn ghost" data-pjclose>取消</button>
       <span class="pjfoot" id="pmFoot"></span>
+    </div>
+  </div>
+</div>
+
+<!-- 简历列表弹窗（单个项目，只显示该项目的简历） -->
+<div class="modal" id="resModal">
+  <div class="mm" data-resclose></div>
+  <div class="mc">
+    <div class="close" data-resclose>✕</div>
+    <div class="mh">
+      <span class="t-type book" id="rsPid">—</span>
+      <h3 id="rsTitle">简历</h3>
+      <span class="meta" id="rsMeta">—</span>
+    </div>
+    <div class="mb">
+      <div class="rl-bar">
+        <input id="rsSearch" type="text" placeholder="在此项目内搜索姓名 / 手机号 / 邮箱…">
+        <span class="n" id="rsCount"></span>
+      </div>
+      <div class="tblwrap">
+        <table class="res-tbl">
+          <thead><tr>
+            <th style="width:130px">投递时间</th>
+            <th style="width:186px">投递人</th>
+            <th style="width:176px">简历文件</th>
+            <th style="width:112px">预览</th>
+            <th style="width:216px">下载 · 留痕</th>
+            <th style="width:76px">操作</th>
+          </tr></thead>
+          <tbody id="rsBody"></tbody>
+        </table>
+        <div class="rl-empty" id="rsEmpty" style="display:none"></div>
+      </div>
+      <div class="res-info" id="rsInfo"></div>
+    </div>
+    <div class="mf">
+      <span style="font-size:12.5px;color:var(--muted);flex:1">点「下载」后浏览器会弹出「另存为」，保存到哪个文件夹由你决定</span>
+      <button class="pbtn ghost" data-resclose>关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 简历在线预览 -->
+<div class="modal" id="resPrev">
+  <div class="mm" data-resclose></div>
+  <div class="mc">
+    <div class="close" data-resclose>✕</div>
+    <div class="mh">
+      <span class="t-type apply" id="pvTag">在线预览</span>
+      <h3 id="pvName">简历</h3>
+      <span class="meta" id="pvMeta"></span>
+    </div>
+    <div class="mb"><div class="pv-wrap" id="pvWrap"></div></div>
+    <div class="mf">
+      <button class="pbtn amber" id="pvDl">下载简历</button>
+      <button class="pbtn ghost" data-resclose>关闭</button>
     </div>
   </div>
 </div>
@@ -1543,7 +1634,7 @@ var PJ_CATS = [
   ["growth","业绩增长"],["strategy","战略规划"],["perf","绩效体系"],
   ["org","组织变革"],["talent","人才发展"],["training","专项培训"]
 ];
-var PJ = { list:[], q:"", cat:"all", editId:null, draft:null };
+var PJ = { list:[], q:"", cat:"all", editId:null, draft:null, counts:{}, res:[], resPid:null, resQ:"", resTitle:"" };
 
 $("pmCat").innerHTML = PJ_CATS.map(function(c){
   return '<option value="' + c[0] + '">' + c[1] + '</option>';
@@ -1639,6 +1730,7 @@ function loadProjects(){
     if(j && j.ok){
       PJ.list = j.projects || [];
       renderProjects();
+      loadResumeCounts();
     } else if(pjIsMissingTable(r)){
       $("pjBody").innerHTML = "";
       $("pjCount").textContent = "";
@@ -1696,6 +1788,7 @@ function renderProjects(){
         (p.published ? "已发布" : "未发布") + '</small></div></td>' +
       '<td><div class="t-actions">' +
         '<button class="view-btn" data-act="edit">修改</button>' +
+        resBtnHtml(p.project_id) +
         (sn.role === "super" ? '<button class="del-btn" data-act="del">删除</button>' : '') +
       '</div></td></tr>';
   }).join("");
@@ -1711,6 +1804,8 @@ function renderProjects(){
         el.addEventListener("change", function(){ setPublish(p, el.checked, el); });
       } else if(act === "edit"){
         el.addEventListener("click", function(){ openProject(p.id); });
+      } else if(act === "res"){
+        el.addEventListener("click", function(){ openResumes(p.project_id, p.title || ""); });
       } else if(act === "del"){
         el.addEventListener("click", function(){ deleteProject(p); });
       }
@@ -1750,6 +1845,278 @@ function deleteProject(p){
     else toast((r.body && r.body.error) || "删除失败", true);
   });
 }
+
+/* ---------- 简历投递（后台 · 每个项目各自独立） ---------- */
+function resBtnHtml(pid){
+  var n = PJ.counts[pid];
+  var num = (typeof n === "number") ? n : 0;
+  return '<button class="res-btn' + (num ? "" : " zero") + '" data-act="res"' +
+    ' title="查看该项目收到的简历（只显示本项目）">查看简历<i>' + num + '</i></button>';
+}
+function loadResumeCounts(){
+  var sn = sess(); if(!sn) return;
+  rpc("resume_counts", { p_token: sn.token }).then(function(r){
+    var j = r.body || {};
+    if(j.ok && j.counts){
+      PJ.counts = j.counts || {};
+      renderProjects();
+    }
+  }).catch(function(){});
+}
+function resTypeTag(fileName){
+  var ext = (/\.([a-z0-9]+)$/i.exec(String(fileName || "")) || [])[1];
+  ext = ext ? ext.toLowerCase() : "";
+  var m = { pdf:["PDF","#fdeceb","#c0392b"], doc:["DOC","#eef4ff","#2b4b93"], docx:["DOCX","#eef4ff","#2b4b93"],
+            jpg:["JPG","#eaf6f1","#0f8f78"], jpeg:["JPEG","#eaf6f1","#0f8f78"],
+            png:["PNG","#eaf6f1","#0f8f78"], webp:["WEBP","#eaf6f1","#0f8f78"], bmp:["BMP","#eaf6f1","#0f8f78"] };
+  var c = m[ext] || [ext ? ext.toUpperCase() : "文件", "#f1f0ea", "#6b6d85"];
+  return '<span style="font-family:ui-monospace,Consolas,monospace;font-size:10.5px;font-weight:800;'
+    + 'background:' + c[1] + ';color:' + c[2] + ';border-radius:5px;padding:2px 6px;margin-right:6px">'
+    + c[0] + '</span>';
+}
+function fmtResSize(n){
+  n = +n || 0;
+  if(n < 1024) return n + " B";
+  if(n < 1048576) return (n / 1024).toFixed(0) + " KB";
+  return (n / 1048576).toFixed(1) + " MB";
+}
+function resMatches(r){
+  if(!PJ.resQ) return true;
+  var q = PJ.resQ.toLowerCase();
+  return (String(r.name || "") + " " + String(r.phone || "") + " " +
+          String(r.email || "") + " " + String(r.intro || "")).toLowerCase().indexOf(q) > -1;
+}
+function resInfoHtml(isSuper){
+  return "简历属于求职者个人信息，仅管理员可见，请勿外传，面试结束后建议及时清理。" +
+    (isSuper ? "每次下载都会留下记录（操作人 + 时间），<b>该记录只有总管理员能查看</b>。"
+             : "下载操作会留下记录，<b>该记录只有总管理员能查看</b>。");
+}
+function resMissingTable(){
+  $("rsMeta").textContent = "尚未开通";
+  $("rsCount").textContent = "";
+  $("rsBody").innerHTML = "";
+  $("rsEmpty").style.display = "";
+  $("rsEmpty").innerHTML = "<b>简历功能还没有开通</b>" +
+    "请先在 Supabase SQL Editor 执行 sql-copy.html 里「② 本次新增 · 简历投递」那一段，" +
+    "执行完刷新本页即可。该脚本不会改动任何已有数据。";
+  $("rsInfo").innerHTML = "";
+}
+function openResumes(pid, title){
+  var sn = sess(); if(!sn) return showLogin();
+  PJ.resPid = pid || ""; PJ.resTitle = title || pid || "简历"; PJ.resQ = "";
+  PJ.res = [];
+  $("rsPid").textContent = pid || "—";
+  $("rsTitle").textContent = title || pid || "简历";
+  $("rsMeta").textContent = "加载中…";
+  $("rsSearch").value = "";
+  $("rsBody").innerHTML = "";
+  $("rsEmpty").style.display = "none";
+  $("rsCount").textContent = "";
+  $("rsInfo").innerHTML = "";
+  $("resModal").classList.add("open");
+  loadResumes();
+}
+function loadResumes(){
+  var sn = sess(); if(!sn) return;
+  var isSuper = sn.role === "super";
+  rpc("resume_list", { p_token: sn.token, p_project_id: PJ.resPid || "" }).then(function(r){
+    var j = r.body || {};
+    if(j.ok){
+      PJ.res = j.resumes || [];
+      var n = PJ.res.length;
+      $("rsMeta").textContent = n
+        ? ("共 " + n + " 份投递 · 最近投递 " + fmtTime(PJ.res[0].created_at))
+        : "暂无投递";
+      $("rsInfo").innerHTML = resInfoHtml(isSuper);
+      renderResumeList();
+      return;
+    }
+    if(pjIsMissingTable(r) || /Could not find the function|schema cache|does not exist/i
+        .test(String(j.message || "") + " " + String(j.error || ""))){
+      resMissingTable();
+      return;
+    }
+    $("rsMeta").textContent = "加载失败";
+    $("rsEmpty").style.display = "";
+    $("rsEmpty").innerHTML = "<b>加载失败</b>" + esc((j && (j.error || j.message)) || "请稍后重试");
+  }).catch(function(){
+    $("rsMeta").textContent = "加载失败";
+    $("rsEmpty").style.display = "";
+    $("rsEmpty").innerHTML = "<b>连不上服务器</b>请检查网络（或代理 / VPN）后重试";
+  });
+}
+function renderResumeList(){
+  var sn = sess() || {};
+  var isSuper = sn.role === "super";
+  var rows = PJ.res.filter(resMatches);
+  var tb = $("rsBody"), empty = $("rsEmpty");
+  $("rsCount").textContent = PJ.res.length ? ("共 " + PJ.res.length + " 份") : "";
+  if(!rows.length){
+    tb.innerHTML = "";
+    empty.style.display = "";
+    empty.innerHTML = PJ.resQ
+      ? "<b>没有匹配的记录</b>换个关键词试试（本项目共 " + PJ.res.length + " 份）"
+      : "<b>该项目还没有收到简历</b>应聘者在前端点「投递简历」后，就会出现在这里（" + esc(PJ.resPid) + "）";
+    return;
+  }
+  empty.style.display = "none";
+  tb.innerHTML = rows.map(function(r){
+    var dls = r.dls || [];
+    var trace = "";
+    if(isSuper){
+      trace = dls.length
+        ? '<small class="dl-trace warn" data-trace="' + esc(r.id) + '" title="点击查看全部下载记录">已下载 '
+          + dls.length + ' 次 · 最近 ' + esc(dls[dls.length - 1].who) + ' ' + fmtTime(dls[dls.length - 1].at) + '</small>'
+        : '<small class="dl-trace none">未下载</small>';
+    }
+    return '<tr data-rid="' + esc(r.id) + '">' +
+      '<td class="t-time">' + fmtTime(r.created_at) + '</td>' +
+      '<td class="res-name"><b>' + esc(r.name) + '</b><small>' + esc(r.phone) +
+        (r.email ? ' · ' + esc(r.email) : '') + '</small>' +
+        (r.intro ? '<div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.55">'
+                   + esc(r.intro) + '</div>' : '') +
+      '</td>' +
+      '<td class="res-file">' + esc(r.file_name || "—") + '<br>' + fmtResSize(r.file_size) + '</td>' +
+      '<td><button class="view-btn" data-ract="pv">' + resTypeTag(r.file_name) + '预览</button></td>' +
+      '<td><div class="dl-cell"><button class="view-btn" data-ract="dl">下载简历</button>' + trace + '</div></td>' +
+      '<td>' + (isSuper ? '<button class="del-btn" data-ract="del">删除</button>'
+                        : '<span style="font-size:11.5px;color:var(--muted)">仅总管理员</span>') + '</td>' +
+    '</tr>';
+  }).join("");
+  tb.querySelectorAll("tr").forEach(function(tr){
+    var rid = tr.getAttribute("data-rid");
+    var r = null;
+    PJ.res.forEach(function(x){ if(x.id === rid) r = x; });
+    if(!r) return;
+    tr.querySelectorAll("[data-ract]").forEach(function(b){
+      var a = b.getAttribute("data-ract");
+      if(a === "pv") b.addEventListener("click", function(){ resumePreview(r); });
+      else if(a === "dl") b.addEventListener("click", function(){ resumeDownload(r, b); });
+      else b.addEventListener("click", function(){ deleteResume(r); });
+    });
+    var tp = tr.querySelector("[data-trace]");
+    if(tp){
+      tp.addEventListener("click", function(){
+        var dls = r.dls || [];
+        if(!dls.length) return;
+        alert("下载留痕 · " + r.name + "（" + (r.file_name || "") + "）\n\n" +
+          dls.map(function(d, i){ return (i + 1) + ". " + d.who + " · " + fmtTime(d.at); }).join("\n"));
+      });
+    }
+  });
+}
+
+/* 文件字节 → Blob；base64 解码后逐字节还原，内容不做任何改动 */
+function b64ToBlob(b64, type){
+  var bin = atob(b64 || ""), len = bin.length, u8 = new Uint8Array(len);
+  for(var i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
+  return new Blob([u8], { type: type || "application/octet-stream" });
+}
+function saveBlob(blob, name){
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = name || "简历";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 2000);
+}
+function resumeFetch(r, btn){
+  var sn = sess(); if(!sn){ showLogin(); return Promise.reject(new Error("登录已过期")); }
+  if(btn) btn.disabled = true;
+  return rpc("resume_file", { p_token: sn.token, p_id: r.id }).then(function(res){
+    if(btn) btn.disabled = false;
+    var j = res.body || {};
+    if(!j.ok) throw new Error((j && (j.error || j.message)) || "读取文件失败");
+    return j;
+  }).catch(function(e){
+    if(btn) btn.disabled = false;
+    throw e;
+  });
+}
+/* 下载：取文件 → 存盘 → 写留痕（「该简历已被下载」只有总管理员能看到提示） */
+function resumeDownload(r, btn){
+  var sn = sess(); if(!sn) return showLogin();
+  resumeFetch(r, btn).then(function(j){
+    saveBlob(b64ToBlob(j.data, r.file_type || ""), j.file_name || r.file_name || "简历");
+    return rpc("resume_download_mark", { p_token: sn.token, p_id: r.id });
+  }).then(function(res){
+    var jj = (res && res.body) || {};
+    if(!jj.ok) return;
+    if(sn.role === "super"){
+      toast(jj.first ? "已开始下载 · 本次下载已记入留痕"
+                     : "⚠️ 该简历已被下载过（本次为第 " + jj.times + " 次），已记入留痕", !jj.first);
+    } else {
+      toast("已开始下载");
+    }
+    loadResumes();
+  }).catch(function(e){
+    toast((e && e.message) || "下载失败，请重试", true);
+  });
+}
+
+var curRes = null, pvUrl = null;
+function resumePreview(r){
+  curRes = r;
+  var ext = (/\.([a-z0-9]+)$/i.exec(String(r.file_name || "")) || [])[1];
+  ext = ext ? ext.toLowerCase() : "";
+  var isImg = /^image\//.test(r.file_type || "") || /^(jpg|jpeg|png|webp|bmp|gif)$/.test(ext);
+  $("pvTag").textContent = "在线预览";
+  $("pvName").textContent = r.name + " · " + (r.file_name || "简历");
+  $("pvMeta").textContent = "投递于 " + (r.project_id || "") + " · " + fmtTime(r.created_at);
+  $("pvWrap").innerHTML = '<div class="pv-none">加载中…</div>';
+  $("resPrev").classList.add("open");
+  resumeFetch(r).then(function(j){
+    if(pvUrl){ try { URL.revokeObjectURL(pvUrl); } catch(e){} pvUrl = null; }
+    if(ext === "pdf" || /pdf/i.test(r.file_type || "")){
+      pvUrl = URL.createObjectURL(b64ToBlob(j.data, "application/pdf"));
+      $("pvWrap").innerHTML = '<iframe src="' + pvUrl + '" title="简历预览"></iframe>';
+      return;
+    }
+    if(isImg){
+      pvUrl = URL.createObjectURL(b64ToBlob(j.data, r.file_type || "image/jpeg"));
+      $("pvWrap").innerHTML = '<img src="' + pvUrl + '" alt="简历预览">';
+      return;
+    }
+    $("pvWrap").innerHTML = '<div class="pv-none"><b>该格式不支持在线预览</b>' +
+      esc(r.file_name || "该文件") + '（' + (ext ? ext.toUpperCase() : "未知格式") +
+      '）浏览器无法直接打开，请点下方「下载简历」查看。</div>';
+  }).catch(function(e){
+    $("pvWrap").innerHTML = '<div class="pv-none"><b>预览失败</b>' + esc((e && e.message) || "请稍后重试") + '</div>';
+  });
+}
+function deleteResume(r){
+  var sn = sess(); if(!sn) return showLogin();
+  if(sn.role !== "super") return toast("仅总管理员可删除简历", true);
+  if(!confirm("确定删除「" + r.name + "」投递的简历？\n删除后该简历与它的下载留痕会一起清除，操作不可撤销。")) return;
+  rpc("resume_delete", { p_token: sn.token, p_id: r.id }).then(function(res){
+    var j = res.body || {};
+    if(j.ok){
+      toast("已删除");
+      loadResumes();
+      loadResumeCounts();
+    } else toast((j && j.error) || "删除失败", true);
+  }).catch(function(){ toast("网络异常，请重试", true); });
+}
+function closeResModals(){
+  $("resModal").classList.remove("open");
+  $("resPrev").classList.remove("open");
+  if(pvUrl){ try { URL.revokeObjectURL(pvUrl); } catch(e){} pvUrl = null; }
+  $("pvWrap").innerHTML = "";
+  curRes = null;
+}
+document.querySelectorAll("[data-resclose]").forEach(function(el){
+  el.addEventListener("click", function(){ closeResModals(); });
+});
+document.addEventListener("keydown", function(e){
+  if(e.key !== "Escape") return;
+  if($("resModal").classList.contains("open") || $("resPrev").classList.contains("open")) closeResModals();
+});
+$("rsSearch").addEventListener("input", function(){ PJ.resQ = this.value.trim(); renderResumeList(); });
+$("pvDl").addEventListener("click", function(){ if(curRes) resumeDownload(curRes, this); });
 
 /* ---------- 项目编辑弹窗 ---------- */
 function pjBlank(){

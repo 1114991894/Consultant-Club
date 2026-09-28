@@ -143,6 +143,60 @@ h1 em{font-style:normal;color:var(--amber-deep);position:relative}
 .i-count{font-family:var(--mono);font-size:13px;color:var(--muted)}
 .i-count b{color:var(--text);font-size:16px;font-weight:700}
 
+/* 投递简历按钮（与感兴趣按钮同排同尺寸） */
+.r-btn{display:inline-flex;align-items:center;gap:9px;border:1.6px solid var(--indigo-800);border-radius:99px;
+  padding:11px 26px;font-size:14.5px;font-weight:700;background:#fff;cursor:pointer;color:var(--indigo-800);
+  font-family:inherit;transition:.25s var(--ease)}
+.r-btn svg{width:16px;height:16px;flex-shrink:0}
+.r-btn:hover{background:var(--indigo-950);border-color:var(--indigo-950);color:var(--amber);transform:translateY(-2px);box-shadow:var(--shadow-2)}
+.r-btn.done{cursor:default;border-color:#0e7a66;background:rgba(40,184,160,.1);color:#0e7a66}
+.r-btn.done:hover{transform:none;box-shadow:none;background:rgba(40,184,160,.1);border-color:#0e7a66;color:#0e7a66}
+
+/* 投递弹窗 */
+.r-modal{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:20px}
+.r-modal.open{display:flex}
+.rm-mask{position:absolute;inset:0;background:rgba(20,21,58,.55);backdrop-filter:blur(3px)}
+.rm-box{position:relative;background:var(--white);border-radius:18px;width:100%;max-width:560px;max-height:88vh;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(20,21,58,.3)}
+.rm-x{position:absolute;right:13px;top:13px;width:28px;height:28px;border:0;border-radius:50%;background:#f1f0ea;
+  color:var(--ink);cursor:pointer;font-size:12px;z-index:2}
+.rm-head{padding:22px 26px 14px;border-bottom:1px solid var(--line);padding-right:52px}
+.rm-head h3{font-size:17px;font-weight:800;color:var(--ink)}
+.rm-head .rm-sub{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.6}
+.rm-body{padding:18px 26px;overflow-y:auto}
+.rm-row{margin-bottom:14px}
+.rm-row>label{display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.rm-row>label em{color:#c0392b;font-style:normal;margin-left:2px}
+.rm-row input,.rm-row textarea{width:100%;padding:10px 12px;border:1.4px solid var(--line);border-radius:10px;
+  font-family:inherit;font-size:13.5px;color:var(--ink);background:#fff;outline:none;transition:.2s}
+.rm-row input:focus,.rm-row textarea:focus{border-color:var(--amber-deep)}
+.rm-row textarea{min-height:60px;resize:vertical;line-height:1.6}
+.rm-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rm-drop{border:1.6px dashed var(--line);border-radius:12px;padding:16px;text-align:center;cursor:pointer;
+  transition:.2s;background:#fcfbf7}
+.rm-drop:hover{border-color:var(--amber-deep);background:rgba(240,194,75,.07)}
+.rm-drop b{display:block;font-size:13.5px;color:var(--ink);margin-top:2px}
+.rm-drop span{font-size:12px;color:var(--muted);display:block;margin-top:4px}
+.rm-file{display:none;align-items:center;gap:10px;border:1.4px solid var(--line);border-radius:12px;
+  padding:11px 14px;background:#fcfbf7}
+.rm-file.on{display:flex}
+.rm-file .fn{flex:1;font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-file .fs{font-size:11.5px;color:var(--muted);font-family:var(--mono);flex-shrink:0}
+.rm-file button{border:0;background:transparent;color:#c0392b;cursor:pointer;font-size:12.5px;font-family:inherit;flex-shrink:0}
+.rm-note{font-size:12px;color:var(--muted);line-height:1.75;background:#f7f6f1;border-radius:10px;padding:11px 14px}
+.rm-foot{padding:14px 26px;border-top:1px solid var(--line);background:#faf9f4;display:flex;gap:10px;flex-shrink:0}
+.rm-foot button{flex:1;border:0;border-radius:11px;padding:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.2s}
+.rm-send{background:var(--indigo-950);color:#fff}
+.rm-send:hover{background:var(--indigo-800)}
+.rm-send:disabled{opacity:.6;cursor:default}
+.rm-cancel{background:#eeece5;color:var(--ink);flex:0 0 92px}
+.rm-cancel:hover{background:#e4e2da}
+.r-toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(18px);background:var(--indigo-950);
+  color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;line-height:1.6;max-width:min(90vw,470px);
+  z-index:99;opacity:0;transition:.28s;box-shadow:0 12px 34px rgba(0,0,0,.3);text-align:center;pointer-events:none}
+.r-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:560px){ .rm-2{grid-template-columns:1fr} .r-btn{padding:10px 20px;font-size:13.5px} }
+
 /* 尾部 */
 .footnote{margin-top:8px;padding:0 4px 8px;font-size:12px;color:var(--muted)}
 .empty-tip{display:none;padding:60px 20px;text-align:center;color:var(--muted);font-size:14px}
@@ -617,6 +671,41 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
 
 <footer>CONSULTANT CLUB · 深入一线 · 管理进化 · 陪伴成长 · 驱动增长</footer>
 
+<!-- 投递简历弹窗 -->
+<div class="r-modal" id="rmModal">
+  <div class="rm-mask" data-rmclose></div>
+  <div class="rm-box">
+    <button class="rm-x" type="button" data-rmclose aria-label="关闭">✕</button>
+    <div class="rm-head">
+      <h3>投递简历</h3>
+      <div class="rm-sub" id="rmProj">—</div>
+    </div>
+    <div class="rm-body">
+      <div class="rm-2">
+        <div class="rm-row"><label>姓名<em>*</em></label><input type="text" id="rmName" placeholder="请输入真实姓名" maxlength="30" autocomplete="name"></div>
+        <div class="rm-row"><label>手机号<em>*</em></label><input type="tel" id="rmPhone" placeholder="11 位手机号" maxlength="11" inputmode="numeric" autocomplete="tel"></div>
+      </div>
+      <div class="rm-row"><label>邮箱</label><input type="email" id="rmMail" placeholder="选填，便于我们联系你" maxlength="80" autocomplete="email"></div>
+      <div class="rm-row"><label>一句话介绍</label><textarea id="rmIntro" placeholder="选填：你的相关经验、可到岗时间等" maxlength="300"></textarea></div>
+      <div class="rm-row">
+        <label>简历文件<em>*</em></label>
+        <div class="rm-drop" id="rmDrop"><div>📄</div><b>点击选择简历文件</b><span>PDF / Word（doc、docx）/ 图片</span></div>
+        <div class="rm-file" id="rmFile">
+          <span>📎</span><span class="fn" id="rmFileName"></span><span class="fs" id="rmFileSize"></span>
+          <button type="button" id="rmFileDel">移除</button>
+        </div>
+        <input type="file" id="rmInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.bmp,image/*" style="display:none">
+      </div>
+      <div class="rm-note">你的简历仅用于本项目的人员筛选，不会外传，我们会在 3 个工作日内回复。<br>同一项目同一姓名 + 手机号只能投递一次。</div>
+    </div>
+    <div class="rm-foot">
+      <button class="rm-cancel" type="button" data-rmclose>取消</button>
+      <button class="rm-send" type="button" id="rmSend">提交投递</button>
+    </div>
+  </div>
+</div>
+<div class="r-toast" id="rmToast"></div>
+
 <script>
 (function(){
 "use strict";
@@ -788,6 +877,290 @@ function initInterest(){
   });
 }
 
+/* ---------- 投递简历（前端） ---------- */
+var RM_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><polyline points="14 2 14 7 19 7"/><line x1="12" y1="12" x2="12" y2="17"/><polyline points="9.5 14.5 12 12 14.5 14.5"/></svg>';
+var RM_TICK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+var PART_BYTES = 600 * 1024;      /* 每片 600KB 原始字节：base64 后约 800KB，单次请求始终小于 1MB */
+var MAX_SEND   = 1024 * 1024;     /* 图片压缩目标：1MB 以内 */
+var MAX_FILE   = 20 * 1024 * 1024;
+
+function rmKey(pid){ return "cc_resume_" + pid; }
+function rmDone(pid){
+  try { return !!localStorage.getItem(rmKey(pid)); } catch(e){ return false; }
+}
+function rmMark(pid, name, phone){
+  try { localStorage.setItem(rmKey(pid), name + "|" + phone); } catch(e){}
+}
+function fmtSize(n){
+  if(n < 1024) return n + " B";
+  if(n < 1048576) return (n / 1024).toFixed(1) + " KB";
+  return (n / 1048576).toFixed(2) + " MB";
+}
+var rmToastT = null;
+function rmToast(m, ms){
+  var t = document.getElementById("rmToast");
+  if(!t) return;
+  t.innerHTML = m;
+  t.classList.add("on");
+  clearTimeout(rmToastT);
+  rmToastT = setTimeout(function(){ t.classList.remove("on"); }, ms || 3400);
+}
+/* 给每张项目卡的「我有兴趣」旁边补上「投递简历」按钮（静态卡与动态卡通用） */
+function paintResumeBtn(pid){
+  var btn = document.querySelector('.r-btn[data-resume-for="' + pid + '"]');
+  if(!btn) return;
+  if(rmDone(pid)){
+    btn.classList.add("done");
+    btn.innerHTML = RM_TICK + "简历已投递";
+    btn.title = "你已投递过该项目的简历（同一项目同一姓名 + 手机号只能投一次）";
+  } else {
+    btn.classList.remove("done");
+    btn.innerHTML = RM_ICON + "投递简历";
+    btn.title = "";
+  }
+}
+function ensureResumeBtns(){
+  document.querySelectorAll(".proj").forEach(function(card){
+    var like = card.querySelector(".i-btn[data-project]");
+    if(!like) return;
+    var bar = card.querySelector(".interest");
+    if(!bar) return;
+    var pid = like.getAttribute("data-project");
+    if(!pid) return;
+    var btn = bar.querySelector(".r-btn[data-resume-for]");
+    if(!btn){
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "r-btn";
+      btn.setAttribute("data-resume-for", pid);
+      btn.innerHTML = RM_ICON + "投递简历";
+      bar.insertBefore(btn, like.nextSibling);
+      btn.addEventListener("click", function(){
+        if(btn.classList.contains("done")){
+          rmToast("你已投递过该项目的简历，无需重复提交");
+          return;
+        }
+        openResume(pid);
+      });
+    }
+    paintResumeBtn(pid);
+  });
+}
+
+/* 弹窗开关 */
+var rmPid = null, rmBlob = null;
+function openResume(pid){
+  rmPid = pid;
+  var like = document.querySelector('.i-btn[data-project="' + pid + '"]');
+  var card = like ? like.closest(".proj") : null;
+  var num = numOf(pid);
+  var ttl = card ? (card.querySelector(".proj-title") || {}).textContent : "";
+  document.getElementById("rmProj").textContent =
+    (num ? "NO." + num + " · " : "") + (ttl || pid);
+  document.getElementById("rmModal").classList.add("open");
+  setTimeout(function(){ var n = document.getElementById("rmName"); if(n) n.focus(); }, 60);
+}
+function closeResume(){ document.getElementById("rmModal").classList.remove("open"); }
+function rmReset(){
+  rmBlob = null;
+  ["rmName","rmPhone","rmMail","rmIntro"].forEach(function(k){
+    var el = document.getElementById(k); if(el) el.value = "";
+  });
+  document.getElementById("rmFile").classList.remove("on");
+  document.getElementById("rmDrop").style.display = "";
+  document.getElementById("rmFileName").textContent = "";
+  document.getElementById("rmFileSize").textContent = "";
+}
+document.querySelectorAll("[data-rmclose]").forEach(function(el){
+  el.addEventListener("click", function(){ closeResume(); rmReset(); });
+});
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape" && document.getElementById("rmModal").classList.contains("open")){
+    closeResume(); rmReset();
+  }
+});
+document.getElementById("rmDrop").addEventListener("click", function(){
+  document.getElementById("rmInput").click();
+});
+document.getElementById("rmFileDel").addEventListener("click", function(e){
+  e.stopPropagation();
+  rmBlob = null;
+  document.getElementById("rmFile").classList.remove("on");
+  document.getElementById("rmDrop").style.display = "";
+});
+document.getElementById("rmInput").addEventListener("change", function(){
+  var f = this.files && this.files[0];
+  this.value = "";
+  if(!f) return;
+  var okExt = /\.(pdf|doc|docx|jpg|jpeg|png|webp|bmp)$/i.test(f.name);
+  if(!okExt && !/^image\//.test(f.type || "")){ rmToast("请上传 PDF / Word / 图片格式的简历"); return; }
+  if(f.size <= 0){ rmToast("文件内容为空，请重新选择"); return; }
+  if(f.size > MAX_FILE){ rmToast("文件过大，请上传 20MB 以内的简历"); return; }
+  rmBlob = f;
+  document.getElementById("rmFileName").textContent = f.name;
+  document.getElementById("rmFileSize").textContent = fmtSize(f.size);
+  document.getElementById("rmFile").classList.add("on");
+  document.getElementById("rmDrop").style.display = "none";
+});
+
+/* 图片简历：重绘到画布上并逐步降质量 / 降尺寸，压到 1MB 以内（无提示，静默完成） */
+function shrinkImage(file){
+  return new Promise(function(resolve){
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function(){
+      URL.revokeObjectURL(url);
+      var edge = 1600, q = 0.85, tries = 0;
+      function draw(){
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        if(!w || !h){ resolve(file); return; }
+        var scale = Math.min(1, edge / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+        var cv = document.createElement("canvas");
+        cv.width = cw; cv.height = ch;
+        var cx = cv.getContext("2d");
+        cx.fillStyle = "#ffffff";
+        cx.fillRect(0, 0, cw, ch);
+        cx.drawImage(img, 0, 0, cw, ch);
+        cv.toBlob(function(b){
+          if(b && b.size > MAX_SEND && tries < 8){
+            tries++;
+            if(q > 0.5) q -= 0.1; else edge = Math.round(edge * 0.8);
+            draw();
+            return;
+          }
+          resolve(b && b.size ? b : file);
+        }, "image/jpeg", q);
+      }
+      draw();
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+function guessType(name){
+  var m = /\.([a-z0-9]+)$/i.exec(name || "");
+  var e = m ? m[1].toLowerCase() : "";
+  if(e === "pdf") return "application/pdf";
+  if(e === "doc") return "application/msword";
+  if(e === "docx") return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  if(e === "png") return "image/png";
+  if(e === "jpg" || e === "jpeg") return "image/jpeg";
+  return "";
+}
+function shrinkFile(file){
+  return new Promise(function(resolve){
+    var t = file.type || "";
+    var compressible = /^image\/(jpeg|jpg|png|webp|bmp)$/i.test(t) ||
+      (!t && /\.(jpe?g|png|webp|bmp)$/i.test(file.name));
+    if(!compressible){
+      resolve({ blob: file, name: file.name, type: t || guessType(file.name), size: file.size });
+      return;
+    }
+    shrinkImage(file).then(function(b){
+      resolve({ blob: b, name: file.name.replace(/\.[^.]+$/, "") + ".jpg",
+                type: "image/jpeg", size: b.size });
+    });
+  });
+}
+function rpcMsg(j){
+  var m = (j && (j.error || j.message)) || "";
+  if(!m) return "提交失败，请稍后再试";
+  if(/Could not find the function|does not exist|schema cache/i.test(m)) return "投递功能正在开通中，请稍后再试";
+  return m;
+}
+function readChunk(blob, start, end){
+  return new Promise(function(resolve, reject){
+    var fr = new FileReader();
+    fr.onload = function(){
+      var s = String(fr.result || "");
+      var i = s.indexOf(",");
+      resolve(i >= 0 ? s.slice(i + 1) : "");
+    };
+    fr.onerror = function(){ reject(new Error("读取文件失败，请重试")); };
+    fr.readAsDataURL(blob.slice(start, end));
+  });
+}
+/* 投递：① 建记录 → ② 逐片传文件（每片 < 1MB）→ ③ 标记完成 */
+function submitResume(pid, meta, file){
+  var blob = file.blob, size = file.size || blob.size;
+  var id = null;
+  return rpc("resume_submit", {
+    p_project_id: pid, p_name: meta.name, p_phone: meta.phone,
+    p_email: meta.email, p_intro: meta.intro,
+    p_file_name: file.name, p_file_type: file.type || guessType(file.name),
+    p_file_size: size
+  }).then(function(r){
+    var j = r.body || {};
+    if(!j.ok){
+      if(j.duplicate) throw { dup: true, message: j.error };
+      throw new Error(rpcMsg(j));
+    }
+    id = j.id;
+    var total = Math.max(1, Math.ceil(size / PART_BYTES));
+    var chain = Promise.resolve();
+    for(var i = 0; i < total; i++){
+      (function(seq){
+        chain = chain.then(function(){
+          return readChunk(blob, seq * PART_BYTES, Math.min(size, (seq + 1) * PART_BYTES))
+            .then(function(b64){
+              return rpc("resume_part_add", { p_id: id, p_seq: seq, p_chunk: b64 });
+            }).then(function(rr){
+              var jj = rr.body || {};
+              if(!jj.ok) throw new Error(rpcMsg(jj));
+            });
+        });
+      })(i);
+    }
+    return chain.then(function(){
+      return rpc("resume_submit_done", { p_id: id });
+    }).then(function(rr){
+      var jj = rr.body || {};
+      if(!jj.ok) throw new Error(rpcMsg(jj));
+      return id;
+    });
+  }).catch(function(e){
+    if(id && !(e && e.dup)){ try { rpc("resume_abort", { p_id: id }); } catch(err){} }
+    throw e;
+  });
+}
+document.getElementById("rmSend").addEventListener("click", function(){
+  var btn = this;
+  if(!rmPid) return;
+  var name  = document.getElementById("rmName").value.trim();
+  var phone = document.getElementById("rmPhone").value.trim();
+  var mail  = document.getElementById("rmMail").value.trim();
+  var intro = document.getElementById("rmIntro").value.trim();
+  if(!name){ rmToast("请填写姓名"); return; }
+  if(!/^1\d{10}$/.test(phone)){ rmToast("请填写 11 位手机号"); return; }
+  if(!rmBlob){ rmToast("请选择简历文件"); return; }
+  if(mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)){ rmToast("邮箱格式看起来不对，请检查或留空"); return; }
+  var pid = rmPid;
+  btn.disabled = true;
+  btn.textContent = "提交中…";
+  shrinkFile(rmBlob).then(function(f){
+    return submitResume(pid, { name: name, phone: phone, email: mail, intro: intro }, f);
+  }).then(function(){
+    rmMark(pid, name, phone);
+    paintResumeBtn(pid);
+    closeResume();
+    rmReset();
+    rmToast("投递成功，我们会在 3 个工作日内回复");
+  }).catch(function(e){
+    if(e && e.dup){
+      rmMark(pid, name, phone);
+      paintResumeBtn(pid);
+      closeResume();
+      rmReset();
+      rmToast("你已投递过该项目的简历，无需重复提交");
+      return;
+    }
+    rmToast((e && e.message) || "提交失败，请稍后再试");
+  }).then(function(){
+    btn.disabled = false;
+    btn.textContent = "提交投递";
+  });
+});
+
 /* ---------- 由后台数据渲染项目卡（结构与静态版完全一致） ---------- */
 function renderProject(p, idx){
   var cat  = CAT_NAME[p.category] || "未分类";
@@ -878,6 +1251,7 @@ function applyDbProjects(list){
   syncFilters(list);
   initFilter();
   initInterest();
+  ensureResumeBtns();
 }
 
 /* 数据表尚未就绪时：给页面原有的静态卡片补上自动编号（无发布时间，不带角标） */
@@ -905,6 +1279,7 @@ function boot(){
   initFilter();
   initInterest();
   decorateStatic();
+  ensureResumeBtns();
   var url = SB_URL + "/rest/v1/projects?select=*&published=eq.true&order=first_pub_at.desc.nullslast,created_at.desc";
   fetch(url, { headers: { "apikey": SB_KEY } }).then(function(r){
     return r.ok ? r.json() : [];

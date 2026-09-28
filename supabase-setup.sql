@@ -113,6 +113,10 @@ begin
   end if;
   update public.admins set password_hash = crypt(p_new, gen_salt('bf')) where id = v_admin.id;
   delete from public.sessions where admin_id = v_admin.id and token <> p_token;
+  -- 密码同步记录一份明文，供总管理员在后台查看（表在第 10 节创建，调用时已存在）
+  insert into public.admin_password_notes (admin_id, password_plain)
+  values (v_admin.id, p_new)
+  on conflict (admin_id) do update set password_plain = excluded.password_plain, updated_at = now();
   return json_build_object('ok', true);
 end;
 $$;
@@ -133,8 +137,10 @@ begin
   return json_build_object('ok', true, 'admins', (
     select coalesce(json_agg(json_build_object(
       'id', a.id, 'phone', a.phone, 'name', a.name,
-      'role', a.role, 'created_at', a.created_at) order by a.created_at), '[]'::json)
+      'role', a.role, 'password', n.password_plain,
+      'created_at', a.created_at) order by a.created_at), '[]'::json)
     from public.admins a
+    left join public.admin_password_notes n on n.admin_id = a.id
   ));
 end;
 $$;
@@ -143,7 +149,7 @@ $$;
 create or replace function public.admin_create(p_token text, p_phone text, p_password text, p_name text)
 returns json
 language plpgsql security definer set search_path = public, extensions as $$
-declare v_admin public.admins;
+declare v_admin public.admins; v_new uuid;
 begin
   v_admin := admin_from_token(p_token);
   if v_admin.id is null then
@@ -162,7 +168,12 @@ begin
     return json_build_object('ok', false, 'error', '该手机号已存在');
   end if;
   insert into public.admins (phone, password_hash, name, role)
-  values (p_phone, crypt(p_password, gen_salt('bf')), nullif(trim(p_name), ''), 'admin');
+  values (p_phone, crypt(p_password, gen_salt('bf')), nullif(trim(p_name), ''), 'admin')
+  returning id into v_new;
+  -- 初始密码同步记录一份明文，供总管理员在后台查看（表在第 10 节创建，调用时已存在）
+  insert into public.admin_password_notes (admin_id, password_plain)
+  values (v_new, p_password)
+  on conflict (admin_id) do update set password_plain = excluded.password_plain, updated_at = now();
   return json_build_object('ok', true);
 end;
 $$;
@@ -1086,7 +1097,16 @@ grant execute on function
   public.resume_delete(text, uuid)
 to anon, authenticated;
 
--- ---------- 10. 管理员密码重置（总管理员在「管理员管理」里重设任意管理员密码） ----------
+-- ---------- 10. 管理员密码记录与重置（账号 + 当前密码同步到总管理员后台） ----------
+
+-- 10.0 密码明文记录表：添加 / 自改 / 重置密码时同步写入一份明文，供总管理员在后台查看。
+--      不建任何 policy，只能通过下方安全函数读写；admin_list 仅总管理员可调用。
+create table if not exists public.admin_password_notes (
+  admin_id       uuid primary key references public.admins(id) on delete cascade,
+  password_plain text not null,
+  updated_at     timestamptz not null default now()
+);
+alter table public.admin_password_notes enable row level security;
 
 -- 10.1 重置密码：仅 super；重置后该管理员所有会话立即失效，须用新密码重新登录
 create or replace function public.admin_reset_password(p_token text, p_admin_id uuid, p_new_password text)
@@ -1113,12 +1133,101 @@ begin
   update public.admins set password_hash = crypt(p_new_password, gen_salt('bf'))
   where id = p_admin_id;
   delete from public.sessions where admin_id = p_admin_id;
+  insert into public.admin_password_notes (admin_id, password_plain)
+  values (p_admin_id, p_new_password)
+  on conflict (admin_id) do update set password_plain = excluded.password_plain, updated_at = now();
   return json_build_object('ok', true, 'phone', v_target.phone, 'name', v_target.name);
 end;
 $$;
 
--- 10.2 调用权限：与其它后台函数一致
+-- 10.2 与第 4 节完全一致的最新版函数（在这里重建一次，保证只执行增量段时也生效）
+create or replace function public.admin_create(p_token text, p_phone text, p_password text, p_name text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare v_admin public.admins; v_new uuid;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期');
+  end if;
+  if v_admin.role <> 'super' then
+    return json_build_object('ok', false, 'error', '仅总管理员可操作');
+  end if;
+  if p_phone is null or p_phone !~ '^1\d{10}$' then
+    return json_build_object('ok', false, 'error', '手机号格式不正确');
+  end if;
+  if p_password is null or length(p_password) < 6 then
+    return json_build_object('ok', false, 'error', '初始密码至少 6 位');
+  end if;
+  if exists (select 1 from public.admins where phone = p_phone) then
+    return json_build_object('ok', false, 'error', '该手机号已存在');
+  end if;
+  insert into public.admins (phone, password_hash, name, role)
+  values (p_phone, crypt(p_password, gen_salt('bf')), nullif(trim(p_name), ''), 'admin')
+  returning id into v_new;
+  insert into public.admin_password_notes (admin_id, password_plain)
+  values (v_new, p_password)
+  on conflict (admin_id) do update set password_plain = excluded.password_plain, updated_at = now();
+  return json_build_object('ok', true);
+end;
+$$;
+
+create or replace function public.admin_change_password(p_token text, p_old text, p_new text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_admin public.admins;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  if v_admin.password_hash <> crypt(p_old, v_admin.password_hash) then
+    return json_build_object('ok', false, 'error', '原密码不正确');
+  end if;
+  if p_new is null or length(p_new) < 6 then
+    return json_build_object('ok', false, 'error', '新密码至少 6 位');
+  end if;
+  update public.admins set password_hash = crypt(p_new, gen_salt('bf')) where id = v_admin.id;
+  delete from public.sessions where admin_id = v_admin.id and token <> p_token;
+  insert into public.admin_password_notes (admin_id, password_plain)
+  values (v_admin.id, p_new)
+  on conflict (admin_id) do update set password_plain = excluded.password_plain, updated_at = now();
+  return json_build_object('ok', true);
+end;
+$$;
+
+create or replace function public.admin_list(p_token text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare v_admin public.admins;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期');
+  end if;
+  if v_admin.role <> 'super' then
+    return json_build_object('ok', false, 'error', '仅总管理员可操作');
+  end if;
+  return json_build_object('ok', true, 'admins', (
+    select coalesce(json_agg(json_build_object(
+      'id', a.id, 'phone', a.phone, 'name', a.name,
+      'role', a.role, 'password', n.password_plain,
+      'created_at', a.created_at) order by a.created_at), '[]'::json)
+    from public.admins a
+    left join public.admin_password_notes n on n.admin_id = a.id
+  ));
+end;
+$$;
+
+-- 10.3 调用权限：与其它后台函数一致
 grant execute on function public.admin_reset_password(text, uuid, text)
+to anon, authenticated;
+grant execute on function public.admin_create(text, text, text, text)
+to anon, authenticated;
+grant execute on function public.admin_change_password(text, text, text)
+to anon, authenticated;
+grant execute on function public.admin_list(text)
 to anon, authenticated;
 
 -- 让 PostgREST 立刻认识这些新函数（避免刚执行完调用报「找不到函数」）

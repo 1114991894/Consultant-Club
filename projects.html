@@ -696,7 +696,7 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
         </div>
         <input type="file" id="rmInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.bmp,image/*" style="display:none">
       </div>
-      <div class="rm-note">你的简历仅用于本项目的人员筛选，不会外传，我们会在 3 个工作日内回复。<br>同一项目同一姓名 + 手机号只能投递一次。</div>
+      <div class="rm-note">你的简历仅用于本项目的人员筛选，不会外传。<br>同一项目同一姓名 + 手机号只能投递一次。</div>
     </div>
     <div class="rm-foot">
       <button class="rm-cancel" type="button" data-rmclose>取消</button>
@@ -1144,7 +1144,7 @@ document.getElementById("rmSend").addEventListener("click", function(){
     paintResumeBtn(pid);
     closeResume();
     rmReset();
-    rmToast("投递成功，我们会在 3 个工作日内回复");
+    rmToast("投递成功");
   }).catch(function(e){
     if(e && e.dup){
       rmMark(pid, name, phone);

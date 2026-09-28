@@ -246,6 +246,11 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
       <button data-filter="talent">人才发展</button>
       <button data-filter="growth">业绩增长</button>
       <button data-filter="training">专项培训</button>
+      <button data-filter="finance">财税管理</button>
+      <button data-filter="legal">法律咨询</button>
+      <button data-filter="digital">数字化</button>
+      <button data-filter="ai">AI</button>
+      <button data-filter="other">其他</button>
     </div>
   </section>
 
@@ -712,7 +717,9 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
 var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
 var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
 var CAT_NAME = { growth:"业绩增长", strategy:"战略规划", perf:"绩效体系",
-                 org:"组织变革", talent:"人才发展", training:"专项培训" };
+                 org:"组织变革", talent:"人才发展", training:"专项培训",
+                 finance:"财税管理", legal:"法律咨询", digital:"数字化",
+                 ai:"AI", other:"其他" };
 
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }

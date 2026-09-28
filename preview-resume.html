@@ -397,7 +397,7 @@ body[data-role="admin"] .dl-trace{display:none}
   <!-- ============ ② 简历列表（单项目） ============ -->
   <section class="pane" id="p2">
     <div class="why">
-      这是点 <b>p001「查看简历」</b> 后的窗口，<b>只有这一个项目的投递</b>。重点看第四列 <b>「简历下载 · 留痕」</b>——
+      这是点 <b>p001「查看简历」</b> 后的窗口，<b>只有这一个项目的投递</b>。重点看第四列 <b>「下载」</b>——
       下载会<b>留痕</b>：没下过显示「未下载」，下过就显示「已下载 N 次 · 最近 谁 什么时候」。
       <b>再点已下载过的简历，会明确提示「该简历已被下载」。</b>
       <br>现在把右上角切到 <b>「普通管理员」</b>：这一列会瘦成只剩一个「⬇ 下载简历」按钮，
@@ -422,7 +422,7 @@ body[data-role="admin"] .dl-trace{display:none}
               <th style="width:140px">投递时间</th>
               <th style="width:198px">投递人</th>
               <th style="width:152px">简历预览</th>
-              <th class="th-dl" style="width:206px">简历下载</th>
+              <th class="th-dl" style="width:206px">下载</th>
               <th style="width:74px">操作</th>
             </tr></thead>
             <tbody id="inlineBody"></tbody>
@@ -513,7 +513,7 @@ body[data-role="admin"] .dl-trace{display:none}
             <th style="width:140px">投递时间</th>
             <th style="width:198px">投递人</th>
             <th style="width:152px">简历预览</th>
-            <th class="th-dl" style="width:206px">简历下载</th>
+            <th class="th-dl" style="width:206px">下载</th>
             <th style="width:74px">操作</th>
           </tr></thead>
           <tbody id="modalBody"></tbody>
@@ -781,9 +781,9 @@ body[data-role="admin"] .dl-trace{display:none}
   function renderAll(){
     fill("inlineBody", "inlineEmpty", INLINE_PID, $("inlineSearch").value.trim());
     $("inlineMeta").textContent = metaOf(INLINE_PID);
-    /* 表头跟着视角变：总管理员看到「留痕」，普通管理员只有「下载」 */
+    /* 表头固定为「下载」（两个视角一致） */
     document.querySelectorAll(".th-dl").forEach(function(th){
-      th.textContent = role === "super" ? "简历下载 · 留痕" : "下载";
+      th.textContent = "下载";
     });
     if(curPid && $("mResume").classList.contains("open")){
       fill("modalBody", "modalEmpty", curPid, $("rsSearch").value.trim());

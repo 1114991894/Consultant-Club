@@ -858,6 +858,15 @@ document.querySelectorAll(".tabs button").forEach(function(b){
   });
 });
 
+/* 联系记录里的「[操作人 时间]」前缀属于留痕，普通管理员看不到，只保留内容 */
+function stripTrace(txt){
+  var s = String(txt == null ? "" : txt);
+  if(sess() && sess().role === "super") return s;
+  return s.split("\n").map(function(line){
+    return line.replace(/^\s*\[[^\]]*\]\s*/, "");
+  }).join("\n");
+}
+
 function rowKey(s){
   var d = s.data || {};
   if(s.type === "book")
@@ -888,7 +897,9 @@ function render(){
     var statusCls = s.status || "pending";
     var statusTxt = statusCls === "handled" ? "已处理" : "未处理";
     var handler = s.handler_name || s.handler_phone || "";
-    var handlerTxt = handler ? ("<br><small style='color:#888'>"+esc(handler)+" · "+esc(fmtTime(s.handled_at))+"</small>") : "";
+    /* 处理人 / 处理时间属于留痕，仅总管理员可见 */
+    var handlerTxt = (sess().role === "super" && handler)
+      ? ("<br><small style='color:#888'>"+esc(handler)+" · "+esc(fmtTime(s.handled_at))+"</small>") : "";
     var markBtn = statusCls === "handled"
       ? '<button class="mark-btn sm pending" data-act="unhandled">未处理</button>'
       : '<button class="mark-btn sm handled" data-act="handled">处理</button>';
@@ -1225,7 +1236,7 @@ function openDetail(s){
   var handler = s.handler_name || s.handler_phone || "";
   var meta = fmtTime(s.created_at);
   if(s.status === "handled") meta += " · 已处理"; else meta += " · 未处理";
-  if(handler) meta += " · 处理人 " + handler;
+  if(handler && sess().role === "super") meta += " · 处理人 " + handler;
   $("mMeta").textContent = meta;
 
   var d = s.data || {};
@@ -1247,7 +1258,7 @@ function openDetail(s){
             "<div class='col'>" + makeCol(right) + "</div>";
   if(keys.length === 0) htm = "<div class='col left'><div class='row'><div class='hk'>—</div><div class='hv'>无内容</div></div></div><div class='col'></div>";
   $("mGrid").innerHTML = htm;
-  $("mNotes").textContent = s.notes || "";
+  $("mNotes").textContent = stripTrace(s.notes);
 
   $("mToggleStatus").textContent = s.status === "handled" ? "未处理" : "处理";
   $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : " amber");
@@ -1255,13 +1266,13 @@ function openDetail(s){
   setTimeout(function(){ $("mNoteInput").focus(); }, 100);
 }
 function refreshModal(s){
-  $("mNotes").textContent = s.notes || "";
+  $("mNotes").textContent = stripTrace(s.notes);
   $("mToggleStatus").textContent = s.status === "handled" ? "未处理" : "处理";
   $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : " amber");
   var handler = s.handler_name || s.handler_phone || "";
   var meta = fmtTime(s.created_at);
   if(s.status === "handled") meta += " · 已处理"; else meta += " · 未处理";
-  if(handler) meta += " · 处理人 " + handler;
+  if(handler && sess().role === "super") meta += " · 处理人 " + handler;
   $("mMeta").textContent = meta;
 }
 document.querySelectorAll("[data-mclose]").forEach(function(el){

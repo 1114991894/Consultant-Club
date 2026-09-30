@@ -177,6 +177,22 @@ body.nav-open .float-actions{opacity:0;visibility:hidden;pointer-events:none}
 .hero-slogans span{display:flex;align-items:center;gap:26px}
 .hero-slogans span:not(:last-child)::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--amber)}
 .hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:38px}
+/* 「查看咨询项目」右侧的项目数徽标 */
+.pj-badge{
+  display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:24px;
+  margin-left:1px;padding:0 9px;border-radius:99px;
+  background:var(--amber);color:var(--ink);font-size:13.5px;font-weight:800;
+  font-variant-numeric:tabular-nums;letter-spacing:.01em;
+  box-shadow:0 0 0 4px rgba(240,194,75,.16);animation:pjGlow 2.6s ease-in-out infinite;
+}
+.pj-badge[hidden]{display:none}
+@keyframes pjGlow{
+  0%,100%{box-shadow:0 0 0 4px rgba(240,194,75,.16)}
+  50%{box-shadow:0 0 0 9px rgba(240,194,75,.04)}
+}
+@media (prefers-reduced-motion:reduce){
+  .pj-badge{animation:none}
+}
 .btn{
   display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:13px 30px;
   border-radius:99px;font-size:15.5px;font-weight:700;border:1px solid transparent;
@@ -576,6 +592,15 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
   border-top:1px solid var(--line);background:#fbfaf6}
 .amodal .ft .note{font-size:12.5px;color:var(--muted);line-height:1.6}
 .amodal .ft .btn{margin-left:auto;flex:none}
+/* 咨询师登录弹窗：内容比预约表单短，用窄版卡片 */
+.amodal.slim .card{width:min(430px,calc(100% - 28px));max-height:min(92vh,640px)}
+.amodal.slim .bd{padding-top:30px}
+.cs-err{display:none;margin-top:16px;padding:10px 13px;border-radius:9px;background:#fdf1ef;
+  border:1px solid rgba(201,74,61,.28);font-size:13px;line-height:1.65;color:#a93a2e}
+.cs-err.show{display:block}
+.cs-err a{color:#a93a2e;text-decoration:underline;font-weight:700}
+.cs-note{margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.7;text-align:center}
+.cs-sub{width:100%;justify-content:center;margin-top:20px}
 .adone{display:none;flex-direction:column;align-items:center;text-align:center;padding:64px 40px 58px}
 .adone .ok{width:74px;height:74px;border-radius:50%;background:rgba(240,194,75,.18);
   display:flex;align-items:center;justify-content:center;margin-bottom:24px}
@@ -617,7 +642,7 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
         <li><a href="#ai">AI 咨询</a></li>
         <li><a href="#cases">咨询项目</a></li>
         <li><a href="#diagnosis">管理诊断</a></li>
-        <li><button class="nav-cta" id="navBookBtn" type="button">预约诊断</button></li>
+        <li><button class="nav-cta" id="navLoginBtn" type="button">咨询师登录</button></li>
       </ul>
     </nav>
     <button class="nav-burger" id="burger" aria-label="打开菜单" aria-expanded="false">
@@ -638,7 +663,7 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
     </div>
     <div class="hero-actions rise d6">
       <button class="btn btn-primary" id="bookBtn" type="button">预约管理诊断</button>
-      <a class="btn btn-ghost" href="projects.html">查看咨询项目</a>
+      <a class="btn btn-ghost" href="projects.html">查看咨询项目<span class="pj-badge" id="pjBadge" hidden>0</span></a>
     </div>
     <div class="hero-stats rise d6">
       <div class="hero-stat"><b data-count="17" data-suffix="+">0</b><span>咨询项目实战落地</span></div>
@@ -1170,8 +1195,8 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
       burger.setAttribute("aria-expanded", "false");
     }
   });
-  /* 导航「预约诊断」按钮：打开弹窗时顺手收起移动端菜单 */
-  document.getElementById("navBookBtn").addEventListener("click", function(){
+  /* 导航「咨询师登录」按钮：点击时顺手收起移动端菜单（弹窗由下面的登录脚本打开） */
+  document.getElementById("navLoginBtn").addEventListener("click", function(){
     links.classList.remove("open"); burger.classList.remove("x");
     document.body.classList.remove("nav-open");
     burger.setAttribute("aria-expanded", "false");
@@ -1509,6 +1534,35 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
   </div>
 </div>
 
+<!-- ================= 咨询师登录弹窗 ================= -->
+<div class="amodal slim" id="consLoginModal" role="dialog" aria-modal="true" aria-labelledby="consLoginTitle">
+  <div class="mask" data-clclose></div>
+  <div class="card">
+    <div class="hd">
+      <div class="k">Consultant Sign in</div>
+      <h3 id="consLoginTitle">咨询师登录</h3>
+      <p>用手机号登录，进入自己的咨询师工作台。</p>
+      <button class="x" type="button" data-clclose aria-label="关闭">✕</button>
+    </div>
+
+    <form class="bd" id="consLoginForm" novalidate>
+      <div class="frow" style="grid-template-columns:1fr">
+        <div class="fitem">
+          <label for="cl_phone">手机号</label>
+          <input id="cl_phone" name="phone" type="tel" inputmode="tel" maxlength="11" placeholder="11 位手机号" autocomplete="tel">
+        </div>
+        <div class="fitem">
+          <label for="cl_pass">密码</label>
+          <input id="cl_pass" name="password" type="password" placeholder="请输入密码" autocomplete="current-password">
+        </div>
+      </div>
+      <div class="cs-err" id="clErr"></div>
+      <button class="btn btn-dark cs-sub" id="clSubmit" type="submit">登 录</button>
+      <div class="cs-note">首次登录请使用开通时给的初始密码，登录后可在「个人中心」修改。</div>
+    </form>
+  </div>
+</div>
+
 <script>
 /* 团队区动态化：后台「咨询师管理」配置了数据则覆盖静态卡片，否则保留静态 */
 (function(){
@@ -1644,7 +1698,95 @@ var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
               submit:"applySubmit", type:"apply", btns:["applyBtn","floatApplyBtn"], hash:"#apply" });
 
   initModal({ modal:"bookModal", form:"bookForm", done:"bookDone", foot:"bookFoot",
-              submit:"bookSubmit", type:"book", btns:["bookBtn","navBookBtn","floatBookBtn"], hash:"#book" });
+              submit:"bookSubmit", type:"book", btns:["bookBtn","floatBookBtn"], hash:"#book" });
+
+  /* ---------- 咨询师登录（首页导航入口） ---------- */
+  (function(){
+    var modal = document.getElementById("consLoginModal");
+    if(!modal) return;
+    var form  = document.getElementById("consLoginForm");
+    var btn   = document.getElementById("clSubmit");
+    var err   = document.getElementById("clErr");
+    var phone = document.getElementById("cl_phone");
+    var pass  = document.getElementById("cl_pass");
+
+    function showErr(html){ err.innerHTML = html; err.className = "cs-err show"; }
+    function clearErr(){ err.className = "cs-err"; err.innerHTML = ""; }
+    function openM(){
+      clearErr();
+      modal.classList.add("open");
+      document.body.style.overflow = "hidden";
+      setTimeout(function(){ try{ phone.focus(); }catch(e){ } }, 80);
+    }
+    function closeM(){ modal.classList.remove("open"); document.body.style.overflow = ""; }
+
+    ["navLoginBtn"].forEach(function(id){
+      var b = document.getElementById(id);
+      if(b) b.addEventListener("click", openM);
+    });
+    modal.addEventListener("click", function(e){ if(e.target.closest("[data-clclose]")) closeM(); });
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Escape" && modal.classList.contains("open")) closeM();
+    });
+
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      var p = phone.value.trim(), pw = pass.value;
+      var badPhone = !/^1\d{10}$/.test(p);
+      phone.closest(".fitem").classList.toggle("err", badPhone);
+      if(badPhone){ showErr("请输入正确的 11 位手机号"); try{ phone.focus(); }catch(e1){ } return; }
+      if(!pw){ showErr("请输入密码"); try{ pass.focus(); }catch(e2){ } return; }
+      clearErr();
+      btn.disabled = true;
+      var t0 = btn.textContent;
+      btn.textContent = "登录中…";
+      fetch(SB_URL + "/rest/v1/rpc/admin_login", {
+        method: "POST",
+        headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ p_phone: p, p_password: pw })
+      }).then(function(r){
+        return r.json().then(function(j){ return { status: r.status, body: j }; });
+      }).then(function(res){
+        var j = (res && res.body) || {};
+        /* 咨询师账号：写入咨询师会话（与管理后台会话分开），进入自己的工作台 */
+        if(j.ok && j.role === "consultant"){
+          try{
+            localStorage.removeItem("cc_admin_session");   /* 同机换身份时清掉管理后台登录态 */
+            localStorage.setItem("cc_consultant_session", JSON.stringify(
+              { token:j.token, role:j.role, phone:j.phone, name:j.name, at:Date.now() }));
+          }catch(e3){ }
+          btn.textContent = "正在进入工作台…";
+          location.href = "consultant.html";
+          return;
+        }
+        btn.disabled = false; btn.textContent = t0;
+        if(j.ok && (j.role === "super" || j.role === "admin")){
+          showErr('这是管理员账号，请到 <a href="admin.html">管理后台</a> 登录。');
+        }else{
+          showErr((j && j.error) || "登录失败，请稍后重试");
+        }
+      }).catch(function(){
+        btn.disabled = false; btn.textContent = t0;
+        showErr("网络异常，请稍后重试");
+      });
+    });
+  })();
+
+  /* ---------- 「查看咨询项目」上的项目数徽标 ---------- */
+  (function(){
+    var badge = document.getElementById("pjBadge");
+    if(!badge) return;
+    fetch(SB_URL + "/rest/v1/projects?select=project_id&published=eq.true", {
+      headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY }
+    }).then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+      .then(function(list){
+        /* 取不到数字就不显示徽标 —— 宁可没有，也不画一个会被误读的 0 */
+        if(!Array.isArray(list) || !list.length) return;
+        badge.textContent = list.length > 99 ? "99+" : String(list.length);
+        badge.hidden = false;
+      })
+      .catch(function(){ });
+  })();
 })();
 </script>
 

@@ -1788,16 +1788,60 @@ $("cSave").addEventListener("click", function(){
   }).catch(function(){ $("cSave").disabled = false; toast("网络异常，请稍后再试", true); });
 });
 
+/* 数据库还没升级到「咨询师后台」那一版时，新字段（cases/views/admin_id）不存在，
+   整条查询会 400；这里识别出来并退回基础字段，至少让列表能正常显示 */
+function consMissingCol(r){
+  var j = (r && r.body) || {};
+  return j.code === "42703" || j.code === "PGRST204"
+    || /column .* does not exist/i.test(String(j.message || ""))
+    || /schema cache/i.test(String(j.message || ""));
+}
+function consWarn(msg){
+  var box = $("consWarn");
+  if(!box){
+    box = document.createElement("div");
+    box.id = "consWarn";
+    box.className = "empty";
+    box.style.cssText = "text-align:left;background:#fff8e6;border:1px solid #f0d78a;color:#8a6d1a;line-height:1.75;margin-bottom:12px";
+    var wrap = $("consList");
+    wrap.parentNode.insertBefore(box, wrap);
+  }
+  box.style.display = msg ? "" : "none";
+  box.innerHTML = msg || "";
+}
+function consMsg(html){
+  consWarn("");
+  $("consList").innerHTML = html;
+}
+var CONS_UPGRADE_TIP = "⚠️ <b>数据库还没升级</b>：列表已按旧字段显示，但「案例 / 观点」和咨询师后台还用不了。<br>"
+  + "解决办法：打开 <b>sql-copy.html</b> → 点「<b>② 一键复制本次新增部分</b>」→ 粘贴到 Supabase 的 SQL Editor 执行一次 → 回到本页刷新。"
+  + "（脚本可重复执行，不会改动任何已有数据）";
+
 function loadConsultants(){
   /* 明确列出字段：申请资料（profile）含个人信息，已收回公开读权限，这里也不再取 */
   api("/rest/v1/consultants?select=id,name,title,bio,image,cases,views,sort,created_at,admin_id"
     + "&order=sort.asc,created_at.asc", {}).then(function(r){
-    if(r.status === 200 && Array.isArray(r.body)){ C.list = r.body; renderConsultants(); }
-    else if(r.status === 404){
-      $("consList").innerHTML = '<div class="empty">⚠️ 数据表还未创建：请先在 Supabase SQL Editor 执行 sql-copy.html 里的初始化 SQL，然后刷新本页。执行完成后这里会列出所有咨询师，可直接编辑。</div>';
+    if(r.status === 200 && Array.isArray(r.body)){
+      consWarn(""); C.list = r.body; renderConsultants(); return;
     }
-    else $("consList").innerHTML = '<div class="empty">加载失败，请刷新重试</div>';
-  }).catch(function(){ $("consList").innerHTML = '<div class="empty">加载失败，请刷新重试</div>'; });
+    if(r.status === 404){
+      consMsg('⚠️ 数据表还未创建：请先在 Supabase SQL Editor 执行 sql-copy.html 里的初始化 SQL，然后刷新本页。执行完成后这里会列出所有咨询师，可直接编辑。');
+      return;
+    }
+    if(consMissingCol(r)){
+      /* 退回基础字段：先把已有咨询师正常列出来 */
+      api("/rest/v1/consultants?select=id,name,title,bio,image,sort,created_at"
+        + "&order=sort.asc,created_at.asc", {}).then(function(r2){
+        if(r2.status === 200 && Array.isArray(r2.body)){
+          C.list = r2.body.map(function(c){ c.cases = []; c.views = []; return c; });
+          consWarn(CONS_UPGRADE_TIP);
+          renderConsultants();
+        } else consMsg('加载失败，请刷新重试');
+      }).catch(function(){ consMsg('加载失败，请刷新重试'); });
+      return;
+    }
+    consMsg('加载失败，请刷新重试');
+  }).catch(function(){ consMsg('加载失败，请刷新重试'); });
 }
 function renderConsultants(){
   var wrap = $("consList");

@@ -99,8 +99,11 @@ h1 em{font-style:normal;color:var(--amber-deep);position:relative}
 .blk-h .no{font-family:var(--mono);font-size:12px;color:var(--amber-deep);letter-spacing:.14em}
 .blk-h h3{font-size:16.5px;font-weight:700;letter-spacing:.02em}
 
-/* 企业画像 */
+/* 企业画像（data-n = 实际条目数，4 条以上按 4 列；窄屏由媒体查询统一压成 2 列） */
 .profile{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.profile[data-n="1"]{grid-template-columns:1fr}
+.profile[data-n="2"]{grid-template-columns:repeat(2,1fr)}
+.profile[data-n="3"]{grid-template-columns:repeat(3,1fr)}
 .pf{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:13px 15px}
 .pf .k{font-size:11.5px;color:var(--muted);letter-spacing:.08em;margin-bottom:3px}
 .pf .v{font-size:13.8px;font-weight:600;line-height:1.5}
@@ -195,24 +198,79 @@ h1 em{font-style:normal;color:var(--amber-deep);position:relative}
   color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;line-height:1.6;max-width:min(90vw,470px);
   z-index:99;opacity:0;transition:.28s;box-shadow:0 12px 34px rgba(0,0,0,.3);text-align:center;pointer-events:none}
 .r-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-@media(max-width:560px){ .rm-2{grid-template-columns:1fr} .r-btn{padding:10px 20px;font-size:13.5px} }
+@media(max-width:560px){ .rm-2{grid-template-columns:1fr} }
 
 /* 尾部 */
 .footnote{margin-top:8px;padding:0 4px 8px;font-size:12px;color:var(--muted)}
 .empty-tip{display:none;padding:60px 20px;text-align:center;color:var(--muted);font-size:14px}
 footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.08em}
 
+/* ---------- 响应式 ---------- */
 @media(max-width:860px){
-  .profile{grid-template-columns:repeat(2,1fr)}
+  .profile,.profile[data-n="2"],.profile[data-n="3"],.profile[data-n="4"]{grid-template-columns:repeat(2,1fr)}
   .path{grid-template-columns:1fr;gap:18px}
   .step:not(:last-child)::after{display:none}
   .step{padding:0}
 }
-@media(max-width:520px){
-  .profile{grid-template-columns:1fr}
-  .p-status{margin-left:0}
+@media(max-width:560px){
+  /* 卡片：收窄留白，标题与说明同步收小 */
+  .proj{margin:20px 0}
+  .proj-card{border-radius:16px}
+  .proj-head{padding-left:18px;padding-right:18px}
+  .proj-body{padding-left:18px;padding-right:18px;padding-bottom:26px}
+  .proj-title{font-size:19.5px;line-height:1.38;margin-bottom:8px}
+  .proj-sub{font-size:13.2px;line-height:1.7}
+  .proj-topline{gap:7px;margin-bottom:13px}
+  .p-num{font-size:10.5px;padding:3px 9px;letter-spacing:.1em}
+  .p-tag{font-size:11.2px;padding:3px 11px}
+  .p-status{margin-left:0;font-size:11px;letter-spacing:.04em}
   .p-badge{padding:7px 15px 8px;font-size:11.5px;letter-spacing:.14em;border-radius:20px 0 16px 0}
   .proj-card.has-badge .proj-head{padding-top:calc(clamp(24px,3.5vw,40px) + 32px)}
+
+  /* 区块标题 */
+  .blk{margin-top:18px}
+  .blk-h{gap:8px;margin-bottom:10px}
+  .blk-h h3{font-size:15px}
+  .blk-h .no{font-size:11px;letter-spacing:.12em}
+
+  /* 企业画像：固定两列 + 字号收小，长词强制断行，避免窄列里折成一大坨 */
+  .profile{grid-template-columns:repeat(2,1fr);gap:8px}
+  .profile[data-n="1"]{grid-template-columns:1fr}
+  .pf{padding:10px 11px;border-radius:10px}
+  .pf .k{font-size:10.5px;letter-spacing:.04em;margin-bottom:2px}
+  .pf .v{font-size:12.2px;font-weight:600;line-height:1.5;overflow-wrap:anywhere}
+
+  /* 挑战列表 */
+  .challenges{gap:8px}
+  .challenges li{gap:10px;padding:12px 13px;border-radius:10px}
+  .challenges .n{width:22px;height:22px;border-radius:6px;font-size:11.5px;margin-top:1px}
+  .challenges b{font-size:13.4px;line-height:1.5}
+  .challenges p{font-size:12.4px;line-height:1.62}
+
+  /* 服务路径：2×2 网格，比四步竖排短得多 */
+  .path{grid-template-columns:repeat(2,1fr);gap:16px 12px}
+  .step .sn{width:27px;height:27px;font-size:12px;margin-bottom:8px;box-shadow:0 0 0 4px var(--white)}
+  .step h4{font-size:13.2px;line-height:1.42}
+  .step p{font-size:11.8px;line-height:1.55}
+
+  /* 价值条 */
+  .value{margin-top:18px;padding:15px;gap:11px;border-radius:12px}
+  .value .icon{width:31px;height:31px;border-radius:9px}
+  .value .icon svg{width:16px;height:16px}
+  .value b{font-size:13.4px}
+  .value p{font-size:12.4px;line-height:1.66}
+
+  /* 按钮与计数：两个按钮等宽平分一行，计数独占一行 */
+  .interest{gap:10px;margin-top:14px}
+  .i-btn,.r-btn{flex:1 1 0;min-width:0;justify-content:center;padding:10px 14px;font-size:13.4px}
+  .i-count{flex-basis:100%;font-size:12px}
+  .i-count b{font-size:15px}
+
+  /* 页头与筛选条 */
+  .hero-sub{font-size:14.4px}
+  .hero-meta{gap:14px;font-size:11.8px}
+  .filter{gap:8px}
+  .filter button{padding:7px 15px;font-size:12.8px}
 }
 </style>
 </head>
@@ -1192,8 +1250,10 @@ function renderProject(p, idx){
     return '<div class="blk-h"><span class="no">' + ("0" + no).slice(-2) + '</span><h3>' + title + '</h3></div>';
   }
   if(prof.length){
+    /* data-n 交给 CSS 决定列数：桌面 min(条数,4) 列，窄屏统一两列
+       （不要写成 inline style，内联样式会盖掉媒体查询，窄屏会被挤成 4 列） */
     blocks.push('<div class="blk">' + head(blocks.length + 1, "企业画像") +
-      '<div class="profile" style="grid-template-columns:repeat(' + Math.min(prof.length, 4) + ',1fr)">' +
+      '<div class="profile" data-n="' + Math.min(prof.length, 4) + '">' +
       prof.map(function(r){
         return '<div class="pf"><div class="k">' + esc(r.k) + '</div><div class="v">' + esc(r.v) + '</div></div>';
       }).join("") + '</div></div>');

@@ -834,5 +834,205 @@ grant execute on function public.consultant_interest_toggle(text, text)    to an
 grant execute on function public.project_interest_vote_as(text, text)      to anon, authenticated;
 grant execute on function public.consultant_profile_save(text, jsonb)      to anon, authenticated;
 
+-- ---------- 12. 咨询师后台数据隔离（各账号各管各的数据，互不串号） ----------
+-- 本节全部是 create or replace / revoke / grant，只有权限与函数逻辑，
+-- 不新增、不修改、不删除任何一条已有数据，可重复执行。
+
+-- 12.1 介绍卡片：公开只读「展示字段」，申请资料（profile）不再对外可读
+--      卡片里 profile 存着申请时填的手机号、期望薪资等个人信息，
+--      原来整表对匿名访客可读（policy using(true)），等于所有人的资料都公开。
+--      这里收回整表读权限，只放开首页 / 详情页真正要展示的那几列。
+revoke select on public.consultants from anon, authenticated;
+grant select (id, name, title, bio, image, cases, views, sort, created_at, admin_id)
+  on public.consultants to anon, authenticated;
+
+-- 12.2 官网点赞：咨询师登录态下的这一票按「咨询师」记账，不再借用 IP 哈希
+--      原来用 IP 哈希有两个串号问题：
+--      ① 同办公室同一个出口 IP，咨询师 A 的票会被后来点的人「顶」掉或误记；
+--      ② 匿名访客的票与咨询师的票会互相同一条记录冲突。
+--      改成每个咨询师一个固定哈希（cc_consultant:<账号 id>）后互不干扰。
+create or replace function public.project_interest_vote_as(p_project_id text, p_token text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me   public.admins;
+  v_hash text;
+  v_cnt  int;
+begin
+  if p_project_id is null or btrim(p_project_id) = '' then
+    return json_build_object('ok', false, 'error', '缺少项目编号');
+  end if;
+  v_me := admin_from_token(p_token);
+  -- 没有有效咨询师登录态：等同普通匿名投票（按 IP 去重）
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return public.project_interest_vote(p_project_id);
+  end if;
+  v_hash := encode(digest('cc_consultant:' || v_me.id::text, 'sha256'), 'hex');
+  -- 这位咨询师已经点过：不重复计数
+  if exists (select 1 from public.project_interest
+              where project_id = p_project_id and admin_id = v_me.id) then
+    select count(*) into v_cnt from public.project_interest where project_id = p_project_id;
+    return json_build_object('ok', true, 'count', v_cnt, 'first', false, 'named', true);
+  end if;
+  insert into public.project_interest (project_id, ip_hash, admin_id)
+  values (p_project_id, v_hash, v_me.id)
+  on conflict do nothing;
+  select count(*) into v_cnt from public.project_interest where project_id = p_project_id;
+  return json_build_object('ok', true, 'count', v_cnt, 'first', true, 'named', true);
+end;
+$$;
+
+-- 12.3 咨询师后台点 / 取消「感兴趣」：目标永远是自己名下那一条
+create or replace function public.consultant_interest_toggle(p_token text, p_project_id text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me   public.admins;
+  v_on   boolean;
+  v_hash text;
+  v_cnt  int;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  if p_project_id is null or btrim(p_project_id) = '' then
+    return json_build_object('ok', false, 'error', '缺少项目编号');
+  end if;
+  v_hash := encode(digest('cc_consultant:' || v_me.id::text, 'sha256'), 'hex');
+  if exists (select 1 from public.project_interest
+              where project_id = p_project_id and admin_id = v_me.id) then
+    -- 只删自己名下的那一条（连同本账号可能残留的同哈希行）
+    delete from public.project_interest
+     where project_id = p_project_id
+       and (admin_id = v_me.id or ip_hash = v_hash);
+    v_on := false;
+  else
+    insert into public.project_interest (project_id, ip_hash, admin_id)
+    values (p_project_id, v_hash, v_me.id)
+    on conflict do nothing;
+    v_on := true;
+  end if;
+  select count(*) into v_cnt from public.project_interest where project_id = p_project_id;
+  return json_build_object('ok', true, 'on', v_on, 'count', v_cnt);
+end;
+$$;
+
+-- 12.4 咨询师保存自己的介绍卡片：
+--      ① 只认「本账号名下的卡片」，绝不碰别人的卡片；
+--      ② 若后台先手工建过一张同名的空白卡片（还没绑定账号），直接认领，
+--         避免首页出现两张同名卡片。
+create or replace function public.consultant_save_self(
+  p_token text,
+  p_name  text,
+  p_title text,
+  p_bio   text,
+  p_image text,
+  p_cases jsonb,
+  p_views jsonb
+) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me  public.admins;
+  v_row public.consultants;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  p_name  := btrim(coalesce(p_name, ''));
+  p_title := btrim(coalesce(p_title, ''));
+  if p_name = '' or p_title = '' then
+    return json_build_object('ok', false, 'error', '姓名与头衔为必填');
+  end if;
+
+  select * into v_row from public.consultants where admin_id = v_me.id limit 1;
+
+  if v_row.id is null then
+    -- 认领后台手工建的同名空白卡片（未绑定账号、无个人资料）
+    select * into v_row from public.consultants
+     where admin_id is null
+       and btrim(name) = p_name
+       and (profile is null or profile = '{}'::jsonb)
+     order by created_at asc limit 1;
+    if v_row.id is not null then
+      update public.consultants set admin_id = v_me.id where id = v_row.id;
+    end if;
+  end if;
+
+  if v_row.id is null then
+    insert into public.consultants (name, title, bio, image, cases, views, admin_id)
+    values (p_name, p_title, coalesce(p_bio, ''), coalesce(p_image, ''),
+            coalesce(p_cases, '[]'::jsonb), coalesce(p_views, '[]'::jsonb), v_me.id)
+    returning * into v_row;
+  else
+    update public.consultants set
+      name  = p_name,
+      title = p_title,
+      bio   = coalesce(p_bio, ''),
+      image = case when coalesce(p_image, '') = '' then image else p_image end,
+      cases = coalesce(p_cases, cases),
+      views = coalesce(p_views, views)
+    where id = v_row.id          -- 只改自己这一条
+    returning * into v_row;
+  end if;
+
+  update public.admins set name = p_name where id = v_me.id;
+  return json_build_object('ok', true, 'id', v_row.id);
+end;
+$$;
+
+-- 12.5 咨询师保存个人信息：
+--      手机号是登录账号，也是「投递项目」的匹配依据，这里强制等于账号手机号，
+--      避免改了手机号以后自己的投递记录凭空消失（看着像数据被清）。
+create or replace function public.consultant_profile_save(p_token text, p_profile jsonb)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me  public.admins;
+  v_row public.consultants;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  if p_profile is null or jsonb_typeof(p_profile) <> 'object' then
+    return json_build_object('ok', false, 'error', '没有需要保存的内容');
+  end if;
+
+  p_profile := jsonb_set(p_profile, '{phone}', to_jsonb(v_me.phone));
+
+  select * into v_row from public.consultants where admin_id = v_me.id limit 1;
+  if v_row.id is null then
+    select * into v_row from public.consultants
+     where admin_id is null
+       and btrim(name) = btrim(coalesce(p_profile->>'name', ''))
+       and btrim(coalesce(p_profile->>'name', '')) <> ''
+       and (profile is null or profile = '{}'::jsonb)
+     order by created_at asc limit 1;
+    if v_row.id is not null then
+      update public.consultants set admin_id = v_me.id where id = v_row.id;
+    end if;
+  end if;
+  if v_row.id is null then
+    return json_build_object('ok', false, 'error', '介绍卡片还没有建立，请先在「咨询师介绍」里保存一次');
+  end if;
+
+  update public.consultants set profile = p_profile where id = v_row.id;
+
+  if coalesce(btrim(p_profile->>'name'), '') <> '' then
+    update public.admins set name = btrim(p_profile->>'name') where id = v_me.id;
+  end if;
+  return json_build_object('ok', true);
+end;
+$$;
+
+-- 12.6 调用权限（与前面各节一致）
+grant execute on function public.project_interest_vote_as(text, text)      to anon, authenticated;
+grant execute on function public.consultant_interest_toggle(text, text)    to anon, authenticated;
+grant execute on function public.consultant_save_self(text, text, text, text, text, jsonb, jsonb)
+  to anon, authenticated;
+grant execute on function public.consultant_profile_save(text, jsonb)      to anon, authenticated;
+
 -- 让 PostgREST 立刻认识这些新函数（避免刚执行完调用报「找不到函数」）
 notify pgrst, 'reload schema';

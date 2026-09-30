@@ -530,51 +530,9 @@ tr:hover td{background:#fcfbf7}
     <!-- 咨询师管理 -->
     <section id="view-consultants" style="display:none">
       <div class="mhead"><h2>咨询师管理</h2><span class="sub">管理首页「项目咨询师」展示 · 保存后官网自动更新</span><a class="home-btn" href="https://1114991894.github.io/Consultant-Club/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 6.5L8 2l5.5 4.5V13a1 1 0 01-1 1h-3v-4h-3v4h-3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>进入首页</a></div>
-      <div class="card">
-        <h3 id="cFormTitle">添加咨询师</h3>
-        <div class="desc">照片上传后拖动调整位置、滑块缩放，保存时自动裁剪为圆形头像（400×400，自动压缩）。介绍每行一条，与首页列表格式一致。</div>
-        <div class="cform">
-          <div>
-            <div class="crop-wrap" id="cropBox">
-              <div class="crop-empty" id="cropEmpty">点击下方「选择照片」上传<br>拖动调整位置 · 滑块缩放</div>
-              <img id="cropImg" alt="" style="display:none">
-            </div>
-            <div class="czoom" id="cropZoomRow" style="display:none">
-              <span>缩放</span><input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1">
-            </div>
-            <div class="cbtns">
-              <button class="pbtn ghost" id="cropPick">选择照片</button>
-              <button class="pbtn ghost" id="cropReset" style="display:none">重选</button>
-            </div>
-            <input type="file" id="cropFile" accept="image/*" style="display:none">
-          </div>
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div class="fi"><label>姓名 *</label><input id="cName" type="text" maxlength="20" placeholder="如：张三"></div>
-            <div class="fi"><label>头衔 *</label><input id="cTitle" type="text" maxlength="20" placeholder="如：战略顾问"></div>
-            <div style="display:flex;flex-direction:column;gap:6px">
-              <label style="font-size:12.5px;color:var(--muted);font-weight:600">介绍 *（每行一条）</label>
-              <textarea id="cBio" rows="4" placeholder="世界前 10 强集团 / P8&#10;大型金融集团 / 总经理&#10;上市连锁商超 / 人力总监" style="border:1.4px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;font-size:13.5px;resize:vertical"></textarea>
-            </div>
-            <div class="rep-block">
-              <div class="rep-head">
-                <label>项目案例（选填 · 标题 + 一句成果）</label>
-                <button class="rep-add" id="caseAdd" type="button">＋ 添加一条</button>
-              </div>
-              <div class="rep-list" id="caseList"></div>
-            </div>
-            <div class="rep-block">
-              <div class="rep-head">
-                <label>专业观点（选填 · 标题 + 一句观点）</label>
-                <button class="rep-add" id="viewAdd" type="button">＋ 添加一条</button>
-              </div>
-              <div class="rep-list" id="viewList"></div>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button class="pbtn" id="cSave">保存</button>
-              <button class="pbtn ghost" id="cCancel" style="display:none">取消编辑</button>
-            </div>
-          </div>
-        </div>
+      <div class="bar">
+        <span style="font-size:13px;color:var(--muted);flex:1">咨询师在自己工作台改的介绍，也会同步到这里和官网，两边显示的是同一张卡片</span>
+        <button class="pbtn amber" id="cNew">＋ 添加咨询师</button>
       </div>
       <div class="conslist" id="consList"></div>
     </section>
@@ -752,6 +710,65 @@ tr:hover td{background:#fcfbf7}
       <button class="pbtn amber" id="pmSave">保存</button>
       <button class="pbtn ghost" data-pjclose>取消</button>
       <span class="pjfoot" id="pmFoot"></span>
+    </div>
+  </div>
+</div>
+
+<!-- 添加 / 编辑咨询师弹窗 -->
+<div class="modal" id="cModal">
+  <div class="mm" data-cclose></div>
+  <div class="mc" style="max-width:940px">
+    <div class="close" data-cclose>✕</div>
+    <div class="mh">
+      <h3 id="cFormTitle">添加咨询师</h3>
+      <span class="meta" id="cMeta"></span>
+    </div>
+    <div class="mb">
+      <div class="desc" style="font-size:13px;color:var(--muted);margin-bottom:18px">照片上传后拖动调整位置、滑块缩放，保存时自动裁剪为圆形头像（400×400，自动压缩）。介绍每行一条，与首页列表格式一致。</div>
+      <div class="cform">
+        <div>
+          <div class="crop-wrap" id="cropBox">
+            <div class="crop-empty" id="cropEmpty">点击下方「选择照片」上传<br>拖动调整位置 · 滑块缩放</div>
+            <img id="cropImg" alt="" style="display:none">
+          </div>
+          <div class="czoom" id="cropZoomRow" style="display:none">
+            <span>缩放</span><input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1">
+          </div>
+          <div class="cbtns">
+            <button class="pbtn ghost" id="cropPick">选择照片</button>
+            <button class="pbtn ghost" id="cropReset" style="display:none">重选</button>
+          </div>
+          <input type="file" id="cropFile" accept="image/*" style="display:none">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="fi"><label>姓名 *</label><input id="cName" type="text" maxlength="20" placeholder="如：张三"></div>
+          <div class="fi"><label>头衔 *</label><input id="cTitle" type="text" maxlength="20" placeholder="如：战略顾问"></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label style="font-size:12.5px;color:var(--muted);font-weight:600">介绍 *（每行一条）</label>
+            <textarea id="cBio" rows="4" placeholder="世界前 10 强集团 / P8&#10;大型金融集团 / 总经理&#10;上市连锁商超 / 人力总监" style="border:1.4px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;font-size:13.5px;resize:vertical"></textarea>
+          </div>
+          <div class="rep-block">
+            <div class="rep-head">
+              <label>项目案例（选填 · 标题 + 一句成果）</label>
+              <button class="rep-add" id="caseAdd" type="button">＋ 添加一条</button>
+            </div>
+            <div class="rep-list" id="caseList"></div>
+          </div>
+          <div class="rep-block">
+            <div class="rep-head">
+              <label>专业观点（选填 · 标题 + 一句观点）</label>
+              <button class="rep-add" id="viewAdd" type="button">＋ 添加一条</button>
+            </div>
+            <div class="rep-list" id="viewList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="pbtn amber" id="cSave">保存</button>
+      <button class="pbtn ghost" id="cCancel" style="display:none">取消编辑</button>
+      <button class="pbtn ghost" data-cclose>关闭</button>
+      <span style="font-size:12.5px;color:var(--muted);margin-left:auto" id="cFoot"></span>
     </div>
   </div>
 </div>
@@ -955,6 +972,7 @@ function doLogin(){
       /* 咨询师账号：登录后进入自己的后台，与管理后台分开 */
       if(j.role === "consultant"){
         try {
+          localStorage.removeItem(LS_KEY);          /* 清掉上一位（管理员）的登录态，避免同机串号 */
           localStorage.setItem("cc_consultant_session",
             JSON.stringify({ token:j.token, role:j.role, phone:j.phone, name:j.name, at:Date.now() }));
         } catch(e){}
@@ -962,6 +980,7 @@ function doLogin(){
         location.href = "consultant.html";
         return;
       }
+      try { localStorage.removeItem("cc_consultant_session"); } catch(e){}  /* 管理员登录时清掉咨询师登录态 */
       var s = { token:j.token, role:j.role, phone:j.phone, name:j.name, at:Date.now() };
       saveSess(s); showApp(s);
     } else {
@@ -1702,9 +1721,12 @@ function collectRep(listId){
 $("caseAdd").addEventListener("click", function(){ addRepRow("caseList"); });
 $("viewAdd").addEventListener("click", function(){ addRepRow("viewList"); });
 
+/* 清空表单（不负责开关弹窗） */
 function resetConsForm(){
   C.editId = null; C.img = null;
   $("cFormTitle").textContent = "添加咨询师";
+  $("cMeta").textContent = "";
+  $("cFoot").textContent = "";
   $("cSave").textContent = "保存";
   $("cCancel").style.display = "none";
   $("cName").value = ""; $("cTitle").value = ""; $("cBio").value = "";
@@ -1714,7 +1736,37 @@ function resetConsForm(){
   $("cropReset").style.display = "none";
   $("cropZoomRow").style.display = "none";
 }
-$("cCancel").addEventListener("click", resetConsForm);
+function openConsModal(){
+  resetConsForm();
+  $("cModal").classList.add("open");
+  setTimeout(function(){ try{ $("cName").focus(); }catch(e){} }, 60);
+}
+function closeConsModal(){
+  $("cModal").classList.remove("open");
+}
+function editConsModal(id){
+  var c = C.list.find(function(x){ return x.id === id; });
+  if(!c) return;
+  resetConsForm();
+  C.editId = id;
+  $("cFormTitle").textContent = "编辑咨询师";
+  $("cMeta").textContent = c.name || "";
+  $("cFoot").textContent = "修改后官网「项目咨询师」同步更新";
+  $("cSave").textContent = "保存修改";
+  $("cCancel").style.display = "";
+  $("cName").value = c.name || ""; $("cTitle").value = c.title || ""; $("cBio").value = c.bio || "";
+  setRep("caseList", c.cases); setRep("viewList", c.views);
+  if(c.image) cropLoadSrc(c.image);
+  $("cModal").classList.add("open");
+}
+$("cNew").addEventListener("click", openConsModal);
+$("cCancel").addEventListener("click", function(){ resetConsForm(); });
+document.querySelectorAll("#cModal [data-cclose]").forEach(function(el){
+  el.addEventListener("click", closeConsModal);
+});
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape" && $("cModal").classList.contains("open")) closeConsModal();
+});
 
 $("cSave").addEventListener("click", function(){
   var sn = sess(); if(!sn) return showLogin();
@@ -1731,13 +1783,15 @@ $("cSave").addEventListener("click", function(){
     var j = r.body;
     if(j && j.ok){
       toast(C.editId ? "已保存修改" : "已添加");
-      resetConsForm(); loadConsultants();
+      resetConsForm(); closeConsModal(); loadConsultants();
     } else toast((j && j.error) || "保存失败", true);
   }).catch(function(){ $("cSave").disabled = false; toast("网络异常，请稍后再试", true); });
 });
 
 function loadConsultants(){
-  api("/rest/v1/consultants?select=*&order=sort.asc,created_at.asc", {}).then(function(r){
+  /* 明确列出字段：申请资料（profile）含个人信息，已收回公开读权限，这里也不再取 */
+  api("/rest/v1/consultants?select=id,name,title,bio,image,cases,views,sort,created_at,admin_id"
+    + "&order=sort.asc,created_at.asc", {}).then(function(r){
     if(r.status === 200 && Array.isArray(r.body)){ C.list = r.body; renderConsultants(); }
     else if(r.status === 404){
       $("consList").innerHTML = '<div class="empty">⚠️ 数据表还未创建：请先在 Supabase SQL Editor 执行 sql-copy.html 里的初始化 SQL，然后刷新本页。执行完成后这里会列出所有咨询师，可直接编辑。</div>';
@@ -1748,16 +1802,19 @@ function loadConsultants(){
 function renderConsultants(){
   var wrap = $("consList");
   if(!C.list.length){
-    wrap.innerHTML = '<div class="empty">暂无咨询师 · 在上方添加后，首页「项目咨询师」将改为展示这里的内容</div>';
+    wrap.innerHTML = '<div class="empty">暂无咨询师 · 点上方的「＋ 添加咨询师」新建，首页「项目咨询师」将展示这里的内容</div>';
     return;
   }
   wrap.innerHTML = C.list.map(function(c, i){
     var first = String(c.bio||"").split(/\n/).map(function(l){return l.trim();}).filter(Boolean)[0] || "";
+    var linked = c.admin_id
+      ? '<span class="cnt" style="color:var(--ok)">· 已开通后台</span>' : "";
     return '<div class="cons-item" data-id="' + c.id + '">' +
       '<img src="' + esc(c.image) + '" alt="">' +
       '<div class="ci-main"><b>' + esc(c.name) + '</b><span class="tag">' + esc(c.title) + '</span>' +
       '<small>' + esc(first) + (String(c.bio||"").indexOf("\n") > -1 ? " 等" : "") +
-      '<span class="cnt">· 案例 ' + ((c.cases||[]).length) + ' · 观点 ' + ((c.views||[]).length) + '</span></small></div>' +
+      '<span class="cnt">· 案例 ' + ((c.cases||[]).length) + ' · 观点 ' + ((c.views||[]).length) + '</span>' +
+      linked + '</small></div>' +
       '<div class="ci-ops">' +
       '<button class="mv" data-act="up" title="上移">↑</button>' +
       '<button class="mv" data-act="down" title="下移">↓</button>' +
@@ -1778,14 +1835,7 @@ function renderConsultants(){
             else toast((r.body && r.body.error) || "操作失败", true);
           });
         } else if(act === "edit"){
-          C.editId = id;
-          $("cFormTitle").textContent = "编辑咨询师";
-          $("cSave").textContent = "保存修改";
-          $("cCancel").style.display = "";
-          $("cName").value = c.name || ""; $("cTitle").value = c.title || ""; $("cBio").value = c.bio || "";
-          setRep("caseList", c.cases); setRep("viewList", c.views);
-          if(c.image) cropLoadSrc(c.image);
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          editConsModal(id);
         } else if(act === "del"){
           if(!confirm("确定删除咨询师「" + c.name + "」？删除后官网不再展示。")) return;
           rpc("consultant_delete", { p_token: sn.token, p_id: id }).then(function(r){
@@ -2583,8 +2633,10 @@ $("pmSave").addEventListener("click", function(){
 });
 
 /* ---------- 启动 ---------- */
+/* 咨询师登录态一律不进管理后台（各自的后台互相隔离），残留的一并清掉 */
 var s = sess();
-if(s && s.token) showApp(s); else showLogin();
+if(s && s.token && s.role !== "consultant"){ showApp(s); }
+else { saveSess(null); showLogin(); }
 })();
 </script>
 <script>

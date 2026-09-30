@@ -152,6 +152,17 @@ body[data-role="admin"] .dl-trace{display:none}
 .paper .sheet .hd{font-size:17px;font-weight:900;color:var(--f-indigo);margin-bottom:4px}
 .paper .sheet .sb{font-size:11.5px;color:#8b8da4;font-family:ui-monospace,Consolas,monospace;margin-bottom:22px}
 .paper .sheet .sec{font-size:12px;font-weight:800;color:var(--amber-d);letter-spacing:.08em;margin:18px 0 8px}
+/* 图片简历放大镜（可缩放 + 可拖动） */
+.pv-zoombar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pv-zoombar button{border:1.3px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;
+  font-size:12.5px;font-family:inherit;cursor:pointer;color:var(--ink)}
+.pv-zoombar button:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.pv-zoombar .pct{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--muted);min-width:50px}
+.pv-zoombar .hint{font-size:11.5px;color:var(--muted);margin-left:auto}
+.pv-canvas{width:100%;height:62vh;overflow:auto;background:#e9e7e0;border-radius:12px;cursor:grab}
+.pv-canvas.dragging{cursor:grabbing}
+.pv-canvas .paper{min-width:100%;width:max-content;padding:18px}
+.pv-canvas .sheet{width:520px;max-width:none;flex:0 0 auto;transform-origin:0 0}
 
 /* ---------- 前端按钮区 ---------- */
 .phone{background:var(--f-paper);border:1px solid var(--f-line);border-radius:18px;padding:28px 26px}
@@ -423,7 +434,7 @@ body[data-role="admin"] .dl-trace{display:none}
               <th style="width:198px">投递人</th>
               <th style="width:152px">简历预览</th>
               <th class="th-dl" style="width:206px">下载</th>
-              <th style="width:74px">操作</th>
+              <th class="th-op" style="width:74px">操作</th>
             </tr></thead>
             <tbody id="inlineBody"></tbody>
           </table>
@@ -514,7 +525,7 @@ body[data-role="admin"] .dl-trace{display:none}
             <th style="width:198px">投递人</th>
             <th style="width:152px">简历预览</th>
             <th class="th-dl" style="width:206px">下载</th>
-            <th style="width:74px">操作</th>
+            <th class="th-op" style="width:74px">操作</th>
           </tr></thead>
           <tbody id="modalBody"></tbody>
         </table>
@@ -541,19 +552,29 @@ body[data-role="admin"] .dl-trace{display:none}
       </div>
     </div>
     <div class="mb">
-      <div class="paper">
-        <div class="sheet">
-          <div class="hd">陈 嘉 明</div>
-          <div class="sb">186****2043 · chenjm@example.com · 应聘：滚针轴承制造企业生产数字化项目</div>
-          <div class="sec">工 作 经 历</div>
-          <div class="bar m"></div><div class="bar l"></div><div class="bar s"></div>
-          <div class="sec">项 目 经 验</div>
-          <div class="bar l"></div><div class="bar m"></div><div class="bar l"></div><div class="bar s"></div>
-          <div class="sec">教 育 背 景</div>
-          <div class="bar m"></div><div class="bar s"></div>
+      <div class="pv-zoombar">
+        <button type="button" data-pvzoom="in">🔍 放大</button>
+        <button type="button" data-pvzoom="out">🔍 缩小</button>
+        <button type="button" data-pvzoom="fit">适应宽度</button>
+        <button type="button" data-pvzoom="one">1:1 原始</button>
+        <span class="pct" id="pvPct">140%</span>
+        <span class="hint">滚轮缩放 · 按住拖动 · 单击图片放大</span>
+      </div>
+      <div class="pv-canvas" id="pvCanvas">
+        <div class="paper">
+          <div class="sheet" id="pvSheet">
+            <div class="hd">陈 嘉 明</div>
+            <div class="sb">186****2043 · chenjm@example.com · 应聘：滚针轴承制造企业生产数字化项目</div>
+            <div class="sec">工 作 经 历</div>
+            <div class="bar m"></div><div class="bar l"></div><div class="bar s"></div>
+            <div class="sec">项 目 经 验</div>
+            <div class="bar l"></div><div class="bar m"></div><div class="bar l"></div><div class="bar s"></div>
+            <div class="sec">教 育 背 景</div>
+            <div class="bar m"></div><div class="bar s"></div>
+          </div>
         </div>
       </div>
-      <div class="alert" style="margin-top:14px">这是效果稿的示意内容。<b>部署后</b>：PDF 直接内嵌真实预览，图片简历直接显示；Word（doc/docx）浏览器无法渲染，会提示「该格式不支持在线预览，请下载查看」。</div>
+      <div class="alert" style="margin-top:14px">这是效果稿的示意内容。<b>部署后</b>：PDF 直接内嵌真实预览；图片简历（jpg/png）以<b>放大镜视图</b>打开——默认不小于原始清晰度，可滚轮缩放、按住拖动、单击图片放大，文字都看得清；Word（doc/docx）浏览器无法渲染，会提示「该格式不支持在线预览，请下载查看」。</div>
     </div>
     <div class="mf">
       <button class="pbtn okbtn" id="pvDl">⬇ 下载简历</button>
@@ -641,7 +662,7 @@ body[data-role="admin"] .dl-trace{display:none}
       b.classList.add("on");
       toast(role === "super"
         ? "已切换为<b>总管理员</b>：能看到「删除」按钮，以及全部留痕记录（谁下载过、什么时候下的）"
-        : "已切换为<b>普通管理员</b>：不仅「删除」按钮隐藏，全部留痕记录（处理人 / 下载记录）也一律不显示");
+        : "已切换为<b>普通管理员</b>：「删除」按钮隐藏，<b>「操作」整列都不显示</b>，全部留痕记录（处理人 / 下载记录）也一律不显示");
       renderAll();
     });
   });
@@ -658,7 +679,7 @@ body[data-role="admin"] .dl-trace{display:none}
       dls:[ { who:"刘总（总管理员）", at:"09-27 09:15" }, { who:"王敏（普通管理员）", at:"09-28 10:02" } ] },
 
     { t:"09-27 18:06", name:"赵倩",   phone:"138****3120", mail:"zhaoq@example.com",
-      pid:"p002", file:"赵倩-市场增长.pdf", type:"pdf", fresh:false, dls:[] },
+      pid:"p002", file:"赵倩-市场增长.jpg", type:"jpg", fresh:false, dls:[] },
     { t:"09-26 09:38", name:"郑维",   phone:"133****8821", mail:"zhengwei@example.com",
       pid:"p002", file:"郑维-渠道销售.docx", type:"docx", fresh:false,
       dls:[ { who:"刘总（总管理员）", at:"09-26 10:20" } ] },
@@ -682,11 +703,14 @@ body[data-role="admin"] .dl-trace{display:none}
     });
   }
   function typeBadge(t){
-    var m = { pdf:["PDF","#fdeceb","#c0392b"], doc:["DOC","#eef4ff","#2b4b93"], docx:["DOCX","#eef4ff","#2b4b93"] };
+    var m = { pdf:["PDF","#fdeceb","#c0392b"], doc:["DOC","#eef4ff","#2b4b93"], docx:["DOCX","#eef4ff","#2b4b93"],
+              jpg:["JPG","#eaf6f1","#0f8f78"], jpeg:["JPEG","#eaf6f1","#0f8f78"], png:["PNG","#eaf6f1","#0f8f78"] };
     var c = m[t] || ["文件","#f1f0ea","#6b6d85"];
     return '<span style="font-family:ui-monospace,Consolas,monospace;font-size:10.5px;font-weight:800;'
       + 'background:' + c[1] + ';color:' + c[2] + ';border-radius:5px;padding:2px 6px;margin-right:6px">' + c[0] + '</span>';
   }
+  /* 图片简历（jpg/png）标上放大镜 */
+  function isImgType(t){ return /^(jpg|jpeg|png)$/.test(t || ""); }
   function ofProject(pid){
     return DATA.filter(function(r){ return r.pid === pid; });
   }
@@ -707,10 +731,12 @@ body[data-role="admin"] .dl-trace{display:none}
         '<td><b style="display:block;font-size:13.2px">' + esc(r.name) + '</b>' +
           '<small style="color:var(--muted);font-size:11.5px;font-family:ui-monospace,Consolas,monospace">' +
           esc(r.phone) + (r.mail ? ' · ' + esc(r.mail) : '') + '</small></td>' +
-        '<td><button class="view-btn pv" data-i="' + i + '">' + typeBadge(r.type) + '在线预览</button></td>' +
+        '<td><button class="view-btn pv" data-i="' + i + '">' + (isImgType(r.type) ? "🔍 " : "")
+          + typeBadge(r.type) + '在线预览</button></td>' +
         '<td><div class="dl-cell"><button class="view-btn dl" data-i="' + i + '">⬇ 下载简历</button>'
           + traceHtml(r, i) + '</div></td>' +
-        '<td><button class="del-btn dlt" data-i="' + i + '">删除</button></td>' +
+        /* 「操作」整列只给总管理员看（列里只有删除） */
+        (role === "super" ? '<td><button class="del-btn dlt" data-i="' + i + '">删除</button></td>' : '') +
       '</tr>';
     }).join("");
   }
@@ -785,6 +811,10 @@ body[data-role="admin"] .dl-trace{display:none}
     document.querySelectorAll(".th-dl").forEach(function(th){
       th.textContent = "下载";
     });
+    /* 「操作」列只有总管理员看得到，普通管理员整列不显示 */
+    document.querySelectorAll(".th-op").forEach(function(th){
+      th.style.display = (role === "super") ? "" : "none";
+    });
     if(curPid && $("mResume").classList.contains("open")){
       fill("modalBody", "modalEmpty", curPid, $("rsSearch").value.trim());
       $("rsMeta").textContent = metaOf(curPid);
@@ -839,11 +869,64 @@ body[data-role="admin"] .dl-trace{display:none}
     curResume = r;
     $("pvName").textContent = r.name + " · " + r.file;
     $("pvMeta").textContent = "投递于 " + r.pid + " · " + r.t;
+    /* 效果稿：图片简历默认放大到 140% 打开，体现「文字看得清」 */
+    pvSet(isImgType(r.type) ? 1.4 : 1);
     open("mPreview");
   }
   $("pvDl").addEventListener("click", function(){
     if(curResume) doDownload(curResume);
   });
+
+  /* ---------- 图片简历放大镜（效果稿演示：滚轮缩放 + 拖动 + 单击放大） ---------- */
+  var pvK = 1.4, pvMoved = false;
+  function pvSheetEl(){ return $("pvSheet"); }
+  function pvApply(){
+    var s = pvSheetEl(); if(!s) return;
+    s.style.zoom = pvK;
+    var p = $("pvPct"); if(p) p.textContent = Math.round(pvK * 100) + "%";
+  }
+  function pvWidthK(){
+    var c = $("pvCanvas"); if(!c) return 1;
+    return Math.max(0.4, ((c.clientWidth || 760) - 36) / 520);
+  }
+  function pvSet(k){ pvK = Math.max(0.4, Math.min(4, k)); pvApply(); }
+  document.querySelectorAll("[data-pvzoom]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var m = b.getAttribute("data-pvzoom");
+      if(m === "fit") pvSet(pvWidthK());
+      else if(m === "one") pvSet(1);
+      else pvSet(pvK * (m === "in" ? 1.25 : 0.8));
+    });
+  });
+  (function(){
+    var c = $("pvCanvas"); if(!c) return;
+    c.addEventListener("wheel", function(e){
+      e.preventDefault();
+      pvSet(pvK * (e.deltaY < 0 ? 1.12 : 1 / 1.12));
+    }, { passive:false });
+    var drag = null;
+    c.addEventListener("mousedown", function(e){
+      if(e.button !== 0) return;
+      drag = { x:e.clientX, y:e.clientY, l:c.scrollLeft, t:c.scrollTop, moved:false };
+      c.classList.add("dragging");
+    });
+    document.addEventListener("mousemove", function(e){
+      if(!drag) return;
+      var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if(Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+      c.scrollLeft = drag.l - dx; c.scrollTop = drag.t - dy;
+    });
+    document.addEventListener("mouseup", function(){
+      if(!drag) return;
+      pvMoved = drag.moved; drag = null; c.classList.remove("dragging");
+    });
+    c.addEventListener("click", function(e){
+      if(pvMoved){ pvMoved = false; return; }
+      var fit = pvWidthK();
+      pvSet(pvK > fit + 0.02 ? fit : Math.min(3, Math.max(1.8, pvK * 2)));
+    });
+  })();
+  pvApply();
 
   /* ---------- 投递表单（效果稿演示） ---------- */
   var KEY = "cc_demo_resume_p001";

@@ -345,6 +345,19 @@ tr:hover td{background:#fcfbf7}
 .pv-wrap img{max-width:100%;max-height:62vh;border-radius:8px;background:#fff;object-fit:contain}
 .pv-none{text-align:center;padding:70px 20px;color:var(--muted);font-size:13.5px;line-height:1.9}
 .pv-none b{display:block;color:var(--ink);font-size:15px;margin-bottom:8px}
+/* 图片简历：放大镜（可缩放 + 可拖动，文字能看清） */
+.pv-zoom{width:100%}
+.pv-zoombar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pv-zoombar button{border:1.3px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;
+  font-size:12.5px;font-family:inherit;cursor:pointer;color:var(--ink)}
+.pv-zoombar button:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.pv-zoombar .pct{font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--muted);min-width:50px}
+.pv-zoombar .hint{font-size:11.5px;color:var(--muted);margin-left:auto}
+.pv-canvas{width:100%;height:62vh;overflow:auto;background:#e9e7e0;border-radius:8px;cursor:zoom-in}
+.pv-canvas.dragging{cursor:grabbing}
+.pv-inner{min-width:100%;width:max-content;padding:12px;display:flex;justify-content:center}
+.pv-wrap .pv-canvas img{max-width:none;max-height:none;border-radius:6px;background:#fff;
+  display:block;-webkit-user-select:none;user-select:none;-webkit-user-drag:none;cursor:zoom-in}
 
 /* 响应式 */
 @media (max-width:960px){
@@ -732,7 +745,7 @@ tr:hover td{background:#fcfbf7}
             <th style="width:176px">简历文件</th>
             <th style="width:112px">预览</th>
             <th style="width:216px">下载</th>
-            <th style="width:76px">操作</th>
+            <th style="width:76px" id="rsThOp">操作</th>
           </tr></thead>
           <tbody id="rsBody"></tbody>
         </table>
@@ -1898,6 +1911,11 @@ function resTypeTag(fileName){
     + 'background:' + c[1] + ';color:' + c[2] + ';border-radius:5px;padding:2px 6px;margin-right:6px">'
     + c[0] + '</span>';
 }
+function isImgRes(r){
+  var ext = (/\.([a-z0-9]+)$/i.exec(String((r && r.file_name) || "")) || [])[1];
+  return /^image\//i.test((r && r.file_type) || "") ||
+    /^(jpg|jpeg|png|webp|bmp|gif)$/i.test(ext || "");
+}
 function fmtResSize(n){
   n = +n || 0;
   if(n < 1024) return n + " B";
@@ -1931,6 +1949,7 @@ function openResumes(pid, title){
   $("rsEmpty").style.display = "none";
   $("rsCount").textContent = "";
   $("resModal").classList.add("open");
+  rsApplyCols();
   loadResumes();
 }
 function loadResumes(){
@@ -1960,9 +1979,16 @@ function loadResumes(){
     $("rsEmpty").innerHTML = "<b>连不上服务器</b>请检查网络（或代理 / VPN）后重试";
   });
 }
+/* 「操作」列只给总管理员看（列里只有删除；普通管理员整天列都不显示） */
+function rsApplyCols(){
+  var sn = sess() || {};
+  var th = $("rsThOp");
+  if(th) th.style.display = (sn.role === "super") ? "" : "none";
+}
 function renderResumeList(){
   var sn = sess() || {};
   var isSuper = sn.role === "super";
+  rsApplyCols();
   var rows = PJ.res.filter(resMatches);
   var tb = $("rsBody"), empty = $("rsEmpty");
   $("rsCount").textContent = PJ.res.length ? ("共 " + PJ.res.length + " 份") : "";
@@ -1992,10 +2018,9 @@ function renderResumeList(){
                    + esc(r.intro) + '</div>' : '') +
       '</td>' +
       '<td class="res-file">' + esc(r.file_name || "—") + '<br>' + fmtResSize(r.file_size) + '</td>' +
-      '<td><button class="view-btn" data-ract="pv">' + resTypeTag(r.file_name) + '预览</button></td>' +
+      '<td><button class="view-btn" data-ract="pv">' + (isImgRes(r) ? "🔍 " : "") + resTypeTag(r.file_name) + '预览</button></td>' +
       '<td><div class="dl-cell"><button class="view-btn" data-ract="dl">下载简历</button>' + trace + '</div></td>' +
-      '<td>' + (isSuper ? '<button class="del-btn" data-ract="del">删除</button>'
-                        : '<span style="font-size:11.5px;color:var(--muted)">仅总管理员</span>') + '</td>' +
+      (isSuper ? '<td><button class="del-btn" data-ract="del">删除</button></td>' : '') +
     '</tr>';
   }).join("");
   tb.querySelectorAll("tr").forEach(function(tr){
@@ -2074,8 +2099,89 @@ function resumeDownload(r, btn){
 }
 
 var curRes = null, pvUrl = null;
+/* ---------- 图片简历放大镜：滚轮缩放 / 按住拖动 / 单击放大 ---------- */
+var pvImg = null, pvCanvas = null, pvNat = null, pvScale = 1, pvMoved = false;
+function pvApply(){
+  if(!pvImg || !pvNat) return;
+  pvImg.style.width  = Math.round(pvNat.w * pvScale) + "px";
+  pvImg.style.height = "auto";
+  var p = $("pvPct");
+  if(p) p.textContent = Math.round(pvScale * 100) + "%";
+}
+/* 「适应宽度」：整页进视野，可能比原图小 */
+function pvWidthScale(){
+  if(!pvNat || !pvCanvas) return 1;
+  return ((pvCanvas.clientWidth || 800) - 24) / pvNat.w;
+}
+/* 默认：不小于 1:1（原图清晰度），小图最多放大到 2 倍 */
+function pvDefaultScale(){
+  return Math.max(1, Math.min(2, pvWidthScale()));
+}
+function pvSetScale(s, cx, cy){
+  s = Math.max(0.2, Math.min(6, s));
+  if(!pvCanvas || !pvNat || pvScale === s){ pvScale = s; pvApply(); return; }
+  var ratio = s / pvScale;
+  var rect = pvCanvas.getBoundingClientRect();
+  var px = (cx == null ? (pvCanvas.clientWidth || 0) / 2 : cx - rect.left);
+  var py = (cy == null ? (pvCanvas.clientHeight || 0) / 2 : cy - rect.top);
+  var ox = pvCanvas.scrollLeft + px, oy = pvCanvas.scrollTop + py;
+  pvScale = s;
+  pvApply();
+  pvCanvas.scrollLeft = ox * ratio - px;
+  pvCanvas.scrollTop  = oy * ratio - py;
+}
+function initPvZoom(){
+  pvImg = $("pvImg"); pvCanvas = $("pvCanvas"); pvNat = null; pvScale = 1; pvMoved = false;
+  if(!pvImg || !pvCanvas) return;
+  function ready(){
+    pvNat = { w: pvImg.naturalWidth || 900, h: pvImg.naturalHeight || 1200 };
+    pvScale = pvDefaultScale();
+    pvApply();
+    pvCanvas.scrollTop = 0; pvCanvas.scrollLeft = 0;
+  }
+  if(pvImg.complete && pvImg.naturalWidth) ready();
+  else pvImg.addEventListener("load", ready);
+  $("pvWrap").querySelectorAll("[data-pvzoom]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var m = b.getAttribute("data-pvzoom");
+      if(m === "fit") pvSetScale(pvWidthScale());
+      else if(m === "one") pvSetScale(1);
+      else pvSetScale(pvScale * (m === "in" ? 1.25 : 0.8));
+    });
+  });
+  pvCanvas.addEventListener("wheel", function(e){
+    if(!pvNat) return;
+    e.preventDefault();
+    pvSetScale(pvScale * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX, e.clientY);
+  }, { passive:false });
+  var drag = null;
+  pvCanvas.addEventListener("mousedown", function(e){
+    if(e.button !== 0) return;
+    drag = { x:e.clientX, y:e.clientY, l:pvCanvas.scrollLeft, t:pvCanvas.scrollTop, moved:false };
+    pvCanvas.classList.add("dragging");
+  });
+  document.addEventListener("mousemove", function(e){
+    if(!drag) return;
+    var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if(Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+    pvCanvas.scrollLeft = drag.l - dx;
+    pvCanvas.scrollTop  = drag.t - dy;
+  });
+  document.addEventListener("mouseup", function(){
+    if(!drag) return;
+    pvMoved = drag.moved; drag = null;
+    pvCanvas.classList.remove("dragging");
+  });
+  pvCanvas.addEventListener("click", function(e){
+    if(pvMoved){ pvMoved = false; return; }   /* 拖动结束的那一下不算点击 */
+    if(e.target !== pvImg || !pvNat) return;
+    var fit = pvWidthScale();
+    pvSetScale(pvScale > fit + 0.02 ? fit : Math.min(3, Math.max(2, pvScale * 2)), e.clientX, e.clientY);
+  });
+}
 function resumePreview(r){
   curRes = r;
+  pvImg = null; pvCanvas = null; pvNat = null; pvScale = 1; pvMoved = false;
   var ext = (/\.([a-z0-9]+)$/i.exec(String(r.file_name || "")) || [])[1];
   ext = ext ? ext.toLowerCase() : "";
   var isImg = /^image\//.test(r.file_type || "") || /^(jpg|jpeg|png|webp|bmp|gif)$/.test(ext);
@@ -2093,7 +2199,21 @@ function resumePreview(r){
     }
     if(isImg){
       pvUrl = URL.createObjectURL(b64ToBlob(j.data, r.file_type || "image/jpeg"));
-      $("pvWrap").innerHTML = '<img src="' + pvUrl + '" alt="简历预览">';
+      $("pvWrap").innerHTML =
+        '<div class="pv-zoom">' +
+          '<div class="pv-zoombar">' +
+            '<button type="button" data-pvzoom="in">🔍 放大</button>' +
+            '<button type="button" data-pvzoom="out">🔍 缩小</button>' +
+            '<button type="button" data-pvzoom="fit">适应宽度</button>' +
+            '<button type="button" data-pvzoom="one">1:1 原始</button>' +
+            '<span class="pct" id="pvPct"></span>' +
+            '<span class="hint">滚轮缩放 · 按住拖动 · 单击图片放大</span>' +
+          '</div>' +
+          '<div class="pv-canvas" id="pvCanvas"><div class="pv-inner">' +
+            '<img id="pvImg" src="' + pvUrl + '" alt="简历预览">' +
+          '</div></div>' +
+        '</div>';
+      initPvZoom();
       return;
     }
     $("pvWrap").innerHTML = '<div class="pv-none"><b>该格式不支持在线预览</b>' +
@@ -2121,6 +2241,7 @@ function closeResModals(){
   $("resPrev").classList.remove("open");
   if(pvUrl){ try { URL.revokeObjectURL(pvUrl); } catch(e){} pvUrl = null; }
   $("pvWrap").innerHTML = "";
+  pvImg = null; pvCanvas = null; pvNat = null; pvScale = 1; pvMoved = false;
   curRes = null;
 }
 document.querySelectorAll("[data-resclose]").forEach(function(el){

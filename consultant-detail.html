@@ -212,20 +212,28 @@ function render(c){
 function fail(){
   $("loading").textContent = "加载失败，请检查网络后刷新重试";
 }
-(function load(){
-  var id = qs("id"), nm = qs("n") || qs("name");
-  if(!id && !nm){ show404(); return; }
-  var url = SB_URL + "/rest/v1/consultants?select=id,name,title,bio,image,cases,views"
+function query(cols, id, nm){
+  var url = SB_URL + "/rest/v1/consultants?select=" + cols
     + (id ? ("&id=eq." + encodeURIComponent(id))
           : ("&name=eq." + encodeURIComponent(nm)))
     + "&limit=1";
-  fetch(url, { headers:{ "apikey":KEY } })
-    .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
-    .then(function(list){
-      if(!Array.isArray(list) || !list.length){ show404(); return; }
-      render(list[0]);
-    })
-    .catch(fail);
+  return fetch(url, { headers:{ "apikey":KEY } })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(); });
+}
+function take(list){
+  if(!Array.isArray(list) || !list.length){ show404(); return false; }
+  render(list[0]);
+  return true;
+}
+(function load(){
+  var id = qs("id"), nm = qs("n") || qs("name");
+  if(!id && !nm){ show404(); return; }
+  /* 先带案例 / 观点取；数据库还没加这两列时自动退回基础字段，基本信息照常展示 */
+  query("id,name,title,bio,image,cases,views", id, nm)
+    .then(take)
+    .catch(function(){
+      return query("id,name,title,bio,image", id, nm).then(take).catch(fail);
+    });
 })();
 })();
 </script>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>咨询师工作台 · CONSULTANT CLUB</title>
+<link rel="icon" href="assets/favicon.png">
+<style>
+:root{
+  --ink:#14153a; --amber:#f0c24b; --amber-d:#b78a22; --white:#fdfdfb;
+  --muted:#6b6d85; --line:#e4e2da; --bg:#f4f3ee; --ok:#2e8b57; --bad:#c0392b;
+  --shadow-1:0 1px 2px rgba(20,21,58,.05),0 6px 18px rgba(20,21,58,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei",-apple-system,"Segoe UI",system-ui,sans-serif;
+  font-size:14px;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font-family:inherit}
+/* ---------- 布局 ---------- */
+#app{display:none;min-height:100vh;grid-template-columns:224px 1fr}
+aside{background:var(--ink);color:var(--white);display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh}
+aside .brand{font-family:ui-monospace,Consolas,monospace;font-size:13px;letter-spacing:.06em;font-weight:700;display:flex;align-items:center;gap:8px}
+aside .dots{display:inline-flex;gap:4px}
+aside .dots i{width:8px;height:8px;border-radius:50%;background:var(--white);opacity:.9}
+aside .dots i.o{background:var(--amber)}
+aside .sub{font-size:10.5px;color:rgba(253,253,251,.42);margin-top:6px;letter-spacing:.16em}
+nav{display:flex;flex-direction:column;gap:4px;margin-top:26px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;background:none;border:0;color:rgba(253,253,251,.72);
+  padding:10px 12px;border-radius:10px;font-size:13.5px;cursor:pointer;text-align:left;width:100%}
+.nav-item:hover{background:rgba(253,253,251,.07);color:var(--white)}
+.nav-item.on{background:var(--amber);color:var(--ink);font-weight:700}
+.me{border-top:1px solid rgba(253,253,251,.14);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.me .who{font-size:13px;font-weight:700}
+.me .ph{font-size:11.5px;color:rgba(253,253,251,.5);font-family:ui-monospace,Consolas,monospace}
+.me .role-badge{align-self:flex-start;font-size:10.5px;background:rgba(240,194,75,.18);color:var(--amber);
+  border:1px solid rgba(240,194,75,.4);border-radius:99px;padding:2px 9px;letter-spacing:.08em}
+.me-logout{background:none;border:1px solid rgba(253,253,251,.24);color:rgba(253,253,251,.8);
+  border-radius:9px;padding:7px 10px;font-size:12.5px;cursor:pointer}
+.me-logout:hover{border-color:var(--amber);color:var(--amber)}
+main{padding:26px 30px 60px;min-width:0}
+.mhead{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.mhead h2{margin:0;font-size:22px;font-weight:800;letter-spacing:-.01em}
+.mhead .sub{font-size:12.5px;color:var(--muted)}
+.home-btn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);
+  border:1px solid var(--line);background:var(--white);border-radius:9px;padding:7px 12px;text-decoration:none}
+.home-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
+/* ---------- 通用 ---------- */
+.card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow-1);max-width:940px}
+.card + .card{margin-top:16px}
+.card h3{margin:0 0 6px;font-size:15.5px}
+.card .desc{font-size:12.5px;color:var(--muted);line-height:1.75;margin-bottom:14px}
+.frm{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.fi{display:flex;flex-direction:column;gap:6px}
+.fi label{font-size:12.5px;color:var(--muted);font-weight:600}
+.fi input,.fi textarea,.fi select{border:1.4px solid var(--line);border-radius:9px;padding:9px 12px;
+  font:inherit;font-size:13.5px;outline:none;background:#fff;color:var(--ink);min-width:0}
+.fi input:focus,.fi textarea:focus,.fi select:focus{border-color:var(--amber)}
+.pbtn{background:var(--ink);color:var(--white);border:0;border-radius:10px;padding:10px 20px;
+  font-size:13.5px;font-weight:600;cursor:pointer}
+.pbtn:hover{opacity:.92}
+.pbtn:disabled{opacity:.55;cursor:default}
+.pbtn.amber{background:var(--amber);color:var(--ink)}
+.pbtn.ghost{background:transparent;color:var(--ink);border:1.4px solid var(--line)}
+.pbtn.ghost:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.pbtn.mini{padding:7px 14px;font-size:12.5px;border-radius:9px}
+.empty{color:var(--muted);font-size:13px;padding:26px 4px;line-height:1.9}
+/* ---------- 项目卡 ---------- */
+.plist{display:flex;flex-direction:column;gap:10px;max-width:940px}
+.pitem{display:flex;align-items:center;gap:14px;background:var(--white);border:1px solid var(--line);
+  border-radius:13px;padding:14px 16px;box-shadow:var(--shadow-1)}
+.pitem .pnum{font-family:ui-monospace,Consolas,monospace;font-size:12px;font-weight:700;color:var(--amber-d);
+  background:rgba(240,194,75,.14);border-radius:7px;padding:4px 8px;flex:none}
+.pitem .pmain{flex:1;min-width:0}
+.pitem .pmain b{font-size:14.5px;display:block}
+.pitem .pmain small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.pitem .pcnt{font-size:12px;color:var(--muted);flex:none;text-align:right;line-height:1.6}
+.pitem .pcnt b{display:block;font-size:17px;color:var(--ink);font-family:ui-monospace,Consolas,monospace}
+.like-btn{flex:none;border:1.4px solid var(--amber-d);background:#fff;color:var(--amber-d);border-radius:10px;
+  padding:8px 15px;font-size:13px;font-weight:600;cursor:pointer}
+.like-btn:hover{background:#fdf8ea}
+.like-btn.on{background:var(--amber);border-color:var(--amber);color:var(--ink)}
+.rfile{font-size:12px;color:var(--muted);font-family:ui-monospace,Consolas,monospace}
+/* ---------- 咨询师介绍 ---------- */
+.cform{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start}
+@media (max-width:900px){.cform{grid-template-columns:1fr}}
+.crop-wrap{position:relative;width:200px;height:200px;border-radius:50%;overflow:hidden;
+  background:#20214a;cursor:grab;flex:none}
+.crop-wrap.dragging{cursor:grabbing}
+.crop-wrap img{position:absolute;left:0;top:0;transform-origin:0 0;user-select:none;-webkit-user-drag:none;pointer-events:none;max-width:none}
+.crop-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:rgba(253,253,251,.45);font-size:12px;gap:6px;text-align:center;line-height:1.8}
+.czoom{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12px;color:var(--muted);width:200px}
+.czoom input{flex:1;accent-color:var(--amber)}
+.cbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;width:200px}
+.rep-block{display:flex;flex-direction:column;gap:8px}
+.rep-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rep-head label{font-size:12.5px;color:var(--muted);font-weight:600}
+.rep-add{border:1.3px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;
+  padding:5px 11px;font-size:12.5px;cursor:pointer;flex:none}
+.rep-add:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.rep-list{display:flex;flex-direction:column;gap:8px}
+.rep-row{display:flex;gap:8px;align-items:center}
+.rep-row input{border:1.4px solid var(--line);border-radius:9px;padding:8px 11px;font:inherit;font-size:13px;outline:none;min-width:0}
+.rep-row input:focus{border-color:var(--amber)}
+.rep-row .rep-t{flex:0 0 34%}
+.rep-row .rep-d{flex:1}
+.rep-del{border:1.3px solid #f0d9d5;background:#fff;color:var(--bad);border-radius:8px;
+  padding:7px 10px;font-size:13px;line-height:1;cursor:pointer;flex:none}
+.rep-del:hover{background:#fdf3f1}
+/* ---------- 个人信息 ---------- */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:13px 16px}
+.pgrid .fi.full{grid-column:1/-1}
+.tools{display:flex;gap:10px;align-items:center;margin-top:16px;flex-wrap:wrap}
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:var(--ink);color:var(--white);
+  padding:11px 20px;border-radius:11px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:86vw;text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:var(--bad)}
+#boot{display:flex;align-items:center;justify-content:center;height:100vh;color:var(--muted);font-size:14px}
+/* ---------- 移动端 ---------- */
+@media (max-width:820px){
+  #app{grid-template-columns:1fr;padding-bottom:64px}
+  aside{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;flex-direction:row;padding:8px 6px;
+    z-index:50;gap:4px;align-items:center}
+  aside .brand,aside .sub,aside .me .role-badge{display:none}
+  aside .me{border:0;padding:0;flex-direction:row;gap:8px}
+  aside .me .who,aside .me .ph{display:none}
+  nav{flex-direction:row;margin:0;gap:2px;flex:1}
+  .nav-item{flex-direction:column;gap:3px;font-size:11px;padding:7px 4px;text-align:center;justify-content:center}
+  .nav-item svg{width:18px;height:18px}
+  .me-logout{padding:6px 9px;font-size:11.5px}
+  main{padding:18px 14px 40px}
+}
+</style>
+</head>
+<body>
+
+<div id="boot">正在进入咨询师工作台…</div>
+
+<div id="app">
+  <aside>
+    <div>
+      <div class="brand"><span class="dots"><i></i><i class="o"></i></span>CONSULTANT CLUB</div>
+      <div class="sub">CONSULTANT CONSOLE</div>
+    </div>
+    <nav>
+      <button class="nav-item on" data-view="interest">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 13.6S2.2 10.1 2.2 6.3A3.3 3.3 0 018 4a3.3 3.3 0 015.8 2.3c0 3.8-5.8 7.3-5.8 7.3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        感兴趣
+      </button>
+      <button class="nav-item" data-view="resume">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="1.8" width="11" height="12.4" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5.4 5.6h5.2M5.4 8.3h5.2M5.4 11h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        投递项目
+      </button>
+      <button class="nav-item" data-view="intro">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 14c.6-2.7 2.8-4 5.5-4s4.9 1.3 5.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        咨询师介绍
+      </button>
+      <button class="nav-item" data-view="me">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="6.5" width="11" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 6.5V5a3 3 0 016 0v1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10.2" r="1.2" fill="currentColor"/></svg>
+        个人中心
+      </button>
+    </nav>
+    <div class="me">
+      <div>
+        <div class="who" id="meName">—</div>
+        <div class="ph" id="mePhone">—</div>
+      </div>
+      <span class="role-badge">咨询师</span>
+      <button class="me-logout" id="logoutBtn" type="button">退出登录</button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- 感兴趣 -->
+    <section id="view-interest">
+      <div class="mhead">
+        <h2>感兴趣的项目</h2>
+        <span class="sub">点亮的项目会记在你的名下，同时计入官网「感兴趣」总数</span>
+        <a class="home-btn" href="projects.html" target="_blank" rel="noopener">查看官网项目页</a>
+      </div>
+      <div class="plist" id="likeAll"></div>
+      <div style="margin-top:26px">
+        <div class="mhead" style="margin-bottom:12px"><h2 style="font-size:16px">我点亮过的</h2><span class="sub" id="likeMineCnt"></span></div>
+        <div class="plist" id="likeMine"></div>
+      </div>
+    </section>
+
+    <!-- 投递项目 -->
+    <section id="view-resume" style="display:none">
+      <div class="mhead">
+        <h2>投递项目</h2>
+        <span class="sub">用你在官网投递简历时填写的手机号自动匹配</span>
+        <a class="home-btn" href="projects.html" target="_blank" rel="noopener">去官网投递</a>
+      </div>
+      <div class="plist" id="resList"></div>
+    </section>
+
+    <!-- 咨询师介绍 -->
+    <section id="view-intro" style="display:none">
+      <div class="mhead">
+        <h2>咨询师介绍</h2>
+        <span class="sub">这里的内容会直接同步到官网「项目咨询师」展示</span>
+      </div>
+      <div class="card">
+        <div class="cform">
+          <div>
+            <div class="crop-wrap" id="cropBox">
+              <div class="crop-empty" id="cropEmpty">点击下方「选择照片」上传<br>拖动调整位置 · 滑块缩放</div>
+              <img id="cropImg" alt="" style="display:none">
+            </div>
+            <div class="czoom" id="cropZoomRow" style="display:none">
+              <span>缩放</span><input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1">
+            </div>
+            <div class="cbtns">
+              <button class="pbtn ghost mini" id="cropPick" type="button">选择照片</button>
+              <button class="pbtn ghost mini" id="cropReset" type="button" style="display:none">重选</button>
+            </div>
+            <input type="file" id="cropFile" accept="image/*" style="display:none">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="fi"><label>姓名 *</label><input id="cName" type="text" maxlength="20" placeholder="如：张三"></div>
+            <div class="fi"><label>头衔 *</label><input id="cTitle" type="text" maxlength="20" placeholder="如：战略顾问"></div>
+            <div class="fi"><label>介绍 *（每行一条）</label>
+              <textarea id="cBio" rows="4" placeholder="世界前 10 强集团 / P8&#10;大型金融集团 / 总经理&#10;上市连锁商超 / 人力总监"></textarea>
+            </div>
+            <div class="rep-block">
+              <div class="rep-head">
+                <label>项目案例（选填 · 标题 + 一句成果）</label>
+                <button class="rep-add" id="caseAdd" type="button">＋ 添加一条</button>
+              </div>
+              <div class="rep-list" id="caseList"></div>
+            </div>
+            <div class="rep-block">
+              <div class="rep-head">
+                <label>专业观点（选填 · 标题 + 一句观点）</label>
+                <button class="rep-add" id="viewAdd" type="button">＋ 添加一条</button>
+              </div>
+              <div class="rep-list" id="viewList"></div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="pbtn" id="cSave" type="button">保存并同步到官网</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 个人中心 -->
+    <section id="view-me" style="display:none">
+      <div class="mhead">
+        <h2>个人中心</h2>
+        <span class="sub">申请时填写的资料，可随时修改</span>
+      </div>
+      <div class="card">
+        <h3>个人信息</h3>
+        <div class="desc">这些内容来自你提交的咨询师申请，修改后仅用于平台内部了解。</div>
+        <div class="pgrid" id="profGrid"></div>
+        <div class="tools">
+          <button class="pbtn" id="profSave" type="button">保存个人信息</button>
+        </div>
+      </div>
+      <div class="card" style="max-width:520px">
+        <h3>修改密码</h3>
+        <div class="desc">首次登录默认密码 123456，建议立即修改。</div>
+        <div class="frm" style="flex-direction:column;align-items:stretch">
+          <div class="fi"><label>原密码</label><input id="pwOld" type="password" autocomplete="current-password"></div>
+          <div class="fi"><label>新密码（至少 6 位）</label><input id="pwNew" type="password" autocomplete="new-password"></div>
+          <div class="fi"><label>确认新密码</label><input id="pwNew2" type="password" autocomplete="new-password"></div>
+          <button class="pbtn" id="pwBtn" type="button" style="margin-top:8px">确认修改</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
+var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
+var CK_KEY = "cc_consultant_session";
+
+var LABELS = {
+  company:"公司名称", contact:"联系人", title:"职务", phone:"手机号", city:"所在城市",
+  size:"员工数", needs:"需求", cycle:"项目周期", budget:"预算",
+  name:"姓名", employers:"过往雇主", location:"所在国家/城市", age:"年龄",
+  experience:"咨询行业经历", education:"最高学历", school:"毕业学校",
+  industry:"擅长的行业", field:"擅长的领域", status:"目前状态",
+  freelance:"Freelancer 经验", start:"开始接项目时间", salary:"期待薪资", unit:"计薪单位"
+};
+var PROF_ORDER = ["name","phone","company","employers","location","age","experience",
+  "education","school","industry","field","status","freelance","start","salary","unit"];
+var FULL_FIELDS = { experience:1 };
+var PJ_CATS = { growth:"业绩增长", strategy:"战略规划", perf:"绩效体系", org:"组织变革",
+  talent:"人才发展", training:"专项培训", finance:"财税管理", legal:"法律咨询",
+  digital:"数字化", ai:"AI", other:"其他" };
+
+var ME = null, MY_LIKES = {}, ALL_PROJECTS = [];
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function fmtTime(iso){
+  if(!iso) return "—";
+  var d = new Date(iso);
+  var p = function(n){ return (n<10?"0":"")+n; };
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes());
+}
+var toastTimer;
+function toast(msg, err){
+  var t = $("toast"); t.textContent = msg;
+  t.className = "toast show" + (err ? " err" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.className = "toast"; }, 2600);
+}
+function sess(){ try{ return JSON.parse(localStorage.getItem(CK_KEY)); }catch(e){ return null; } }
+function logout(){
+  try { localStorage.removeItem(CK_KEY); } catch(e){}
+  location.replace("admin.html");
+}
+function api(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({
+    "apikey": SB_KEY,
+    "Content-Type": "application/json"
+  }, opts.headers || {});
+  var tries = 2;
+  function once(){
+    return fetch(SB_URL + path, opts).then(function(r){
+      return r.json().then(function(j){ return { status:r.status, body:j }; })
+                     .catch(function(){ return { status:r.status, body:null }; });
+    }).catch(function(e){
+      if(tries > 0){ tries--; return new Promise(function(res){ setTimeout(res, 900); }).then(once); }
+      throw e;
+    });
+  }
+  return once();
+}
+function rpc(fn, body){ return api("/rest/v1/rpc/" + fn, { method:"POST", body: JSON.stringify(body) }); }
+
+/* ---------- 视图切换 ---------- */
+function switchView(v){
+  ["interest","resume","intro","me"].forEach(function(k){
+    $("view-" + k).style.display = (k === v) ? "" : "none";
+  });
+  document.querySelectorAll(".nav-item").forEach(function(b){
+    b.classList.toggle("on", b.getAttribute("data-view") === v);
+  });
+  try { history.replaceState(null, "", "#" + v); } catch(e){}
+}
+document.querySelectorAll(".nav-item").forEach(function(b){
+  b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
+});
+$("logoutBtn").addEventListener("click", logout);
+
+/* ---------- 启动 ---------- */
+function boot(){
+  var s = sess();
+  if(!s || !s.token || s.role !== "consultant"){ location.replace("admin.html"); return; }
+  $("meName").textContent = s.name || "咨询师";
+  $("mePhone").textContent = s.phone || "";
+  $("boot").style.display = "none";
+  $("app").style.display = "grid";
+  var h = (location.hash || "").replace("#","");
+  if(["interest","resume","intro","me"].indexOf(h) > -1) switchView(h);
+  loadMe();
+}
+function loadMe(){
+  rpc("consultant_me", { p_token: sess().token }).then(function(r){
+    var j = r.body;
+    if(!j || !j.ok){
+      if(!j || /过期/.test(String(j.error || ""))){ return logout(); }
+      toast((j && j.error) || "加载失败", true); return;
+    }
+    ME = j;
+    if(j.name) $("meName").textContent = j.name;
+    fillIntro(j.consultant || {});
+    fillProfile(j.consultant ? j.consultant.profile : {});
+    loadProjects();
+    loadMyResumes();
+  }).catch(function(){ toast("加载失败：连不上服务器，请检查网络后重试", true); });
+}
+
+/* ---------- 感兴趣 ---------- */
+function loadProjects(){
+  api("/rest/v1/projects?select=project_id,title,subtitle,category,industry&published=eq.true&order=first_pub_at.desc.nullslast,created_at.desc", {})
+    .then(function(r){
+      ALL_PROJECTS = (r.status === 200 && Array.isArray(r.body)) ? r.body : [];
+      return rpc("consultant_my_interests", { p_token: sess().token });
+    })
+    .then(function(r){
+      var j = (r && r.body) || {};
+      MY_LIKES = {};
+      var mine = (j && j.ok && j.projects) ? j.projects : [];
+      mine.forEach(function(p){ MY_LIKES[p.project_id] = p; });
+      renderProjects(mine);
+    })
+    .catch(function(){ $("likeAll").innerHTML = '<div class="empty">加载失败，请刷新重试</div>'; });
+}
+function renderProjects(mine){
+  var wrap = $("likeAll");
+  if(!ALL_PROJECTS.length){
+    wrap.innerHTML = '<div class="empty">暂无已发布的项目 · 后台发布后这里会自动出现</div>';
+  } else {
+    wrap.innerHTML = ALL_PROJECTS.map(function(p){
+      var on = !!MY_LIKES[p.project_id];
+      return '<div class="pitem" data-pid="' + esc(p.project_id) + '">' +
+        '<span class="pnum">' + esc(p.project_id) + '</span>' +
+        '<div class="pmain"><b>' + esc(p.title || p.project_id) + '</b>' +
+        '<small>' + esc([PJ_CATS[p.category] || p.category, p.industry, p.subtitle].filter(Boolean).join(" · ")) + '</small></div>' +
+        '<button class="like-btn' + (on ? " on" : "") + '" type="button" data-act="like">' +
+          (on ? "已感兴趣 ✓" : "感兴趣") + '</button>' +
+      '</div>';
+    }).join("");
+  }
+  wrap.querySelectorAll("[data-act=like]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var pid = b.parentNode.getAttribute("data-pid");
+      b.disabled = true;
+      rpc("consultant_interest_toggle", { p_token: sess().token, p_project_id: pid }).then(function(r){
+        b.disabled = false;
+        var j = r.body;
+        if(j && j.ok){
+          if(j.on){ MY_LIKES[pid] = { project_id: pid }; }
+          else { delete MY_LIKES[pid]; }
+          var p = ALL_PROJECTS.filter(function(x){ return x.project_id === pid; })[0] || {};
+          var row = MY_LIKES[pid];
+          if(row && !row.title){
+            row.title = p.title || pid;
+            row.subtitle = p.subtitle || "";
+            row.category = p.category || "";
+            row.industry = p.industry || "";
+          }
+          b.className = "like-btn" + (j.on ? " on" : "");
+          b.textContent = j.on ? "已感兴趣 ✓" : "感兴趣";
+          renderMine();
+          toast(j.on ? "已点亮 · 官网该项目感兴趣人数 " + j.count : "已取消");
+        } else toast((j && j.error) || "操作失败", true);
+      }).catch(function(){ b.disabled = false; toast("网络异常，请稍后再试", true); });
+    });
+  });
+  renderMine();
+}
+function renderMine(){
+  var ids = Object.keys(MY_LIKES);
+  $("likeMineCnt").textContent = ids.length ? ("共 " + ids.length + " 个") : "";
+  var box = $("likeMine");
+  if(!ids.length){ box.innerHTML = '<div class="empty">还没有点亮过项目 · 在上方点「感兴趣」</div>'; return; }
+  box.innerHTML = ids.map(function(pid){
+    var m = MY_LIKES[pid];
+    return '<div class="pitem">' +
+      '<span class="pnum">' + esc(pid) + '</span>' +
+      '<div class="pmain"><b>' + esc(m.title || pid) + '</b>' +
+      '<small>' + esc([PJ_CATS[m.category] || m.category, m.industry, m.at ? "点亮于 " + fmtTime(m.at) : ""].filter(Boolean).join(" · ")) + '</small></div>' +
+    '</div>';
+  }).join("");
+}
+
+/* ---------- 投递项目 ---------- */
+function loadMyResumes(){
+  rpc("consultant_my_resumes", { p_token: sess().token }).then(function(r){
+    var j = r.body, box = $("resList");
+    if(!j || !j.ok){ box.innerHTML = '<div class="empty">' + esc((j && j.error) || "加载失败，请刷新重试") + '</div>'; return; }
+    var list = j.projects || [];
+    if(!list.length){
+      box.innerHTML = '<div class="empty">暂无投递记录 · 在官网项目卡点「投递简历」后，这里会显示你投递过的项目</div>';
+      return;
+    }
+    box.innerHTML = list.map(function(p){
+      return '<div class="pitem">' +
+        '<span class="pnum">' + esc(p.project_id) + '</span>' +
+        '<div class="pmain"><b>' + esc(p.title || p.project_id) + '</b>' +
+        '<small>' + esc([PJ_CATS[p.category] || p.category, p.subtitle].filter(Boolean).join(" · ")) + '</small>' +
+        '<small class="rfile">' + esc(p.file_name || "") + '</small></div>' +
+        '<div class="pcnt">' + esc(fmtTime(p.at)) + '</div>' +
+      '</div>';
+    }).join("");
+  }).catch(function(){ $("resList").innerHTML = '<div class="empty">加载失败，请刷新重试</div>'; });
+}
+
+/* ---------- 咨询师介绍（头像裁剪 + 字段 + 案例 / 观点） ---------- */
+var BOX = 200, OUT = 400;
+var C = { img:null, x:0, y:0, zoom:1, base:1, w:0, h:0, dragging:false, lx:0, ly:0 };
+
+function cropApply(){
+  if(!C.img) return;
+  var dispW = C.w * C.base * C.zoom, dispH = C.h * C.base * C.zoom;
+  C.x = Math.min(0, Math.max(BOX - dispW, C.x));
+  C.y = Math.min(0, Math.max(BOX - dispH, C.y));
+  $("cropImg").style.transform = "translate(" + C.x + "px," + C.y + "px) scale(" + (C.base * C.zoom) + ")";
+}
+function cropLoadSrc(src){
+  var im = new Image();
+  im.onload = function(){
+    C.img = im; C.w = im.naturalWidth; C.h = im.naturalHeight;
+    C.base = Math.max(BOX / C.w, BOX / C.h); C.zoom = 1;
+    $("cropZoom").value = 1;
+    C.x = (BOX - C.w * C.base) / 2; C.y = (BOX - C.h * C.base) / 2;
+    var el = $("cropImg"); el.src = src; el.style.display = "";
+    $("cropEmpty").style.display = "none";
+    $("cropReset").style.display = "";
+    $("cropZoomRow").style.display = "";
+    cropApply();
+  };
+  im.src = src;
+}
+function cropExport(){
+  if(!C.img) return null;
+  var cv = document.createElement("canvas"); cv.width = OUT; cv.height = OUT;
+  var ctx = cv.getContext("2d");
+  var s = C.base * C.zoom, sw = BOX / s;
+  ctx.drawImage(C.img, -C.x / s, -C.y / s, sw, sw, 0, 0, OUT, OUT);
+  return cv.toDataURL("image/jpeg", 0.85);
+}
+$("cropPick").addEventListener("click", function(){ $("cropFile").click(); });
+$("cropReset").addEventListener("click", function(){ $("cropFile").click(); });
+$("cropFile").addEventListener("change", function(){
+  var f = this.files && this.files[0];
+  this.value = "";
+  if(!f) return;
+  if(f.size > 15 * 1048576){ toast("图片过大，请选择 15MB 以内的照片", true); return; }
+  var fr = new FileReader();
+  fr.onload = function(){ cropLoadSrc(fr.result); };
+  fr.readAsDataURL(f);
+});
+$("cropZoom").addEventListener("input", function(){
+  C.zoom = parseFloat(this.value) || 1; cropApply();
+});
+var cropBox = $("cropBox");
+function pt(e){
+  var t = e.touches ? e.touches[0] : e;
+  return { x:t.clientX, y:t.clientY };
+}
+function dragStart(e){
+  if(!C.img) return;
+  C.dragging = true; cropBox.classList.add("dragging");
+  var p = pt(e); C.lx = p.x; C.ly = p.y;
+  if(e.touches) e.preventDefault();
+}
+function dragMove(e){
+  if(!C.dragging) return;
+  var p = pt(e);
+  C.x += p.x - C.lx; C.y += p.y - C.ly;
+  C.lx = p.x; C.ly = p.y;
+  cropApply();
+  if(e.touches) e.preventDefault();
+}
+function dragEnd(){ C.dragging = false; cropBox.classList.remove("dragging"); }
+cropBox.addEventListener("mousedown", dragStart);
+window.addEventListener("mousemove", dragMove);
+window.addEventListener("mouseup", dragEnd);
+cropBox.addEventListener("touchstart", dragStart, {passive:false});
+cropBox.addEventListener("touchmove", dragMove, {passive:false});
+cropBox.addEventListener("touchend", dragEnd);
+
+/* 案例 / 观点：逐条录入 */
+function repRowHtml(t, d){
+  return '<div class="rep-row">' +
+    '<input class="rep-t" type="text" placeholder="标题（如：某制造企业绩效改革）" value="' + esc(t || "") + '">' +
+    '<input class="rep-d" type="text" placeholder="一句描述（如：人均产值提升 32%）" value="' + esc(d || "") + '">' +
+    '<button class="rep-del" type="button" title="删除这条">✕</button></div>';
+}
+function repBindDel(box){
+  box.querySelectorAll(".rep-del").forEach(function(b){
+    b.addEventListener("click", function(){ b.parentNode.remove(); });
+  });
+}
+function addRepRow(listId, t, d){
+  var box = $(listId);
+  box.insertAdjacentHTML("beforeend", repRowHtml(t, d));
+  repBindDel(box);
+}
+function setRep(listId, arr){
+  $(listId).innerHTML = "";
+  (arr || []).forEach(function(o){ addRepRow(listId, o && o.t, o && o.d); });
+}
+function collectRep(listId){
+  var out = [];
+  $(listId).querySelectorAll(".rep-row").forEach(function(row){
+    var t = row.querySelector(".rep-t").value.trim();
+    var d = row.querySelector(".rep-d").value.trim();
+    if(t || d) out.push({ t:t, d:d });
+  });
+  return out;
+}
+$("caseAdd").addEventListener("click", function(){ addRepRow("caseList"); });
+$("viewAdd").addEventListener("click", function(){ addRepRow("viewList"); });
+
+function fillIntro(c){
+  $("cName").value = c.name || "";
+  $("cTitle").value = c.title || "";
+  $("cBio").value = c.bio || "";
+  setRep("caseList", c.cases);
+  setRep("viewList", c.views);
+  if(c.image) cropLoadSrc(c.image);
+}
+$("cSave").addEventListener("click", function(){
+  var name = $("cName").value.trim(), title = $("cTitle").value.trim(), bio = $("cBio").value;
+  if(!name || !title) return toast("请填写姓名与头衔", true);
+  if(!bio.trim()) return toast("请填写介绍", true);
+  var img = cropExport();
+  var btn = $("cSave"); btn.disabled = true;
+  rpc("consultant_save_self", {
+    p_token: sess().token, p_name: name, p_title: title, p_bio: bio, p_image: img || "",
+    p_cases: collectRep("caseList"), p_views: collectRep("viewList")
+  }).then(function(r){
+    btn.disabled = false;
+    var j = r.body;
+    if(j && j.ok){
+      toast("已保存 · 官网展示同步更新");
+      var s = sess(); if(s){ s.name = name; try{ localStorage.setItem(CK_KEY, JSON.stringify(s)); }catch(e){} }
+      $("meName").textContent = name;
+    } else toast((j && j.error) || "保存失败", true);
+  }).catch(function(){ btn.disabled = false; toast("网络异常，请稍后再试", true); });
+});
+
+/* ---------- 个人中心 ---------- */
+function fillProfile(p){
+  p = p || {};
+  var keys = PROF_ORDER.slice();
+  Object.keys(p).forEach(function(k){ if(keys.indexOf(k) === -1 && k !== "extra") keys.push(k); });
+  if(!keys.length) keys = PROF_ORDER.slice();
+  $("profGrid").innerHTML = keys.map(function(k){
+    var v = (p[k] == null) ? "" : String(p[k]);
+    var label = esc(LABELS[k] || k);
+    if(FULL_FIELDS[k]){
+      return '<div class="fi full"><label>' + label + '</label>' +
+        '<textarea data-pk="' + esc(k) + '" rows="4">' + esc(v) + '</textarea></div>';
+    }
+    return '<div class="fi"><label>' + label + '</label>' +
+      '<input data-pk="' + esc(k) + '" type="text" value="' + esc(v) + '"></div>';
+  }).join("");
+}
+$("profSave").addEventListener("click", function(){
+  var base = (ME && ME.consultant && ME.consultant.profile) ? ME.consultant.profile : {};
+  var out = {};
+  Object.keys(base).forEach(function(k){ out[k] = base[k]; });
+  $("profGrid").querySelectorAll("[data-pk]").forEach(function(el){
+    out[el.getAttribute("data-pk")] = el.value;
+  });
+  var btn = $("profSave"); btn.disabled = true;
+  rpc("consultant_profile_save", { p_token: sess().token, p_profile: out }).then(function(r){
+    btn.disabled = false;
+    var j = r.body;
+    if(j && j.ok){
+      toast("个人信息已保存");
+      if(out.name) $("meName").textContent = out.name;
+      if(ME && ME.consultant) ME.consultant.profile = out;
+    } else toast((j && j.error) || "保存失败", true);
+  }).catch(function(){ btn.disabled = false; toast("网络异常，请稍后再试", true); });
+});
+$("pwBtn").addEventListener("click", function(){
+  var o = $("pwOld").value, n = $("pwNew").value, n2 = $("pwNew2").value;
+  if(!o) return toast("请输入原密码", true);
+  if(!n || n.length < 6) return toast("新密码至少 6 位", true);
+  if(n !== n2) return toast("两次输入的新密码不一致", true);
+  rpc("admin_change_password", { p_token: sess().token, p_old: o, p_new: n }).then(function(r){
+    var j = r.body;
+    if(j && j.ok){
+      toast("密码已修改，下次登录请使用新密码");
+      $("pwOld").value = $("pwNew").value = $("pwNew2").value = "";
+    } else toast((j && j.error) || "修改失败", true);
+  }).catch(function(){ toast("网络异常，请稍后再试", true); });
+});
+
+boot();
+})();
+</script>
+</body>
+</html>

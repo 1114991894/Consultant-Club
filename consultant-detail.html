@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>项目咨询师 · CONSULTANT CLUB</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#181938; --indigo-950:#14153a; --indigo-900:#1e1f4e;
+  --amber:#f0c24b; --amber-deep:#b78a22;
+  --paper:#f7f5ef; --white:#fdfdfb;
+  --text:#232457; --muted:#5f6085; --line:rgba(35,36,87,.14);
+  --serif:'Playfair Display','Noto Serif SC',serif;
+  --serif-cn:'Noto Serif SC','Playfair Display',serif;
+  --sans:'Noto Sans SC','Microsoft YaHei',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);color:var(--text);background:var(--paper);line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+
+/* ---------- 顶栏 ---------- */
+.topbar{position:sticky;top:0;z-index:20;background:rgba(20,21,58,.92);backdrop-filter:blur(10px);
+  color:#fdfdfb;border-bottom:1px solid rgba(253,253,251,.1)}
+.topbar .in{max-width:1080px;margin:0 auto;padding:13px 22px;display:flex;align-items:center;gap:12px}
+.brand{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:.08em;display:flex;align-items:center;gap:9px}
+.brand i{width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block}
+.back{margin-left:auto;font-size:13px;color:rgba(253,253,251,.7);border:1px solid rgba(253,253,251,.24);
+  border-radius:99px;padding:6px 15px;transition:.25s}
+.back:hover{color:var(--amber);border-color:var(--amber)}
+
+/* ---------- Hero ---------- */
+.hero{background:var(--indigo-950);color:#fdfdfb;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-140px;top:-140px;width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,rgba(240,194,75,.16),transparent 68%)}
+.hero .in{max-width:1080px;margin:0 auto;padding:clamp(38px,6vw,68px) 22px clamp(40px,6vw,64px);
+  display:flex;gap:clamp(24px,4vw,52px);align-items:flex-start;position:relative;z-index:1;flex-wrap:wrap}
+.ava{width:clamp(140px,18vw,190px);height:clamp(140px,18vw,190px);border-radius:50%;overflow:hidden;flex:none;
+  border:2px solid rgba(240,194,75,.6);box-shadow:0 0 0 8px rgba(240,194,75,.09);background:#22234f}
+.ava img{width:100%;height:100%;object-fit:cover}
+.ava .ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(253,253,251,.4);
+  font-family:var(--serif-cn);font-size:44px}
+.hmeta{flex:1;min-width:260px;padding-top:6px}
+.kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;color:rgba(240,194,75,.9);margin-bottom:14px}
+.hmeta h1{font-family:var(--serif-cn);font-size:clamp(30px,5vw,46px);font-weight:900;line-height:1.15;letter-spacing:-.01em}
+.role{display:inline-block;margin:16px 0 20px;font-size:13px;font-weight:700;color:var(--ink);
+  background:var(--amber);padding:4px 15px;border-radius:99px}
+.bio{display:grid;gap:9px;max-width:44em}
+.bio li{font-size:clamp(14px,1.5vw,16px);color:rgba(253,253,251,.78);padding-left:19px;position:relative}
+.bio li::before{content:"";position:absolute;left:0;top:.72em;width:7px;height:7px;border-radius:50%;background:rgba(240,194,75,.65)}
+
+/* ---------- 正文 ---------- */
+main{max-width:1080px;margin:0 auto;padding:clamp(40px,6vw,72px) 22px 90px}
+section + section{margin-top:clamp(40px,6vw,64px)}
+.sech{display:flex;align-items:baseline;gap:14px;margin-bottom:clamp(20px,3vw,30px);
+  border-bottom:1px solid var(--line);padding-bottom:14px}
+.sech h2{font-family:var(--serif-cn);font-size:clamp(21px,2.6vw,27px);font-weight:900;letter-spacing:-.01em}
+.sech em{font-family:var(--mono);font-style:normal;font-size:11.5px;letter-spacing:.2em;color:var(--amber-deep)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.item{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:22px 22px 20px;position:relative;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),border-color .3s}
+.item:hover{transform:translateY(-4px);box-shadow:0 14px 34px rgba(20,21,58,.09);border-color:rgba(240,194,75,.5)}
+.item .no{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--amber-deep)}
+.item h3{margin:9px 0 8px;font-size:16.5px;font-weight:700;line-height:1.45}
+.item p{font-size:14px;color:var(--muted);line-height:1.8}
+.item.quote{padding-left:24px}
+.item.quote::before{content:"“";position:absolute;left:14px;top:8px;font-family:var(--serif);font-size:44px;
+  line-height:1;color:rgba(240,194,75,.55)}
+.item.quote h3{margin-left:14px}
+.item.quote p{margin-left:14px}
+.loading{padding:110px 20px;text-align:center;color:var(--muted);font-size:14.5px}
+.notfound{padding:90px 20px;text-align:center}
+.notfound b{display:block;font-family:var(--serif-cn);font-size:22px;font-weight:900;margin-bottom:12px;color:var(--ink)}
+.notfound a{display:inline-block;margin-top:20px;background:var(--ink);color:#fff;border-radius:99px;
+  padding:11px 26px;font-size:13.5px;font-weight:600}
+
+/* ---------- CTA / 页脚 ---------- */
+.cta{margin-top:clamp(48px,7vw,80px);background:var(--indigo-950);color:#fdfdfb;border-radius:18px;
+  padding:clamp(30px,4vw,46px);text-align:center}
+.cta h2{font-family:var(--serif-cn);font-size:clamp(20px,2.6vw,26px);font-weight:900;margin-bottom:12px}
+.cta p{color:rgba(253,253,251,.68);font-size:14.5px;max-width:34em;margin:0 auto}
+.cta .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.cta a{border-radius:99px;padding:12px 28px;font-size:14px;font-weight:600;transition:.25s}
+.cta .p{background:var(--amber);color:var(--ink)}
+.cta .p:hover{transform:translateY(-2px)}
+.cta .s{border:1px solid rgba(253,253,251,.3);color:#fdfdfb}
+.cta .s:hover{border-color:var(--amber);color:var(--amber)}
+footer{border-top:1px solid var(--line);padding:28px 22px;text-align:center;color:var(--muted);font-size:12.5px}
+@media (max-width:620px){
+  .hero .in{flex-direction:column;align-items:center;text-align:center}
+  .hmeta{text-align:center}
+  .bio li{text-align:left}
+  .bio{max-width:100%;text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="in">
+    <div class="brand"><i></i>CONSULTANT CLUB</div>
+    <a class="back" href="index.html#team">← 返回首页</a>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="in">
+    <div class="ava" id="avaBox"><div class="ph">·</div></div>
+    <div class="hmeta">
+      <div class="kicker">PROJECT CONSULTANT</div>
+      <h1 id="cName">—</h1>
+      <div class="role" id="cTitle">—</div>
+      <ul class="bio" id="cBio"></ul>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="loading" id="loading">正在加载咨询师资料…</div>
+
+  <div id="content" style="display:none">
+    <section id="secCase" style="display:none">
+      <div class="sech"><h2>项目案例</h2><em>SELECTED CASES</em></div>
+      <div class="grid" id="caseBox"></div>
+    </section>
+    <section id="secView" style="display:none">
+      <div class="sech"><h2>专业观点</h2><em>INSIGHTS</em></div>
+      <div class="grid" id="viewBox"></div>
+    </section>
+    <div class="cta">
+      <h2>想和 TA 一起把结果做出来？</h2>
+      <p>留下你的业务场景，我们会按项目制匹配最合适的咨询师，进入你的团队，一起对结果负责。</p>
+      <div class="btns">
+        <a class="p" href="index.html#contact">预约一次诊断</a>
+        <a class="s" href="projects.html">看看在做的项目</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="notfound" id="notfound" style="display:none">
+    <b>没有找到这位咨询师</b>
+    <div style="color:var(--muted)">可能是链接失效，或者 TA 的资料还没发布。</div>
+    <a href="index.html#team">回到咨询师列表</a>
+  </div>
+</main>
+
+<footer>CONSULTANT CLUB · 深入一线 · 管理进化 · 陪伴成长 · 驱动增长</footer>
+
+<script>
+(function(){
+"use strict";
+var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
+var KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function qs(name){
+  var m = new RegExp("[?&]" + name + "=([^&#]*)").exec(location.search);
+  return m ? decodeURIComponent(m[1].replace(/\+/g, " ")) : "";
+}
+function show404(){
+  $("loading").style.display = "none";
+  $("content").style.display = "none";
+  $("notfound").style.display = "";
+}
+function render(c){
+  $("loading").style.display = "none";
+  $("notfound").style.display = "none";
+  document.title = c.name + " · 项目咨询师 · CONSULTANT CLUB";
+
+  var img = String(c.image || "").trim();
+  if(img){
+    $("avaBox").innerHTML = '<img src="' + esc(img) + '" alt="' + esc(c.name) + '">';
+  } else {
+    $("avaBox").innerHTML = '<div class="ph">' + esc(String(c.name || "·").slice(0, 1)) + '</div>';
+  }
+
+  $("cName").textContent = c.name || "—";
+  $("cTitle").textContent = c.title || "项目咨询师";
+  var lines = String(c.bio || "").split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean);
+  $("cBio").innerHTML = lines.length
+    ? lines.map(function(l){ return "<li>" + esc(l) + "</li>"; }).join("")
+    : "<li>这位咨询师还没有填写介绍。</li>";
+
+  var cases = Array.isArray(c.cases) ? c.cases : [];
+  if(cases.length){
+    $("secCase").style.display = "";
+    $("caseBox").innerHTML = cases.map(function(x, i){
+      return '<article class="item">' +
+        '<div class="no">CASE ' + String(i + 1).padStart(2, "0") + '</div>' +
+        '<h3>' + esc(x && x.t || "") + '</h3>' +
+        '<p>' + esc(x && x.d || "") + '</p></article>';
+    }).join("");
+  }
+  var views = Array.isArray(c.views) ? c.views : [];
+  if(views.length){
+    $("secView").style.display = "";
+    $("viewBox").innerHTML = views.map(function(x, i){
+      return '<article class="item quote">' +
+        '<div class="no">INSIGHT ' + String(i + 1).padStart(2, "0") + '</div>' +
+        '<h3>' + esc(x && x.t || "") + '</h3>' +
+        '<p>' + esc(x && x.d || "") + '</p></article>';
+    }).join("");
+  }
+  $("content").style.display = "";
+}
+function fail(){
+  $("loading").textContent = "加载失败，请检查网络后刷新重试";
+}
+(function load(){
+  var id = qs("id"), nm = qs("n") || qs("name");
+  if(!id && !nm){ show404(); return; }
+  var url = SB_URL + "/rest/v1/consultants?select=id,name,title,bio,image,cases,views"
+    + (id ? ("&id=eq." + encodeURIComponent(id))
+          : ("&name=eq." + encodeURIComponent(nm)))
+    + "&limit=1";
+  fetch(url, { headers:{ "apikey":KEY } })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(); })
+    .then(function(list){
+      if(!Array.isArray(list) || !list.length){ show404(); return; }
+      render(list[0]);
+    })
+    .catch(fail);
+})();
+})();
+</script>
+</body>
+</html>

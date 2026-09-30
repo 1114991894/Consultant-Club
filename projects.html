@@ -843,6 +843,14 @@ function initFilter(){
   });
 }
 
+/* 若本机登录过咨询师工作台，这次点「我有兴趣」会记到 TA 名下（后台「感兴趣」里能看到） */
+function consultantToken(){
+  try {
+    var s = JSON.parse(localStorage.getItem("cc_consultant_session") || "null");
+    return (s && s.role === "consultant" && s.token) ? s.token : "";
+  } catch(e){ return ""; }
+}
+
 /* ---------- 「我有兴趣」计数（每 IP 每项目限一次） ---------- */
 function initInterest(){
   var btns = document.querySelectorAll(".i-btn");
@@ -864,7 +872,11 @@ function initInterest(){
         return;
       }
       btn.disabled = true;
-      rpc("project_interest_vote", { p_project_id: id }).then(function(r){
+      var ck = consultantToken();
+      var call = ck
+        ? rpc("project_interest_vote_as", { p_project_id: id, p_token: ck })
+        : rpc("project_interest_vote", { p_project_id: id });
+      call.then(function(r){
         btn.disabled = false;
         var j = r.body;
         if(j && j.ok){

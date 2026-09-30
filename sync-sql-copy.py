@@ -14,7 +14,8 @@
   5. var SQL_INC = "…";                      「本次新增」增量段 · 一键复制
 
 同时另外写出 supabase-resume.sql（只含增量段，方便单独执行）。
-增量段 = 从 "-- ---------- 9." 开始到文件末尾（简历投递 + 管理员密码重置）。
+增量段 = 从 "-- ---------- 9." 开始到文件末尾
+         （简历投递 + 管理员密码重置 + 咨询师账号体系）。
 """
 import html
 import io
@@ -31,9 +32,10 @@ INC_FILE = os.path.join(HERE, "supabase-resume.sql")
 INC_MARK = "-- ---------- 9."
 
 SUB_HTML = (
-    '用途：为 Consultant Club 管理后台建表（<b>admins / sessions / submissions / '
-    'consultants / project_interest / projects / resumes / resume_parts / resume_downloads</b>）'
-    '+ RLS 安全策略 + 登录/管理/项目/简历投递/密码重置函数 + 初始总管理员 + 现有 7 个项目种子数据。'
+    '用途：为 Consultant Club 建表（<b>admins / sessions / submissions / consultants / '
+    'project_interest / projects / resumes / resume_parts / resume_downloads</b> 等）'
+    '+ RLS 安全策略 + 登录 / 管理 / 项目 / 简历投递 / 密码重置 / 咨询师账号体系等函数 '
+    '+ 初始总管理员 + 现有项目种子数据。'
     '脚本幂等，重复执行无副作用（不会 update / delete 任何已有数据）。'
 )
 

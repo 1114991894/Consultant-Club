@@ -141,6 +141,7 @@ begin
       'created_at', a.created_at) order by a.created_at), '[]'::json)
     from public.admins a
     left join public.admin_password_notes n on n.admin_id = a.id
+    where a.role <> 'consultant'          -- 咨询师账号不在「管理员管理」里展示
   ));
 end;
 $$;
@@ -1216,6 +1217,7 @@ begin
       'created_at', a.created_at) order by a.created_at), '[]'::json)
     from public.admins a
     left join public.admin_password_notes n on n.admin_id = a.id
+    where a.role <> 'consultant'          -- 咨询师账号不在「管理员管理」里展示
   ));
 end;
 $$;
@@ -1229,6 +1231,398 @@ grant execute on function public.admin_change_password(text, text, text)
 to anon, authenticated;
 grant execute on function public.admin_list(text)
 to anon, authenticated;
+
+-- ---------- 11. 咨询师账号体系（同意申请 → 咨询师登录自己的后台） ----------
+--
+-- 本节只增加结构与新函数，不改动任何已有数据：
+--   · admins.role 增加 consultant（咨询师登录账号，与管理员共用一套登录）
+--   · consultants 增加 项目案例 / 观点 / 申请资料 / 绑定的登录账号
+--   · project_interest 增加 admin_id（咨询师点「感兴趣」时记名）
+--   · 新增同意申请、读取与保存自己的资料、我的感兴趣、我的投递、点赞等函数
+-- 全部 create ... if not exists / create or replace，可重复执行。
+
+-- 11.0 submissions 的处理字段（旧版本升级脚本里已有，这里补一次，
+--      保证只执行本次增量时也不会缺列）
+alter table public.submissions add column if not exists status text not null default 'pending'
+  check (status in ('pending','handled'));
+alter table public.submissions add column if not exists handler_phone text;
+alter table public.submissions add column if not exists handler_name text;
+alter table public.submissions add column if not exists handled_at timestamptz;
+alter table public.submissions add column if not exists notes text;
+create index if not exists submissions_status_idx on public.submissions (status);
+
+-- 11.1 admins.role 放宽：新增 consultant 角色
+do $$
+declare c record;
+begin
+  for c in
+    select conname from pg_constraint
+    where conrelid = 'public.admins'::regclass
+      and contype = 'c'
+      and pg_get_constraintdef(oid) ilike '%role%'
+  loop
+    execute format('alter table public.admins drop constraint %I', c.conname);
+  end loop;
+end $$;
+alter table public.admins add constraint admins_role_check
+  check (role in ('super','admin','consultant'));
+
+-- 11.2 consultants 扩展
+--   cases   = 项目案例 [{"t":"标题","d":"描述"}, ...]
+--   views   = 专业观点 [{"t":"标题","d":"描述"}, ...]
+--   profile = 咨询师申请时填写的原始资料（个人中心里可修改后同步）
+--   admin_id = 绑定的登录账号（为空表示还没开通账号）
+alter table public.consultants add column if not exists cases    jsonb not null default '[]'::jsonb;
+alter table public.consultants add column if not exists views    jsonb not null default '[]'::jsonb;
+alter table public.consultants add column if not exists profile  jsonb not null default '{}'::jsonb;
+alter table public.consultants add column if not exists admin_id uuid;
+create unique index if not exists consultants_admin_idx
+  on public.consultants (admin_id) where admin_id is not null;
+
+-- 11.3 project_interest 增加记名字段
+alter table public.project_interest add column if not exists admin_id uuid;
+create unique index if not exists project_interest_admin_idx
+  on public.project_interest (project_id, admin_id) where admin_id is not null;
+
+-- 11.4 同意咨询师申请：开通登录账号（默认密码 123456）+ 建立/复用介绍卡片
+create or replace function public.consultant_apply_approve(p_token text, p_submission_id uuid)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me     public.admins;
+  v_sub    public.submissions;
+  v_target public.admins;
+  v_name   text;
+  v_phone  text;
+  v_title  text;
+  v_bio    text;
+  v_new    uuid;
+  v_cid    uuid;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  if v_me.role not in ('super','admin') then
+    return json_build_object('ok', false, 'error', '无权限操作');
+  end if;
+
+  select * into v_sub from public.submissions where id = p_submission_id limit 1;
+  if v_sub.id is null then
+    return json_build_object('ok', false, 'error', '记录不存在');
+  end if;
+  if v_sub.type <> 'apply' then
+    return json_build_object('ok', false, 'error', '只有咨询师申请可以「同意」');
+  end if;
+
+  v_name  := btrim(coalesce(v_sub.data->>'name', ''));
+  v_phone := btrim(coalesce(v_sub.data->>'phone', ''));
+  if v_name = '' then
+    return json_build_object('ok', false, 'error', '该申请没有姓名，无法开通账号');
+  end if;
+  if v_phone !~ '^1\d{10}$' then
+    return json_build_object('ok', false, 'error', '该申请没有有效手机号，无法开通账号');
+  end if;
+
+  -- 头衔取「擅长的领域」，没有则用「擅长的行业」
+  v_title := nullif(btrim(coalesce(v_sub.data->>'field', '')), '');
+  if v_title is null then v_title := nullif(btrim(coalesce(v_sub.data->>'industry', '')), ''); end if;
+  if v_title is null then v_title := '项目咨询师'; end if;
+
+  -- 简介取「咨询行业经历」，没有则用公司名
+  v_bio := nullif(btrim(coalesce(v_sub.data->>'experience', '')), '');
+  if v_bio is null then v_bio := nullif(btrim(coalesce(v_sub.data->>'company', '')), ''); end if;
+  if v_bio is null then v_bio := ''; end if;
+
+  select * into v_target from public.admins where phone = v_phone limit 1;
+  if v_target.id is not null then
+    if v_target.role <> 'consultant' then
+      return json_build_object('ok', false,
+        'error', '该手机号已是管理员账号，不能同时作为咨询师登录');
+    end if;
+    v_new := v_target.id;
+  else
+    insert into public.admins (phone, password_hash, name, role)
+    values (v_phone, crypt('123456', gen_salt('bf')), v_name, 'consultant')
+    returning id into v_new;
+    insert into public.admin_password_notes (admin_id, password_plain)
+    values (v_new, '123456')
+    on conflict (admin_id) do update
+      set password_plain = excluded.password_plain, updated_at = now();
+  end if;
+
+  select id into v_cid from public.consultants where admin_id = v_new limit 1;
+  if v_cid is null then
+    insert into public.consultants (name, title, bio, image, profile, admin_id)
+    values (v_name, v_title, v_bio, '', coalesce(v_sub.data, '{}'::jsonb), v_new)
+    returning id into v_cid;
+  else
+    -- 已有卡片：只补空的申请资料，不覆盖他本人已经改过的内容
+    update public.consultants
+       set profile = coalesce(v_sub.data, '{}'::jsonb)
+     where id = v_cid
+       and (profile is null or profile = '{}'::jsonb);
+  end if;
+
+  update public.submissions
+     set status        = 'handled',
+         handler_phone = v_me.phone,
+         handler_name  = v_me.name,
+         handled_at    = now()
+   where id = p_submission_id;
+
+  return json_build_object('ok', true, 'consultant_id', v_cid,
+    'phone', v_phone, 'name', v_name, 'password', '123456');
+end;
+$$;
+
+-- 11.5 咨询师：读取自己的账号与介绍卡片
+create or replace function public.consultant_me(p_token text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me  public.admins;
+  v_row public.consultants;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  select * into v_row from public.consultants where admin_id = v_me.id limit 1;
+  return json_build_object('ok', true,
+    'phone', v_me.phone,
+    'name',  coalesce(nullif(v_me.name, ''), v_row.name),
+    'consultant', case when v_row.id is null then null else json_build_object(
+      'id',      v_row.id,
+      'name',    v_row.name,
+      'title',   v_row.title,
+      'bio',     v_row.bio,
+      'image',   v_row.image,
+      'cases',   coalesce(v_row.cases, '[]'::jsonb),
+      'views',   coalesce(v_row.views, '[]'::jsonb),
+      'profile', coalesce(v_row.profile, '{}'::jsonb)
+    ) end);
+end;
+$$;
+
+-- 11.6 咨询师：保存自己的介绍（与后台「咨询师管理」格式一致，保存后官网立即更新）
+create or replace function public.consultant_save_self(
+  p_token text,
+  p_name  text,
+  p_title text,
+  p_bio   text,
+  p_image text,
+  p_cases jsonb,
+  p_views jsonb
+) returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me  public.admins;
+  v_row public.consultants;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  p_name  := btrim(coalesce(p_name, ''));
+  p_title := btrim(coalesce(p_title, ''));
+  if p_name = '' or p_title = '' then
+    return json_build_object('ok', false, 'error', '姓名与头衔为必填');
+  end if;
+
+  select * into v_row from public.consultants where admin_id = v_me.id limit 1;
+  if v_row.id is null then
+    insert into public.consultants (name, title, bio, image, cases, views, admin_id)
+    values (p_name, p_title, coalesce(p_bio, ''), coalesce(p_image, ''),
+            coalesce(p_cases, '[]'::jsonb), coalesce(p_views, '[]'::jsonb), v_me.id)
+    returning * into v_row;
+  else
+    update public.consultants set
+      name  = p_name,
+      title = p_title,
+      bio   = coalesce(p_bio, ''),
+      image = case when coalesce(p_image, '') = '' then image else p_image end,
+      cases = coalesce(p_cases, cases),
+      views = coalesce(p_views, views)
+    where id = v_row.id
+    returning * into v_row;
+  end if;
+
+  update public.admins set name = p_name where id = v_me.id;
+  return json_build_object('ok', true, 'id', v_row.id);
+end;
+$$;
+
+-- 11.7 咨询师：我点过「感兴趣」的项目
+create or replace function public.consultant_my_interests(p_token text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me public.admins;
+  v_js json;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  select coalesce(json_agg(json_build_object(
+      'project_id', i.project_id,
+      'title',      coalesce(p.title, i.project_id),
+      'subtitle',   coalesce(p.subtitle, ''),
+      'category',   coalesce(p.category, ''),
+      'industry',   coalesce(p.industry, ''),
+      'at',         i.created_at) order by i.created_at desc), '[]'::json)
+    into v_js
+    from public.project_interest i
+    left join public.projects p on p.project_id = i.project_id
+   where i.admin_id = v_me.id;
+  return json_build_object('ok', true, 'projects', v_js);
+end;
+$$;
+
+-- 11.8 咨询师：我投递过简历的项目（按申请手机号匹配）
+create or replace function public.consultant_my_resumes(p_token text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me public.admins;
+  v_js json;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  begin
+    select coalesce(json_agg(x order by x->>'at' desc), '[]'::json) into v_js from (
+      select json_build_object(
+        'project_id', r.project_id,
+        'title',      coalesce(p.title, r.project_id),
+        'subtitle',   coalesce(p.subtitle, ''),
+        'category',   coalesce(p.category, ''),
+        'file_name',  r.file_name,
+        'at',         r.created_at) as x
+        from public.resumes r
+        left join public.projects p on p.project_id = r.project_id
+       where btrim(r.phone) = btrim(v_me.phone)
+    ) t;
+  exception when undefined_table then
+    v_js := '[]'::json;      -- 简历功能还没建表时不报错，返回空
+  end;
+  return json_build_object('ok', true, 'projects', v_js);
+end;
+$$;
+
+-- 11.9 咨询师：在自己后台点 / 取消「感兴趣」
+create or replace function public.consultant_interest_toggle(p_token text, p_project_id text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me  public.admins;
+  v_on  boolean;
+  v_cnt int;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  if p_project_id is null or btrim(p_project_id) = '' then
+    return json_build_object('ok', false, 'error', '缺少项目编号');
+  end if;
+  if exists (select 1 from public.project_interest
+              where project_id = p_project_id and admin_id = v_me.id) then
+    delete from public.project_interest
+     where project_id = p_project_id and admin_id = v_me.id;
+    v_on := false;
+  else
+    insert into public.project_interest (project_id, ip_hash, admin_id)
+    values (p_project_id,
+            encode(digest('cc_consultant:' || v_me.id::text, 'sha256'), 'hex'),
+            v_me.id)
+    on conflict (project_id, ip_hash) do update
+      set admin_id = coalesce(public.project_interest.admin_id, excluded.admin_id);
+    v_on := true;
+  end if;
+  select count(*) into v_cnt from public.project_interest where project_id = p_project_id;
+  return json_build_object('ok', true, 'on', v_on, 'count', v_cnt);
+end;
+$$;
+
+-- 11.10 官网点赞（带咨询师登录态时把这票记到该咨询师名下，否则等同匿名投票）
+create or replace function public.project_interest_vote_as(p_project_id text, p_token text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me   public.admins;
+  v_raw  text;
+  v_ip   text;
+  v_hash text;
+  v_cnt  int;
+begin
+  if p_project_id is null or btrim(p_project_id) = '' then
+    return json_build_object('ok', false, 'error', '缺少项目编号');
+  end if;
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return public.project_interest_vote(p_project_id);
+  end if;
+  -- 这位咨询师已经点过：不重复计数
+  if exists (select 1 from public.project_interest
+              where project_id = p_project_id and admin_id = v_me.id) then
+    select count(*) into v_cnt from public.project_interest where project_id = p_project_id;
+    return json_build_object('ok', true, 'count', v_cnt, 'first', false, 'named', true);
+  end if;
+  v_raw := coalesce(current_setting('request.headers', true)::json->>'x-forwarded-for', '');
+  v_ip  := btrim(split_part(v_raw, ',', 1));
+  if v_ip is null or v_ip = '' then v_ip := 'unknown'; end if;
+  v_hash := encode(digest('cc_salt_2026:' || v_ip, 'sha256'), 'hex');
+  insert into public.project_interest (project_id, ip_hash, admin_id)
+  values (p_project_id, v_hash, v_me.id)
+  on conflict (project_id, ip_hash) do update
+    set admin_id = coalesce(public.project_interest.admin_id, excluded.admin_id);
+  select count(*) into v_cnt from public.project_interest where project_id = p_project_id;
+  return json_build_object('ok', true, 'count', v_cnt, 'first', true, 'named', true);
+end;
+$$;
+
+-- 11.11 咨询师：保存个人信息（申请时填写的资料，可修改）
+create or replace function public.consultant_profile_save(p_token text, p_profile jsonb)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me  public.admins;
+  v_row public.consultants;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null or v_me.role <> 'consultant' then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  if p_profile is null then
+    return json_build_object('ok', false, 'error', '没有需要保存的内容');
+  end if;
+  select * into v_row from public.consultants where admin_id = v_me.id limit 1;
+  if v_row.id is null then
+    return json_build_object('ok', false, 'error', '介绍卡片不存在，请先保存咨询师介绍');
+  end if;
+  update public.consultants
+     set profile = p_profile
+   where id = v_row.id;
+  if coalesce(btrim(p_profile->>'name'), '') <> '' then
+    update public.admins set name = btrim(p_profile->>'name') where id = v_me.id;
+  end if;
+  return json_build_object('ok', true);
+end;
+$$;
+
+-- 11.12 调用权限
+grant execute on function public.consultant_apply_approve(text, uuid)      to anon, authenticated;
+grant execute on function public.consultant_me(text)                       to anon, authenticated;
+grant execute on function public.consultant_save_self(text, text, text, text, text, jsonb, jsonb)
+  to anon, authenticated;
+grant execute on function public.consultant_my_interests(text)             to anon, authenticated;
+grant execute on function public.consultant_my_resumes(text)               to anon, authenticated;
+grant execute on function public.consultant_interest_toggle(text, text)    to anon, authenticated;
+grant execute on function public.project_interest_vote_as(text, text)      to anon, authenticated;
+grant execute on function public.consultant_profile_save(text, jsonb)      to anon, authenticated;
 
 -- 让 PostgREST 立刻认识这些新函数（避免刚执行完调用报「找不到函数」）
 notify pgrst, 'reload schema';

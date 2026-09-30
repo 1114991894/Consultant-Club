@@ -134,6 +134,26 @@ main{flex:1;padding:30px 36px 60px;min-width:0}
 .cons-item .ci-ops{display:flex;gap:6px;flex:none}
 .cons-item .ci-ops .mv{border:1px solid var(--line);background:#fff;border-radius:7px;width:28px;height:28px;font-size:13px;cursor:pointer;color:var(--muted)}
 .cons-item .ci-ops .mv:hover{border-color:var(--amber-d);color:var(--amber-d)}
+/* 咨询师卡片：项目案例 / 专业观点 逐条录入 */
+.rep-block{display:flex;flex-direction:column;gap:8px}
+.rep-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rep-head label{font-size:12.5px;color:var(--muted);font-weight:600}
+.rep-add{border:1.3px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;
+  padding:5px 11px;font-size:12.5px;font-family:inherit;cursor:pointer;flex:none}
+.rep-add:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.rep-list{display:flex;flex-direction:column;gap:8px}
+.rep-row{display:flex;gap:8px;align-items:center}
+.rep-row input{border:1.4px solid var(--line);border-radius:9px;padding:8px 11px;font:inherit;
+  font-size:13px;outline:none;min-width:0}
+.rep-row input:focus{border-color:var(--amber)}
+.rep-row .rep-t{flex:0 0 34%}
+.rep-row .rep-d{flex:1}
+.rep-del{border:1.3px solid #f0d9d5;background:#fff;color:var(--bad);border-radius:8px;
+  padding:7px 10px;font-size:13px;line-height:1;cursor:pointer;flex:none}
+.rep-del:hover{background:#fdf3f1}
+.rep-empty{font-size:12.5px;color:var(--muted);padding:1px 0}
+.mark-btn[disabled]{opacity:.6;cursor:default}
+.cons-item .ci-main .cnt{display:inline-block;margin-left:6px;font-size:11px;color:var(--muted)}
 @media (max-width:720px){ .cform{grid-template-columns:1fr} }
 .search{flex:1;min-width:200px;max-width:340px;padding:9px 14px;border:1.4px solid var(--line);
   border-radius:10px;outline:none}
@@ -535,6 +555,20 @@ tr:hover td{background:#fcfbf7}
               <label style="font-size:12.5px;color:var(--muted);font-weight:600">介绍 *（每行一条）</label>
               <textarea id="cBio" rows="4" placeholder="世界前 10 强集团 / P8&#10;大型金融集团 / 总经理&#10;上市连锁商超 / 人力总监" style="border:1.4px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;font-size:13.5px;resize:vertical"></textarea>
             </div>
+            <div class="rep-block">
+              <div class="rep-head">
+                <label>项目案例（选填 · 标题 + 一句成果）</label>
+                <button class="rep-add" id="caseAdd" type="button">＋ 添加一条</button>
+              </div>
+              <div class="rep-list" id="caseList"></div>
+            </div>
+            <div class="rep-block">
+              <div class="rep-head">
+                <label>专业观点（选填 · 标题 + 一句观点）</label>
+                <button class="rep-add" id="viewAdd" type="button">＋ 添加一条</button>
+              </div>
+              <div class="rep-list" id="viewList"></div>
+            </div>
             <div style="display:flex;gap:8px">
               <button class="pbtn" id="cSave">保存</button>
               <button class="pbtn ghost" id="cCancel" style="display:none">取消编辑</button>
@@ -918,6 +952,16 @@ function doLogin(){
     btn.disabled = false; btn.textContent = "登 录";
     var j = r.body;
     if(j && j.ok){
+      /* 咨询师账号：登录后进入自己的后台，与管理后台分开 */
+      if(j.role === "consultant"){
+        try {
+          localStorage.setItem("cc_consultant_session",
+            JSON.stringify({ token:j.token, role:j.role, phone:j.phone, name:j.name, at:Date.now() }));
+        } catch(e){}
+        btn.textContent = "正在进入咨询师后台…";
+        location.href = "consultant.html";
+        return;
+      }
       var s = { token:j.token, role:j.role, phone:j.phone, name:j.name, at:Date.now() };
       saveSess(s); showApp(s);
     } else {
@@ -1006,9 +1050,17 @@ function render(){
     /* 处理人 / 处理时间属于留痕，仅总管理员可见 */
     var handlerTxt = (sess().role === "super" && handler)
       ? ("<br><small style='color:#888'>"+esc(handler)+" · "+esc(fmtTime(s.handled_at))+"</small>") : "";
-    var markBtn = statusCls === "handled"
-      ? '<button class="mark-btn sm pending" data-act="unhandled">未处理</button>'
-      : '<button class="mark-btn sm handled" data-act="handled">处理</button>';
+    /* 咨询师申请的那一列是「同意」：同意后自动开通登录账号并标记已处理 */
+    var markBtn;
+    if(s.type === "apply"){
+      markBtn = statusCls === "handled"
+        ? '<button class="mark-btn sm handled" disabled>已同意</button>'
+        : '<button class="mark-btn sm handled" data-act="approve">同意</button>';
+    } else {
+      markBtn = statusCls === "handled"
+        ? '<button class="mark-btn sm pending" data-act="unhandled">未处理</button>'
+        : '<button class="mark-btn sm handled" data-act="handled">处理</button>';
+    }
     return "<tr data-id='" + s.id + "'>" +
       '<td class="t-time">' + esc(fmtTime(s.created_at)) + "</td>" +
       '<td class="t-key"><b>' + esc(k.t) + "</b><small>" + esc(k.s) + "</small></td>" +
@@ -1029,6 +1081,7 @@ function render(){
         var s = state.list.find(function(x){ return x.id === id; });
         if(!s) return;
         if(act === "detail") openDetail(s);
+        else if(act === "approve") approveApply(s);
         else if(act === "handled" || act === "unhandled") toggleStatus(s, act);
         else if(act === "note") openNoteDrawer(s);
         else if(act === "del") deleteSubmission(s);
@@ -1077,6 +1130,46 @@ function toggleStatus(s, target){
       }
     } else toast((j && j.error) || "操作失败", true);
   });
+}
+
+/* ---------- 咨询师申请：同意（开通登录账号 + 建立介绍卡片） ---------- */
+function approveApply(s){
+  var sn = sess(); if(!sn) return showLogin();
+  var d = s.data || {};
+  var name = String(d.name || "").trim();
+  var phone = String(d.phone || "").replace(/\D/g, "");
+  if(!/^1\d{10}$/.test(phone))
+    return toast("该申请没有有效手机号，无法开通账号", true);
+  if(!confirm("同意「" + name + "」的咨询师申请？\n\n将开通登录账号：\n手机号 " + phone +
+              "\n初始密码 123456\n\n对方登录后可完善自己的介绍、案例与观点。")) return;
+  rpc("consultant_apply_approve", { p_token: sn.token, p_submission_id: s.id }).then(function(r){
+    var j = r.body;
+    if(j && j.ok){
+      toast("已同意 · 账号 " + j.phone + " / 初始密码 " + (j.password || "123456"));
+      loadList(); loadBadges();
+      if(state.current && state.current.id === s.id){
+        state.current.status = "handled";
+        state.current.handler_phone = sn.phone;
+        state.current.handler_name = sn.name;
+        state.current.handled_at = new Date().toISOString();
+        refreshModal(state.current);
+      }
+    } else toast((j && j.error) || "操作失败", true);
+  }).catch(function(){ toast("网络异常，请稍后再试", true); });
+}
+
+/* 详情弹窗底部按钮：咨询师申请显示「同意」，其它类型保持「处理 / 未处理」 */
+function syncToggleBtn(s){
+  var el = $("mToggleStatus");
+  if(!el) return;
+  if(s.type === "apply"){
+    if(s.status === "handled"){ el.textContent = "已同意"; el.className = "pbtn ghost"; el.disabled = true; }
+    else { el.textContent = "同意"; el.className = "pbtn amber"; el.disabled = false; }
+  } else {
+    el.textContent = s.status === "handled" ? "未处理" : "处理";
+    el.className = "pbtn" + (s.status === "handled" ? " ghost" : " amber");
+    el.disabled = false;
+  }
 }
 
 /* ---------- 联系记录小抽屉 ---------- */
@@ -1366,15 +1459,13 @@ function openDetail(s){
   $("mGrid").innerHTML = htm;
   $("mNotes").textContent = stripTrace(s.notes);
 
-  $("mToggleStatus").textContent = s.status === "handled" ? "未处理" : "处理";
-  $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : " amber");
+  syncToggleBtn(s);
   $("modal").classList.add("open");
   setTimeout(function(){ $("mNoteInput").focus(); }, 100);
 }
 function refreshModal(s){
   $("mNotes").textContent = stripTrace(s.notes);
-  $("mToggleStatus").textContent = s.status === "handled" ? "未处理" : "处理";
-  $("mToggleStatus").className = "pbtn" + (s.status === "handled" ? " ghost" : " amber");
+  syncToggleBtn(s);
   var handler = s.handler_name || s.handler_phone || "";
   var meta = fmtTime(s.created_at);
   if(s.status === "handled") meta += " · 已处理"; else meta += " · 未处理";
@@ -1392,7 +1483,13 @@ document.addEventListener("keydown", function(e){
 });
 $("mToggleStatus").addEventListener("click", function(){
   if(!state.current) return;
-  toggleStatus(state.current, state.current.status === "handled" ? "unhandled" : "handled");
+  var s = state.current;
+  if(s.type === "apply"){
+    if(s.status === "handled") return toast("该申请已经同意过了");
+    approveApply(s);
+  } else {
+    toggleStatus(s, s.status === "handled" ? "unhandled" : "handled");
+  }
 });
 $("mAddNote").addEventListener("click", function(){
   if(!state.current) return;
@@ -1572,12 +1669,46 @@ cropBox.addEventListener("touchstart", dragStart, {passive:false});
 cropBox.addEventListener("touchmove", dragMove, {passive:false});
 cropBox.addEventListener("touchend", dragEnd);
 
+/* ---------- 项目案例 / 专业观点：逐条录入（标题 + 描述） ---------- */
+function repRowHtml(t, d){
+  return '<div class="rep-row">' +
+    '<input class="rep-t" type="text" placeholder="标题（如：某制造企业绩效改革）" value="' + esc(t || "") + '">' +
+    '<input class="rep-d" type="text" placeholder="一句描述（如：人均产值提升 32%）" value="' + esc(d || "") + '">' +
+    '<button class="rep-del" type="button" title="删除这条">✕</button></div>';
+}
+function repBindDel(box){
+  box.querySelectorAll(".rep-del").forEach(function(b){
+    b.addEventListener("click", function(){ b.parentNode.remove(); });
+  });
+}
+function addRepRow(listId, t, d){
+  var box = $(listId);
+  box.insertAdjacentHTML("beforeend", repRowHtml(t, d));
+  repBindDel(box);
+}
+function setRep(listId, arr){
+  $(listId).innerHTML = "";
+  (arr || []).forEach(function(o){ addRepRow(listId, o && o.t, o && o.d); });
+}
+function collectRep(listId){
+  var out = [];
+  $(listId).querySelectorAll(".rep-row").forEach(function(row){
+    var t = row.querySelector(".rep-t").value.trim();
+    var d = row.querySelector(".rep-d").value.trim();
+    if(t || d) out.push({ t: t, d: d });
+  });
+  return out;
+}
+$("caseAdd").addEventListener("click", function(){ addRepRow("caseList"); });
+$("viewAdd").addEventListener("click", function(){ addRepRow("viewList"); });
+
 function resetConsForm(){
   C.editId = null; C.img = null;
   $("cFormTitle").textContent = "添加咨询师";
   $("cSave").textContent = "保存";
   $("cCancel").style.display = "none";
   $("cName").value = ""; $("cTitle").value = ""; $("cBio").value = "";
+  setRep("caseList", []); setRep("viewList", []);
   $("cropImg").style.display = "none"; $("cropImg").src = "";
   $("cropEmpty").style.display = "";
   $("cropReset").style.display = "none";
@@ -1594,7 +1725,8 @@ $("cSave").addEventListener("click", function(){
   var img = cropExport();
   $("cSave").disabled = true;
   rpc("consultant_save", { p_token: sn.token, p_id: C.editId || null,
-    p_name: name, p_title: title, p_bio: bio, p_image: img || "" }).then(function(r){
+    p_name: name, p_title: title, p_bio: bio, p_image: img || "",
+    p_cases: collectRep("caseList"), p_views: collectRep("viewList") }).then(function(r){
     $("cSave").disabled = false;
     var j = r.body;
     if(j && j.ok){
@@ -1624,7 +1756,8 @@ function renderConsultants(){
     return '<div class="cons-item" data-id="' + c.id + '">' +
       '<img src="' + esc(c.image) + '" alt="">' +
       '<div class="ci-main"><b>' + esc(c.name) + '</b><span class="tag">' + esc(c.title) + '</span>' +
-      '<small>' + esc(first) + (String(c.bio||"").indexOf("\n") > -1 ? " 等" : "") + '</small></div>' +
+      '<small>' + esc(first) + (String(c.bio||"").indexOf("\n") > -1 ? " 等" : "") +
+      '<span class="cnt">· 案例 ' + ((c.cases||[]).length) + ' · 观点 ' + ((c.views||[]).length) + '</span></small></div>' +
       '<div class="ci-ops">' +
       '<button class="mv" data-act="up" title="上移">↑</button>' +
       '<button class="mv" data-act="down" title="下移">↓</button>' +
@@ -1650,6 +1783,7 @@ function renderConsultants(){
           $("cSave").textContent = "保存修改";
           $("cCancel").style.display = "";
           $("cName").value = c.name || ""; $("cTitle").value = c.title || ""; $("cBio").value = c.bio || "";
+          setRep("caseList", c.cases); setRep("viewList", c.views);
           if(c.image) cropLoadSrc(c.image);
           window.scrollTo({ top: 0, behavior: "smooth" });
         } else if(act === "del"){

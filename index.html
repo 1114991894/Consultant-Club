@@ -281,6 +281,12 @@ body.nav-open .float-actions{opacity:0;visibility:hidden;pointer-events:none}
 .member ul{list-style:none;display:grid;gap:7px}
 .member li{font-size:13.5px;color:rgba(253,253,251,.72);padding-left:16px;position:relative}
 .member li::before{content:"";position:absolute;left:0;top:.72em;width:6px;height:6px;border-radius:50%;background:rgba(240,194,75,.6)}
+.member-more{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;
+  margin-top:18px;padding-top:14px;border-top:1px solid rgba(253,253,251,.14);
+  font-size:13px;font-weight:600;color:rgba(240,194,75,.92);transition:color .25s,gap .25s}
+.member-more svg{flex:none;transition:transform .25s var(--ease)}
+.member-more:hover{color:#fff}
+.member-more:hover svg{transform:translateX(4px)}
 
 /* ============ 咨询师价值 ============ */
 .cvalue{background:var(--paper-2)}
@@ -708,6 +714,7 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
           <li>大型金融集团 / 总经理</li>
           <li>上市连锁商超 / 人力总监</li>
         </ul>
+        <a class="member-more" href="consultant-detail.html?n=杨景宇"><span>查看详情</span><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </article>
       <article class="member reveal">
         <div class="member-photo"><img src="assets/team-liu.jpg" alt="刘诠案" loading="lazy"></div>
@@ -718,6 +725,7 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
           <li>企业级AI落地咨询师</li>
           <li>FDE项目全案实施辅导师</li>
         </ul>
+        <a class="member-more" href="consultant-detail.html?n=刘诠案"><span>查看详情</span><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </article>
       <article class="member reveal">
         <div class="member-photo"><img src="assets/team-doris.jpg" alt="Doris" loading="lazy"></div>
@@ -728,6 +736,7 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
           <li>HBDI® 全脑优势分析师</li>
           <li>ICF（国际认证）PCC 高管教练</li>
         </ul>
+        <a class="member-more" href="consultant-detail.html?n=Doris"><span>查看详情</span><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </article>
       <article class="member reveal">
         <div class="member-photo"><img src="assets/team-li.jpg" alt="李文科" loading="lazy"></div>
@@ -738,6 +747,7 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
           <li>华为人才发展专家</li>
           <li>APQC 流程搭建师</li>
         </ul>
+        <a class="member-more" href="consultant-detail.html?n=李文科"><span>查看详情</span><svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </article>
     </div>
   </div>
@@ -1506,7 +1516,10 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
 var KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
-fetch("https://kkrokgglorelzwnzlfri.supabase.co/rest/v1/consultants?select=name,title,bio,image&order=sort.asc,created_at.asc", {
+var ARROW = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">'
+  + '<path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" '
+  + 'stroke-linecap="round" stroke-linejoin="round"/></svg>';
+fetch("https://kkrokgglorelzwnzlfri.supabase.co/rest/v1/consultants?select=id,name,title,bio,image&order=sort.asc,created_at.asc", {
   headers: { "apikey": KEY }
 }).then(function(r){ return r.ok ? r.json() : Promise.reject(); }).then(function(list){
   if(!Array.isArray(list) || !list.length) return;
@@ -1519,6 +1532,8 @@ fetch("https://kkrokgglorelzwnzlfri.supabase.co/rest/v1/consultants?select=name,
       '<h3>' + esc(c.name) + '</h3>' +
       '<span class="member-role">' + esc(c.title) + '</span>' +
       '<ul>' + lines.map(function(l){ return '<li>' + esc(l) + '</li>'; }).join("") + '</ul>' +
+      '<a class="member-more" href="consultant-detail.html?id=' + encodeURIComponent(c.id) + '">'
+        + '<span>查看详情</span>' + ARROW + '</a>' +
       '</article>';
   }).join("");
 }).catch(function(){ /* 接口不可用时保留静态卡片 */ });

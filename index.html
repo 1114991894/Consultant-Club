@@ -551,7 +551,7 @@ footer .slogan{font-family:var(--mono);font-size:11px;letter-spacing:.24em}
 }
 /* ============ 申请咨询师弹窗 ============ */
 button.btn{font-family:inherit;cursor:pointer;border:0}
-.amodal{position:fixed;left:0;top:0;width:100vw;height:100vh;max-width:100vw;overflow:hidden;z-index:300;display:none}
+.amodal{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;max-width:100vw;overflow:hidden;z-index:300;display:none}
 .amodal.open{display:block}
 .amodal .mask{position:absolute;inset:0;background:rgba(10,11,30,.62);backdrop-filter:blur(6px)}
 .amodal .card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
@@ -609,6 +609,10 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
 .adone .btn{margin-top:30px}
 @media (max-width:640px){
   .amodal .card{width:100vw;max-width:100vw;height:100%;max-height:none;left:0;top:0;transform:none;border-radius:0}
+  /* 登录弹窗内容短，手机上不做全屏，仍按小卡片居中 */
+  .amodal.slim .card{width:calc(100% - 32px);max-width:430px;height:auto;max-height:calc(100vh - 48px);
+    max-height:calc(100dvh - 48px);left:50%;top:50%;transform:translate(-50%,-50%);border-radius:14px}
+  .amodal.slim .bd{padding-top:24px}
   .amodal .hd{padding:20px 64px 16px 20px}
   .amodal .x{right:14px;top:14px}
   .amodal .hd h3{font-size:21px}

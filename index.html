@@ -190,8 +190,41 @@ body.nav-open .float-actions{opacity:0;visibility:hidden;pointer-events:none}
   0%,100%{box-shadow:0 0 0 4px rgba(240,194,75,.16)}
   50%{box-shadow:0 0 0 9px rgba(240,194,75,.04)}
 }
+/* 「查看咨询项目」：呼吸式红光 + 向外扩散的光环，把视线拉过来 */
+.btn-glow{position:relative;isolation:isolate}
+.btn-glow::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  border:1px solid rgba(255,120,106,.6);
+  box-shadow:0 0 0 1px rgba(255,86,72,.45),0 0 14px 1px rgba(255,86,72,.28);
+  animation:glowBreath 2.6s ease-in-out infinite;
+}
+.btn-glow::after{
+  content:"";position:absolute;inset:-2px;border-radius:inherit;pointer-events:none;
+  border:1.5px solid rgba(255,86,72,.7);
+  animation:glowRing 2.6s ease-out infinite;
+}
+@keyframes glowBreath{
+  0%,100%{border-color:rgba(255,120,106,.55);
+    box-shadow:0 0 0 1px rgba(255,86,72,.45),0 0 14px 1px rgba(255,86,72,.28)}
+  50%{border-color:rgba(255,150,138,.95);
+    box-shadow:0 0 0 1px rgba(255,86,72,.85),0 0 30px 8px rgba(255,86,72,.5)}
+}
+@keyframes glowRing{
+  0%{transform:scale(1);opacity:.9}
+  70%{opacity:0}
+  100%{transform:scale(1.13);opacity:0}
+}
+/* hover：光环加快 + 按钮本体再叠一层实打实的红光（本体没有动画占用，这里能生效） */
+.btn-glow:hover{
+  border-color:rgba(255,150,138,.95) !important;
+  box-shadow:0 0 0 1px rgba(255,86,72,.95),0 0 34px 10px rgba(255,86,72,.55);
+}
+.btn-glow:hover::before,.btn-glow:hover::after{animation-duration:1.1s}
 @media (prefers-reduced-motion:reduce){
   .pj-badge{animation:none}
+  .btn-glow::before,.btn-glow::after{animation:none}
+  .btn-glow::before{box-shadow:0 0 0 1px rgba(255,86,72,.8),0 0 22px 4px rgba(255,86,72,.45)}
+  .btn-glow::after{display:none}
 }
 .btn{
   display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:13px 30px;
@@ -673,7 +706,7 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
     </div>
     <div class="hero-actions rise d6">
       <button class="btn btn-primary" id="bookBtn" type="button">预约管理诊断</button>
-      <a class="btn btn-ghost" href="projects.html">查看咨询项目<span class="pj-badge" id="pjBadge" hidden>0</span></a>
+      <a class="btn btn-ghost btn-glow" id="pjBtn" href="projects.html">查看咨询项目<span class="pj-badge" id="pjBadge" hidden>0</span></a>
     </div>
     <div class="hero-stats rise d6">
       <div class="hero-stat"><b data-count="17" data-suffix="+">0</b><span>咨询项目实战落地</span></div>

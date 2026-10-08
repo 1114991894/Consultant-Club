@@ -17,8 +17,9 @@
 
 增量段 = 从 INC_MARK 开始到文件末尾。INC_MARK 指向「本次要让用户补跑的第一节」：
   - 每加一节新的 SQL，把 INC_MARK 往下挪到那一节，用户就只用复制一小段。
-  - 第 9–14 节（简历投递 / 密码重置 / 咨询师账号体系 / 数据隔离 / 多文件投递 /
-    数据总览改走函数）已在线上库执行过，故当前指向第 15 节（咨询师申请去重）。
+  - 第 9–15 节（简历投递 / 密码重置 / 咨询师账号体系 / 数据隔离 / 多文件投递 /
+    数据总览改走函数 / 申请去重）已在线上库执行过，故当前指向第 16 节
+    （咨询师个人简历与一键投递）。
   - 需要从头重建时用页面上的「① 全量」。
 """
 import html
@@ -33,15 +34,17 @@ SQL_FILE = os.path.join(HERE, "supabase-setup.sql")
 OUT_FILE = os.path.join(HERE, "sql-copy.html")
 INC_FILE = os.path.join(HERE, "supabase-resume.sql")
 
-INC_MARK = "-- ---------- 15."
+INC_MARK = "-- ---------- 16."
 
 # ② 段标题里的描述（节号自动从增量段里解析）
-INC_TITLE_DESC = "② 本次新增 · 咨询师申请去重"
+INC_TITLE_DESC = "② 本次新增 · 咨询师个人简历与一键投递"
 
 SUB_HTML = (
     '用途：为 Consultant Club 建表（<b>admins / sessions / submissions / consultants / '
-    'project_interest / projects / resumes / resume_parts / resume_downloads</b> 等）'
-    '+ RLS 安全策略 + 登录 / 管理 / 项目 / 简历投递 / 密码重置 / 咨询师账号体系等函数 '
+    'project_interest / projects / resumes / resume_parts / resume_downloads / '
+    'consultant_resumes / consultant_resume_parts</b> 等）'
+    '+ RLS 安全策略 + 登录 / 管理 / 项目 / 简历投递 / 密码重置 / 咨询师账号体系 / '
+    '个人简历与一键投递等函数 '
     '+ 初始总管理员 + 现有项目种子数据。'
     '脚本幂等，重复执行无副作用（不会 update / delete 任何已有数据）。'
 )

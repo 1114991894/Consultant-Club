@@ -120,6 +120,46 @@ main{padding:26px 30px 60px;min-width:0}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.err{background:var(--bad)}
 #boot{display:flex;align-items:center;justify-content:center;height:100vh;color:var(--muted);font-size:14px}
+/* ---------- 管理简历 / 最新项目 / 一键投递 ---------- */
+.cv-files{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.cv-file{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;
+  padding:9px 12px;background:#fbfaf6}
+.cv-file .ic{flex:none}
+.cv-file .fn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.cv-file .fs{flex:none;font-size:12px;color:var(--muted);font-family:ui-monospace,Consolas,monospace}
+.cv-meta{font-size:12.5px;color:var(--muted);margin-bottom:12px}
+.cv-btns{display:flex;gap:8px;flex-wrap:wrap}
+.cv-prog{margin-top:10px;font-size:12.5px;color:var(--amber-d);display:none}
+.cv-prog.on{display:block}
+.pbtn.danger{background:#fff;color:var(--bad);border:1.4px solid #f0d9d5}
+.pbtn.danger:hover{background:#fdf3f1}
+.cs-proj{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;
+  border:1px solid var(--line);border-radius:12px;background:#fbfaf6;margin-bottom:14px;width:100%}
+.cs-proj .cs-no{font-family:ui-monospace,Consolas,monospace;font-size:12px;font-weight:700;
+  color:var(--amber-d);background:rgba(240,194,75,.16);border-radius:7px;padding:3px 8px;flex:none}
+.cs-proj b{font-size:14.5px;font-weight:700}
+.cs-proj small{color:var(--muted);font-size:12.5px;flex-basis:100%}
+.cs-lbl{font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:8px}
+.cs-warn{font-size:13px;color:var(--bad);background:#fdf3f1;border:1px solid #f0d9d5;
+  border-radius:10px;padding:11px 13px;line-height:1.7;margin-bottom:4px}
+.cs-note{font-size:12.5px;color:var(--muted);line-height:1.85;margin-top:14px}
+/* 弹窗：桌面居中，手机端整屏抽屉（定位属性整套重写，避免只覆盖宽高导致卡片跑偏） */
+.modal{position:fixed;inset:0;z-index:80;display:none}
+.modal.open{display:block}
+.modal .mk{position:absolute;inset:0;background:rgba(20,21,58,.5)}
+.modal .mbox{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:min(520px,92vw);max-height:86vh;overflow:auto;background:var(--white);
+  border-radius:16px;padding:20px 22px;box-shadow:0 24px 60px rgba(20,21,58,.28)}
+.mtitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.mtitle b{font-size:16.5px;font-weight:800}
+.mclose{border:0;background:none;font-size:16px;line-height:1;color:var(--muted);cursor:pointer;padding:4px}
+.mclose:hover{color:var(--ink)}
+.mft{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+@media (max-width:640px){
+  .modal .mbox{left:0;top:0;transform:none;width:100vw;height:100%;max-height:100%;
+    border-radius:0;display:flex;flex-direction:column;padding:18px 16px}
+  .modal .mbox .mft{margin-top:auto}
+}
 /* ---------- 移动端 ---------- */
 @media (max-width:820px){
   #app{grid-template-columns:1fr;padding-bottom:64px}
@@ -256,6 +296,21 @@ main{padding:26px 30px 60px;min-width:0}
         <span class="sub">申请时填写的资料，可随时修改</span>
       </div>
       <div class="card">
+        <h3>管理简历</h3>
+        <div class="desc">上传一次即可长期使用：支持 PDF / Word（doc、docx）/ 图片，最多 2 份（简历文件 + 图片），
+          单个文件 20MB 以内、合计 30MB 以内，图片会自动压缩到 1MB 以内。
+          之后在下面「最新项目」或官网上投递时，都能一键投递这份简历。</div>
+        <div id="cvBox"><div class="empty">正在加载…</div></div>
+        <div class="cv-prog" id="cvProg"></div>
+        <input type="file" id="cvInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.bmp,image/*" multiple style="display:none">
+      </div>
+      <div class="card">
+        <h3>最新项目</h3>
+        <div class="desc">点「投递简历」即可用上面保存的简历一键投递；投递后会同步到「投递项目」列表。
+          同一项目、同一姓名 + 手机号只能投一次。</div>
+        <div class="plist" id="latestList" style="max-width:none"></div>
+      </div>
+      <div class="card">
         <h3>个人信息</h3>
         <div class="desc">这些内容来自你提交的咨询师申请，修改后仅用于平台内部了解。</div>
         <div class="pgrid" id="profGrid"></div>
@@ -275,6 +330,19 @@ main{padding:26px 30px 60px;min-width:0}
       </div>
     </section>
   </main>
+</div>
+
+<!-- 一键投递弹窗 -->
+<div class="modal" id="csModal">
+  <div class="mk" data-csclose></div>
+  <div class="mbox">
+    <div class="mtitle"><b>一键投递</b><button class="mclose" type="button" data-csclose aria-label="关闭">✕</button></div>
+    <div id="csBody"></div>
+    <div class="mft">
+      <button class="pbtn ghost" type="button" data-csclose>取消</button>
+      <button class="pbtn amber" type="button" id="csOk">确认投递</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -301,7 +369,7 @@ var PJ_CATS = { growth:"业绩增长", strategy:"战略规划", perf:"绩效体�
   talent:"人才发展", training:"专项培训", finance:"财税管理", legal:"法律咨询",
   digital:"数字化", ai:"AI", other:"其他" };
 
-var ME = null, MY_LIKES = {}, ALL_PROJECTS = [];
+var ME = null, MY_LIKES = {}, MY_RESUMES = {}, ALL_PROJECTS = [];
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
@@ -353,6 +421,7 @@ function switchView(v){
     b.classList.toggle("on", b.getAttribute("data-view") === v);
   });
   try { history.replaceState(null, "", "#" + v); } catch(e){}
+  if(v === "me") renderLatest();
 }
 document.querySelectorAll(".nav-item").forEach(function(b){
   b.addEventListener("click", function(){ switchView(b.getAttribute("data-view")); });
@@ -384,6 +453,7 @@ function loadMe(){
     fillProfile(j.consultant ? j.consultant.profile : {});
     loadProjects();
     loadMyResumes();
+    loadCv();
   }).catch(function(){ toast("加载失败：连不上服务器，请检查网络后重试", true); });
 }
 
@@ -446,6 +516,7 @@ function renderProjects(mine){
     });
   });
   renderMine();
+  renderLatest();
 }
 function renderMine(){
   var ids = Object.keys(MY_LIKES);
@@ -468,8 +539,11 @@ function loadMyResumes(){
     var j = r.body, box = $("resList");
     if(!j || !j.ok){ box.innerHTML = '<div class="empty">' + esc((j && j.error) || "加载失败，请刷新重试") + '</div>'; return; }
     var list = j.projects || [];
+    MY_RESUMES = {};
+    list.forEach(function(p){ MY_RESUMES[p.project_id] = p; });
+    renderLatest();
     if(!list.length){
-      box.innerHTML = '<div class="empty">暂无投递记录 · 在官网项目卡点「投递简历」后，这里会显示你投递过的项目</div>';
+      box.innerHTML = '<div class="empty">暂无投递记录 · 在「个人中心 → 最新项目」或官网项目卡点「投递简历」后，这里会显示你投递过的项目</div>';
       return;
     }
     box.innerHTML = list.map(function(p){
@@ -483,6 +557,326 @@ function loadMyResumes(){
     }).join("");
   }).catch(function(){ $("resList").innerHTML = '<div class="empty">加载失败，请刷新重试</div>'; });
 }
+
+/* ---------- 管理简历（个人中心） ---------- */
+/* 文件与分片规则和官网投递完全一致：单文件 <= 20MB、合计 <= 30MB、最多 2 份，
+   图片先压到 1MB 以内，正文按 600KB 一片存，读取时按 seq 顺序拼回 */
+var CV = null;                        /* { has, files, size, updated_at } */
+var CV_PART    = 600 * 1024;
+var CV_MAXFILE = 20 * 1024 * 1024;
+var CV_MAXSEND = 1024 * 1024;
+var CV_MAXTOTAL = 30 * 1024 * 1024;
+var CV_MAX = 2;
+var cvBusy = false;
+
+function fmtSize(n){
+  n = Number(n) || 0;
+  if(n < 1024) return n + " B";
+  if(n < 1048576) return (n / 1024).toFixed(1) + " KB";
+  return (n / 1048576).toFixed(2) + " MB";
+}
+function guessType(name){
+  var m = /\.([a-z0-9]+)$/i.exec(name || "");
+  var e = m ? m[1].toLowerCase() : "";
+  if(e === "pdf") return "application/pdf";
+  if(e === "doc") return "application/msword";
+  if(e === "docx") return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  if(e === "png") return "image/png";
+  if(e === "jpg" || e === "jpeg") return "image/jpeg";
+  return "";
+}
+function cvIsImg(f){
+  return /^image\//i.test((f && f.type) || "") || /\.(jpe?g|png|webp|bmp)$/i.test((f && f.name) || "");
+}
+function cvProg(s){
+  var el = $("cvProg"); if(!el) return;
+  if(s){ el.textContent = s; el.classList.add("on"); }
+  else { el.textContent = ""; el.classList.remove("on"); }
+}
+function cvRpcMsg(j){
+  var m = (j && (j.error || j.message)) || "";
+  if(!m) return "操作失败，请稍后再试";
+  if(/Could not find the function|does not exist|schema cache/i.test(m)) return "该功能正在开通中，请稍后再试";
+  return m;
+}
+/* 图片：重绘到画布上逐步降质量 / 降尺寸，压到 1MB 以内（静默完成） */
+function shrinkImage(file){
+  return new Promise(function(resolve){
+    var img = new Image(), url = URL.createObjectURL(file);
+    img.onload = function(){
+      URL.revokeObjectURL(url);
+      var edge = 1600, q = 0.85, tries = 0;
+      function draw(){
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        if(!w || !h){ resolve(file); return; }
+        var scale = Math.min(1, edge / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+        var cv = document.createElement("canvas");
+        cv.width = cw; cv.height = ch;
+        var cx = cv.getContext("2d");
+        cx.fillStyle = "#ffffff";
+        cx.fillRect(0, 0, cw, ch);
+        cx.drawImage(img, 0, 0, cw, ch);
+        cv.toBlob(function(b){
+          if(b && b.size > CV_MAXSEND && tries < 8){
+            tries++;
+            if(q > 0.5) q -= 0.1; else edge = Math.round(edge * 0.8);
+            draw();
+            return;
+          }
+          resolve(b && b.size ? b : file);
+        }, "image/jpeg", q);
+      }
+      draw();
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+function shrinkFile(file){
+  return new Promise(function(resolve){
+    var t = file.type || "";
+    var compressible = /^image\/(jpeg|jpg|png|webp|bmp)$/i.test(t) ||
+      (!t && /\.(jpe?g|png|webp|bmp)$/i.test(file.name));
+    if(!compressible){
+      resolve({ blob: file, name: file.name, type: t || guessType(file.name), size: file.size });
+      return;
+    }
+    shrinkImage(file).then(function(b){
+      resolve({ blob: b, name: file.name.replace(/\.[^.]+$/, "") + ".jpg",
+                type: "image/jpeg", size: b.size });
+    });
+  });
+}
+function readChunk(blob, start, end){
+  return new Promise(function(resolve, reject){
+    var fr = new FileReader();
+    fr.onload = function(){
+      var s = String(fr.result || "");
+      var i = s.indexOf(",");
+      resolve(i >= 0 ? s.slice(i + 1) : "");
+    };
+    fr.onerror = function(){ reject(new Error("读取文件失败，请重试")); };
+    fr.readAsDataURL(blob.slice(start, end));
+  });
+}
+/* 上传：① 登记清单 → ② 逐片写 → ③ 标记完成（后端在这一步把旧简历替换掉） */
+function cvUpload(list){
+  var total = 0;
+  list.forEach(function(f){ total += Math.max(1, Math.ceil(f.size / CV_PART)); });
+  var id = null, done = 0;
+  cvBusy = true;
+  cvProg("准备上传…");
+  return rpc("consultant_resume_begin", {
+    p_token: sess().token,
+    p_files: list.map(function(f){ return { name: f.name, type: f.type || guessType(f.name), size: f.size }; })
+  }).then(function(r){
+    var j = r.body || {};
+    if(!j.ok) throw new Error(cvRpcMsg(j));
+    id = j.id;
+    var seq = 0, chain = Promise.resolve();
+    list.forEach(function(f){
+      var blob = f.blob, size = f.size || blob.size;
+      var n = Math.max(1, Math.ceil(size / CV_PART));
+      for(var i = 0; i < n; i++, seq++){
+        (function(at, mySeq){
+          chain = chain.then(function(){
+            return readChunk(blob, at * CV_PART, Math.min(size, (at + 1) * CV_PART))
+              .then(function(b64){
+                return rpc("consultant_resume_part_add",
+                  { p_token: sess().token, p_id: id, p_seq: mySeq, p_chunk: b64 });
+              }).then(function(rr){
+                var jj = rr.body || {};
+                if(!jj.ok) throw new Error(cvRpcMsg(jj));
+                done++;
+                cvProg("上传中… " + done + "/" + total);
+              });
+          });
+        })(i, seq);
+      }
+    });
+    return chain.then(function(){
+      return rpc("consultant_resume_done", { p_token: sess().token, p_id: id });
+    }).then(function(rr){
+      var jj = rr.body || {};
+      if(!jj.ok) throw new Error(cvRpcMsg(jj));
+    });
+  }).then(function(){
+    return loadCv();
+  }).then(function(){
+    cvBusy = false; cvProg("");
+    toast("简历已保存 · 现在可以在「最新项目」里一键投递");
+    renderLatest();
+  }).catch(function(e){
+    cvBusy = false; cvProg("");
+    toast((e && e.message) || "上传失败，请稍后再试", true);
+  });
+}
+function renderCv(){
+  var box = $("cvBox"); if(!box) return;
+  if(!CV || !CV.has){
+    box.innerHTML = '<div class="empty">' +
+      (CV && CV.off
+        ? "上传简历功能正在开通中，稍后再试"
+        : "还没有上传简历。上传后可在「最新项目」或官网上直接一键投递。") +
+      '</div>' +
+      '<div class="cv-btns"><button class="pbtn" type="button" id="cvUpBtn">上传简历</button></div>';
+  } else {
+    var files = CV.files || [];
+    box.innerHTML = '<div class="cv-files">' + files.map(function(f){
+        return '<div class="cv-file"><span class="ic">' + (cvIsImg(f) ? "🖼" : "📎") + '</span>' +
+          '<span class="fn">' + esc(f.name || "简历") + '</span>' +
+          '<span class="fs">' + fmtSize(f.size) + '</span></div>';
+      }).join("") + '</div>' +
+      '<div class="cv-meta">共 ' + files.length + ' 份 · ' + fmtSize(CV.size) +
+        (CV.updated_at ? ' · 更新于 ' + fmtTime(CV.updated_at) : '') + '</div>' +
+      '<div class="cv-btns">' +
+        '<button class="pbtn amber mini" type="button" id="cvUpBtn">替换简历</button>' +
+        '<button class="pbtn danger mini" type="button" id="cvDelBtn">删除</button>' +
+      '</div>';
+  }
+  var up = $("cvUpBtn");
+  if(up) up.addEventListener("click", function(){ if(!cvBusy) $("cvInput").click(); });
+  var del = $("cvDelBtn");
+  if(del) del.addEventListener("click", cvDelete);
+}
+function loadCv(){
+  return rpc("consultant_resume_get", { p_token: sess().token }).then(function(r){
+    var j = r.body || {};
+    if(j.ok){
+      CV = { has: !!j.has, files: j.files || [], size: j.size || 0, updated_at: j.updated_at || "" };
+    } else if(/Could not find the function|does not exist|schema cache/i.test(String(j.error || ""))){
+      CV = { has: false, files: [], size: 0, off: true };
+    } else {
+      CV = { has: false, files: [], size: 0 };
+    }
+    renderCv();
+  }).catch(function(){
+    var box = $("cvBox");
+    if(box) box.innerHTML = '<div class="empty">加载失败，请刷新重试</div>';
+  });
+}
+function cvDelete(){
+  if(cvBusy) return;
+  if(!window.confirm("确定删除已保存的简历吗？删除后需要重新上传才能一键投递。")) return;
+  cvBusy = true; cvProg("正在删除…");
+  rpc("consultant_resume_delete", { p_token: sess().token }).then(function(r){
+    cvBusy = false; cvProg("");
+    var j = r.body || {};
+    if(j.ok){ toast("简历已删除"); loadCv(); renderLatest(); }
+    else toast(cvRpcMsg(j), true);
+  }).catch(function(){ cvBusy = false; cvProg(""); toast("网络异常，请稍后再试", true); });
+}
+$("cvInput").addEventListener("change", function(){
+  var picked = Array.prototype.slice.call(this.files || []);
+  this.value = "";
+  if(!picked.length || cvBusy) return;
+  var out = [];
+  for(var i = 0; i < picked.length; i++){
+    var f = picked[i];
+    if(out.length >= CV_MAX){ toast("最多上传 " + CV_MAX + " 份文件", true); break; }
+    var okExt = /\.(pdf|doc|docx|jpg|jpeg|png|webp|bmp)$/i.test(f.name);
+    if(!okExt && !/^image\//.test(f.type || "")){ toast("只支持 PDF / Word / 图片", true); continue; }
+    if(f.size <= 0){ toast("文件内容为空，请重新选择", true); continue; }
+    if(f.size > CV_MAXFILE){ toast("单个文件请控制在 20MB 以内", true); continue; }
+    out.push(f);
+  }
+  if(!out.length) return;
+  Promise.all(out.map(function(f){ return shrinkFile(f); })).then(function(list){
+    var sz = list.reduce(function(a, b){ return a + (b.size || 0); }, 0);
+    if(sz > CV_MAXTOTAL){ toast("文件总计请控制在 30MB 以内", true); return; }
+    cvUpload(list);
+  });
+});
+
+/* ---------- 最新项目 + 一键投递（个人中心） ---------- */
+function renderLatest(){
+  var box = $("latestList"); if(!box) return;
+  var list = (ALL_PROJECTS || []).slice(0, 6);
+  if(!list.length){
+    box.innerHTML = '<div class="empty">暂无已发布的项目 · 后台发布后这里会自动出现</div>';
+    return;
+  }
+  box.innerHTML = list.map(function(p){
+    var pid = p.project_id;
+    var sub = MY_RESUMES[pid];
+    return '<div class="pitem" data-cpid="' + esc(pid) + '">' +
+      '<span class="pnum">' + esc(pid) + '</span>' +
+      '<div class="pmain"><b>' + esc(p.title || pid) + '</b>' +
+      '<small>' + esc([PJ_CATS[p.category] || p.category, p.industry, p.subtitle].filter(Boolean).join(" · ")) + '</small></div>' +
+      (sub
+        ? '<span class="like-btn on" style="cursor:default">已投递 ✓</span>'
+        : '<button class="like-btn" type="button" data-csend="' + esc(pid) + '">投递简历</button>') +
+    '</div>';
+  }).join("");
+  box.querySelectorAll("[data-csend]").forEach(function(b){
+    b.addEventListener("click", function(){ openCs(b.getAttribute("data-csend")); });
+  });
+}
+var CS_PID = null;
+function openCs(pid){
+  CS_PID = pid;
+  var p = (ALL_PROJECTS || []).filter(function(x){ return x.project_id === pid; })[0] || {};
+  var hasCv = !!(CV && CV.has);
+  var files = (CV && CV.files) || [];
+  var html = '<div class="cs-proj"><span class="cs-no">' + esc(pid) + '</span>' +
+             '<b>' + esc(p.title || pid) + '</b>' +
+             '<small>' + esc([PJ_CATS[p.category] || p.category, p.industry, p.subtitle].filter(Boolean).join(" · ")) + '</small></div>';
+  if(hasCv){
+    html += '<div class="cs-lbl">将投递「个人中心 → 管理简历」里保存的简历</div><div class="cv-files">' +
+      files.map(function(f){
+        return '<div class="cv-file"><span class="ic">' + (cvIsImg(f) ? "🖼" : "📎") + '</span>' +
+          '<span class="fn">' + esc(f.name || "简历") + '</span>' +
+          '<span class="fs">' + fmtSize(f.size) + '</span></div>';
+      }).join("") + '</div>';
+  } else {
+    html += '<div class="cs-warn">你还没有上传简历。请先在「管理简历」里上传一份，之后就能一键投递。</div>';
+  }
+  html += '<div class="cs-note">投递后会同步到「投递项目」列表与官网。<br>' +
+          '同一项目、同一姓名 + 手机号只能投递一次。</div>';
+  $("csBody").innerHTML = html;
+  var ok = $("csOk");
+  ok.disabled = !hasCv;
+  ok.textContent = hasCv ? "确认投递" : "请先上传简历";
+  $("csModal").classList.add("open");
+}
+function closeCs(){
+  $("csModal").classList.remove("open");
+  CS_PID = null;
+}
+document.querySelectorAll("[data-csclose]").forEach(function(el){
+  el.addEventListener("click", function(){ closeCs(); });
+});
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape" && $("csModal").classList.contains("open")) closeCs();
+});
+$("csOk").addEventListener("click", function(){
+  if(!CS_PID || this.disabled) return;
+  var pid = CS_PID, btn = this;
+  btn.disabled = true;
+  btn.textContent = "投递中…";
+  rpc("consultant_resume_submit", { p_token: sess().token, p_project_id: pid }).then(function(r){
+    var j = r.body || {};
+    btn.disabled = false;
+    btn.textContent = "确认投递";
+    if(j.ok || j.duplicate){
+      MY_RESUMES[pid] = MY_RESUMES[pid] || { project_id: pid };
+      closeCs();
+      renderLatest();
+      loadMyResumes();
+      toast(j.ok ? "投递成功" : "你已投递过该项目的简历，无需重复提交");
+    } else if(j.no_resume){
+      closeCs(); loadCv();
+      toast(j.error || "请先在个人中心上传简历", true);
+    } else {
+      toast(cvRpcMsg(j), true);
+    }
+  }).catch(function(){
+    btn.disabled = false;
+    btn.textContent = "确认投递";
+    toast("网络异常，请稍后再试", true);
+  });
+});
 
 /* ---------- 咨询师介绍（头像裁剪 + 字段 + 案例 / 观点） ---------- */
 var BOX = 200, OUT = 400;

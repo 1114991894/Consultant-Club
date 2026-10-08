@@ -209,6 +209,11 @@ h1 em{font-style:normal;color:var(--amber-deep);position:relative}
   color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;line-height:1.6;max-width:min(90vw,470px);
   z-index:99;opacity:0;transition:.28s;box-shadow:0 12px 34px rgba(0,0,0,.3);text-align:center;pointer-events:none}
 .r-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+/* 一键投递（已登录咨询师）：复用投递弹窗骨架，只替换正文内容 */
+.cc-lbl{font-size:12.5px;font-weight:700;color:var(--ink);margin:0 0 8px}
+.cc-warn{font-size:13px;color:#c0392b;background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.18);
+  border-radius:10px;padding:11px 14px;line-height:1.7}
+.cc-note{font-size:12px;color:var(--muted);line-height:1.75;background:#f7f6f1;border-radius:10px;padding:11px 14px;margin-top:14px}
 /* 手机上把弹窗里的小按钮放大到手指点得准的尺寸（关闭 40×40、移除 ≥40 高），避免误点 */
 @media(max-width:640px){
   .rm-x{width:40px;height:40px;right:10px;top:10px;font-size:15px}
@@ -790,6 +795,27 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
 </div>
 <div class="r-toast" id="rmToast"></div>
 
+<!-- 一键投递弹窗（本机登录过咨询师工作台、且已在个人中心保存简历时使用） -->
+<div class="r-modal" id="ccModal">
+  <div class="rm-mask" data-ccclose></div>
+  <div class="rm-box">
+    <button class="rm-x" type="button" data-ccclose aria-label="关闭">✕</button>
+    <div class="rm-head">
+      <h3>一键投递</h3>
+      <div class="rm-proj">
+        <div class="rmp-top" id="ccTop"></div>
+        <div class="rmp-title" id="ccTitle">—</div>
+        <div class="rmp-sub" id="ccSub"></div>
+      </div>
+    </div>
+    <div class="rm-body" id="ccBody"></div>
+    <div class="rm-foot">
+      <button class="rm-cancel" type="button" data-ccclose>取消</button>
+      <button class="rm-send" type="button" id="ccSend">确认投递</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
 "use strict";
@@ -924,10 +950,15 @@ function initFilter(){
 
 /* 若本机登录过咨询师工作台，这次点「我有兴趣」会记到 TA 名下（后台「感兴趣」里能看到） */
 function consultantToken(){
+  var s = consultantSess();
+  return s ? s.token : "";
+}
+/* 本机是否登录着咨询师工作台（登录过才有会话） */
+function consultantSess(){
   try {
     var s = JSON.parse(localStorage.getItem("cc_consultant_session") || "null");
-    return (s && s.role === "consultant" && s.token) ? s.token : "";
-  } catch(e){ return ""; }
+    return (s && s.role === "consultant" && s.token) ? s : null;
+  } catch(e){ return null; }
 }
 
 /* ---------- 「我有兴趣」计数（每 IP 每项目限一次） ---------- */
@@ -983,7 +1014,10 @@ var MAX_SEND   = 1024 * 1024;     /* 图片压缩目标：1MB 以内 */
 var MAX_FILE   = 20 * 1024 * 1024;
 
 function rmKey(pid){ return "cc_resume_" + pid; }
+/* 已登录咨询师：从数据库带回来的「已投递」项目（比 localStorage 更准，换浏览器也不会丢） */
+var CC_SUB = {};
 function rmDone(pid){
+  if(CC_SUB[pid]) return true;
   try { return !!localStorage.getItem(rmKey(pid)); } catch(e){ return false; }
 }
 function rmMark(pid, name, phone){
@@ -1038,6 +1072,8 @@ function ensureResumeBtns(){
           rmToast("你已投递过该项目的简历，无需重复提交");
           return;
         }
+        /* 本机登录过咨询师工作台 → 直接用个人中心保存的简历一键投递 */
+        if(consultantSess()){ ccOneClick(pid); return; }
         openResume(pid);
       });
     }
@@ -1308,6 +1344,101 @@ document.getElementById("rmSend").addEventListener("click", function(){
   });
 });
 
+/* ---------- 一键投递（已登录咨询师：直接用咨询师工作台里保存的简历） ---------- */
+var ccPid = null;
+function ccClose(){ document.getElementById("ccModal").classList.remove("open"); ccPid = null; }
+function ccOpen(pid, cv){
+  ccPid = pid;
+  var like = document.querySelector('.i-btn[data-project="' + pid + '"]');
+  var card = like ? like.closest(".proj") : null;
+  function txt(sel){
+    var el = card ? card.querySelector(sel) : null;
+    return el ? (el.textContent || "").replace(/\s+/g, " ").trim() : "";
+  }
+  var num = numOf(pid), ttl = txt(".proj-title"), cat = txt(".p-tag.cat"),
+      per = txt(".p-status"), sub = txt(".proj-sub");
+  document.getElementById("ccTop").innerHTML =
+      (num ? '<span class="rmp-no">NO.' + esc(num) + '</span>' : "")
+    + (cat ? '<span class="rmp-tag">' + esc(cat) + '</span>' : "")
+    + (per ? '<span class="rmp-period">' + esc(per) + '</span>' : "");
+  document.getElementById("ccTitle").textContent = ttl || pid;
+  var sb = document.getElementById("ccSub");
+  sb.textContent = sub;
+  sb.style.display = sub ? "" : "none";
+  var files = (cv && cv.files) || [];
+  document.getElementById("ccBody").innerHTML =
+      '<div class="cc-lbl">将投递你在咨询师工作台「个人中心 → 管理简历」里保存的简历</div>'
+    + '<div class="rm-list on">' + files.map(function(f){
+        return '<div class="rm-item"><span class="ic">' + (rmIsImg(f) ? "🖼" : "📎") + '</span>'
+          + '<span class="fn">' + esc(f.name || "简历") + '</span>'
+          + '<span class="fs">' + fmtSize(f.size) + '</span></div>';
+      }).join("") + '</div>'
+    + '<div class="cc-note">投递后会同步到工作台的「投递项目」与后台的简历列表。<br>'
+    + '同一项目、同一姓名 + 手机号只能投递一次。</div>';
+  document.getElementById("ccModal").classList.add("open");
+}
+function ccOneClick(pid){
+  var s = consultantSess();
+  if(!s){ openResume(pid); return; }
+  return rpc("consultant_resume_get", { p_token: s.token }).then(function(r){
+    var j = r.body || {};
+    if(j.ok && j.has){ ccOpen(pid, j); return; }
+    if(!j.ok && /Could not find the function|schema cache|does not exist/i.test(String(j.error || ""))){
+      openResume(pid); return;   /* 后端还没升级 → 走原来的表单投递，不影响使用 */
+    }
+    rmToast("你还没有保存简历 · 先到工作台「个人中心 → 管理简历」上传，之后就能一键投递");
+    openResume(pid);
+  }).catch(function(){ openResume(pid); });
+}
+document.querySelectorAll("[data-ccclose]").forEach(function(el){
+  el.addEventListener("click", ccClose);
+});
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape" && document.getElementById("ccModal").classList.contains("open")) ccClose();
+});
+document.getElementById("ccSend").addEventListener("click", function(){
+  if(!ccPid) return;
+  var s = consultantSess();
+  if(!s) return;
+  var pid = ccPid, btn = this;
+  btn.disabled = true;
+  btn.textContent = "投递中…";
+  rpc("consultant_resume_submit", { p_token: s.token, p_project_id: pid }).then(function(r){
+    var j = r.body || {};
+    btn.disabled = false;
+    btn.textContent = "确认投递";
+    if(j.ok || j.duplicate){
+      CC_SUB[pid] = true;
+      paintResumeBtn(pid);
+      ccClose();
+      rmToast(j.ok ? "投递成功" : "你已投递过该项目的简历，无需重复提交");
+    } else if(j.no_resume){
+      ccClose();
+      rmToast("你还没有保存简历 · 先到工作台「个人中心 → 管理简历」上传，之后就能一键投递");
+    } else {
+      rmToast(rpcMsg(j));
+    }
+  }).catch(function(){
+    btn.disabled = false;
+    btn.textContent = "确认投递";
+    rmToast("网络异常，请稍后再试");
+  });
+});
+/* 启动时拉一次「我投递过哪些项目」，把按钮标成「简历已投递」（比 localStorage 可靠） */
+var ccLoaded = false;
+function loadCcSubmitted(cb){
+  var s = consultantSess();
+  if(ccLoaded || !s){ if(cb) cb(); return; }
+  ccLoaded = true;
+  rpc("consultant_my_resumes", { p_token: s.token }).then(function(r){
+    var j = r.body || {};
+    if(j.ok && Array.isArray(j.projects)){
+      j.projects.forEach(function(p){ if(p && p.project_id) CC_SUB[p.project_id] = true; });
+    }
+    if(cb) cb();
+  }).catch(function(){ if(cb) cb(); });
+}
+
 /* ---------- 由后台数据渲染项目卡（结构与静态版完全一致） ---------- */
 function renderProject(p, idx){
   var cat  = CAT_NAME[p.category] || "未分类";
@@ -1429,6 +1560,7 @@ function boot(){
   initInterest();
   decorateStatic();
   ensureResumeBtns();
+  loadCcSubmitted(function(){ ensureResumeBtns(); });
   var url = SB_URL + "/rest/v1/projects?select=*&published=eq.true&order=first_pub_at.desc.nullslast,created_at.desc";
   fetch(url, { headers: { "apikey": SB_KEY } }).then(function(r){
     return r.ok ? r.json() : [];

@@ -17,8 +17,8 @@
 
 增量段 = 从 INC_MARK 开始到文件末尾。INC_MARK 指向「本次要让用户补跑的第一节」：
   - 每加一节新的 SQL，把 INC_MARK 往下挪到那一节，用户就只用复制一小段。
-  - 第 9–12 节（简历投递 / 密码重置 / 咨询师账号体系 / 数据隔离）已在线上库执行过，
-    故当前指向第 13 节（多文件投递）+ 第 14 节（后台数据总览改走函数）。
+  - 第 9–14 节（简历投递 / 密码重置 / 咨询师账号体系 / 数据隔离 / 多文件投递 /
+    数据总览改走函数）已在线上库执行过，故当前指向第 15 节（咨询师申请去重）。
   - 需要从头重建时用页面上的「① 全量」。
 """
 import html
@@ -33,10 +33,10 @@ SQL_FILE = os.path.join(HERE, "supabase-setup.sql")
 OUT_FILE = os.path.join(HERE, "sql-copy.html")
 INC_FILE = os.path.join(HERE, "supabase-resume.sql")
 
-INC_MARK = "-- ---------- 13."
+INC_MARK = "-- ---------- 15."
 
 # ② 段标题里的描述（节号自动从增量段里解析）
-INC_TITLE_DESC = "② 本次新增 · 多文件投递 + 数据总览修复"
+INC_TITLE_DESC = "② 本次新增 · 咨询师申请去重"
 
 SUB_HTML = (
     '用途：为 Consultant Club 建表（<b>admins / sessions / submissions / consultants / '

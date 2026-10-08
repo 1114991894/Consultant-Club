@@ -1623,6 +1623,34 @@ fetch("https://kkrokgglorelzwnzlfri.supabase.co/rest/v1/consultants?select=id,na
 var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
 var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
 
+  /* ---------- 咨询师申请防重复：同一姓名 + 同一手机号只能申请一次 ---------- */
+  var APPLY_DUP_LS = "cc_apply_done";
+  function applyDupKey(p){
+    return String((p && p.name) || "").trim().toLowerCase() + "|" + String((p && p.phone) || "").trim();
+  }
+  function applyDupLocal(p){
+    try{ return (localStorage.getItem(APPLY_DUP_LS) || "").split("\n").indexOf(applyDupKey(p)) > -1; }
+    catch(e){ return false; }
+  }
+  function applyDupRemember(p){
+    try{
+      var k = applyDupKey(p), v = localStorage.getItem(APPLY_DUP_LS) || "";
+      if(v.split("\n").indexOf(k) < 0) localStorage.setItem(APPLY_DUP_LS, v ? v + "\n" + k : k);
+    }catch(e){}
+  }
+  /* 先看本机记录（同一浏览器立即拦截），再问数据库；数据库查不了时不拦，交给触发器兜底 */
+  function applyDupCheck(p){
+    if(applyDupLocal(p)) return Promise.resolve(true);
+    return fetch(SB_URL + "/rest/v1/rpc/consultant_apply_check", {
+      method: "POST",
+      headers: { "apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_name: String((p && p.name) || "").trim(), p_phone: String((p && p.phone) || "").trim() })
+    }).then(function(r){
+      if(!r.ok) return false;
+      return r.json().then(function(j){ return j === true; });
+    }).catch(function(){ return false; });
+  }
+
   /* 通用弹窗初始化：打开/关闭/校验/成功视图 */
   function initModal(cfg){
     var modal = document.getElementById(cfg.modal);
@@ -1668,28 +1696,48 @@ var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
         firstBad.focus({preventScroll:true});
         return;
       }
-      /* TODO: 接入后端/表单服务后在此发送数据；当前为演示提交 */
       var payload = {};
       [].slice.call(form.querySelectorAll("input,select,textarea")).forEach(function(el){
         if(el.name) payload[el.name] = el.value.trim();
       });
       var sbtn = document.getElementById(cfg.submit);
-      sbtn.disabled = true;
       var t0 = sbtn.textContent;
+      sbtn.disabled = true;
       sbtn.textContent = "提交中…";
-      fetch(SB_URL + "/rest/v1/submissions", {
-        method: "POST",
-        headers: { "apikey": SB_KEY, "Content-Type": "application/json", "Prefer": "return=minimal" },
-        body: JSON.stringify({ type: cfg.type, data: payload })
-      }).then(function(r){
-        if(!r.ok) throw new Error("bad status");
+      function resetBtn(){ sbtn.disabled = false; sbtn.textContent = t0; }
+      function showDup(){ resetBtn(); alert("已提交过，请勿重复申请！"); }
+      function showDone(){
         form.style.display = "none";
         done.style.display = "flex";
         foot.style.display = "none";
-        done.scrollIntoView({block:"nearest"});
-      }).catch(function(){
-        sbtn.disabled = false;
-        sbtn.textContent = t0;
+        /* 个别环境没有 scrollIntoView，别让它把成功也带进失败分支 */
+        try{ done.scrollIntoView({block:"nearest"}); }catch(e){}
+      }
+      function postForm(){
+        return fetch(SB_URL + "/rest/v1/submissions", {
+          method: "POST",
+          headers: { "apikey": SB_KEY, "Content-Type": "application/json", "Prefer": "return=minimal" },
+          body: JSON.stringify({ type: cfg.type, data: payload })
+        }).then(function(r){
+          if(r.ok) return true;
+          /* 命中数据库去重触发器时回 409 / 23505 / DUPLICATE_APPLY */
+          return r.text().then(function(t){
+            return !(r.status === 409 || /23505|DUPLICATE_APPLY/.test(t));
+          });
+        });
+      }
+      /* 咨询师申请：提交前先查有没有重复（同一姓名 + 同一手机号只能申请一次） */
+      var pre = (cfg.type === "apply") ? applyDupCheck(payload) : Promise.resolve(false);
+      pre.then(function(dup){
+        if(dup) throw { dup: true };
+        return postForm();
+      }).then(function(sent){
+        if(!sent) throw { dup: true };
+        if(cfg.type === "apply") applyDupRemember(payload);
+        showDone();
+      }).catch(function(err){
+        if(err && err.dup){ showDup(); return; }
+        resetBtn();
         alert("提交失败，请检查网络后重试");
       });
     });

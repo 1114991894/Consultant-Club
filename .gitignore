@@ -1,2 +1,5 @@
 # Windows 上把 ssh 的 UserKnownHostsFile 指向 NUL 时，会被误当成文件名创建出来
 NUL
+
+# 本地种子数据（含咨询师姓名与头像 base64），不上传
+consultant_seed.json

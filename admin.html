@@ -834,6 +834,7 @@ tr:hover td{background:#fcfbf7}
     </div>
     <div class="mf">
       <button class="pbtn amber" id="pvDl">下载简历</button>
+      <button class="pbtn ghost" id="pvOpen" style="display:none">新窗口打开</button>
       <button class="pbtn ghost" data-resclose>关闭</button>
     </div>
   </div>
@@ -909,20 +910,30 @@ function api(path, opts){
     "apikey": SB_KEY,
     "Content-Type": "application/json"
   }, s && s.token ? { "x-admin-token": s.token } : {}, opts.headers || {});
-  var tries = 2;
-  function once(){
-    return fetch(SB_URL + path, opts).then(function(r){ return r.json().then(function(j){
-      return { status: r.status, body: j };
-    }); }).catch(function(e){
-      /* 网络被重置/中断时自动重试，避免一进后台就弹「加载失败」 */
-      if(tries > 0){
+  /* 网络抖动 / 网关 5xx 都自动重试。
+     之前只在「连接异常」时重试 2 次，而这条链路实测最常见故障是网关
+     502 / 504 —— 那种响应会直接走到 json() 解析抛错，表现为简历预览失败、
+     下载失败、列表加载失败。5xx 意味着请求多半没到函数本身，重试是安全的。 */
+  var tries = 4;
+  function once(delay){
+    function retry(){
+      return new Promise(function(res){ setTimeout(res, delay); }).then(function(){
+        return once(Math.min(3000, delay + 800));
+      });
+    }
+    return fetch(SB_URL + path, opts).then(function(r){
+      if(tries > 0 && (r.status === 502 || r.status === 503 || r.status === 504)){
         tries--;
-        return new Promise(function(res){ setTimeout(res, 900); }).then(once);
+        return retry();
       }
+      return r.json().then(function(j){ return { status: r.status, body: j }; });
+    }).catch(function(e){
+      /* 网络被重置/中断时自动重试，避免一进后台就弹「加载失败」 */
+      if(tries > 0){ tries--; return retry(); }
       throw e;
     });
   }
-  return once();
+  return once(0);
 }
 function rpc(fn, body){ return api("/rest/v1/rpc/" + fn, { method:"POST", body: JSON.stringify(body) }); }
 
@@ -1049,8 +1060,20 @@ function loadBadges(){
     }
   });
 }
-$("searchBtn").addEventListener("click", loadList);
-$("searchInput").addEventListener("keydown", function(e){ if(e.key==="Enter") loadList(); });
+/* 搜索：过滤发生在前端（matches 用 state.q 匹配整条记录的 JSON）。
+   之前这里误绑成 loadList —— 只会重新拉一遍数据，输入值从来没写进
+   state.q，所以点「搜索」和回车都毫无反应。 */
+function doSearch(){
+  state.q = ($("searchInput").value || "").trim().toLowerCase();
+  render();
+}
+var searchTimer = null;
+$("searchInput").addEventListener("input", function(){
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(doSearch, 200);   /* 边输边筛 */
+});
+$("searchInput").addEventListener("keydown", function(e){ if(e.key==="Enter"){ clearTimeout(searchTimer); doSearch(); } });
+$("searchBtn").addEventListener("click", doSearch);
 document.querySelectorAll(".tabs button").forEach(function(b){
   b.addEventListener("click", function(){
     document.querySelectorAll(".tabs button").forEach(function(x){ x.classList.remove("on"); });
@@ -2379,7 +2402,10 @@ function resumeDownload(r, btn, only){
   });
   chain.then(function(){
     got.forEach(function(g, i){
-      setTimeout(function(){ saveBlob(b64ToBlob(g.data, g.type), g.name); }, i * 450);
+      setTimeout(function(){
+        try { saveBlob(b64ToBlob(g.data, g.type), g.name); }
+        catch(e){ toast("第 " + (i + 1) + " 个文件保存失败：浏览器拦截了下载，请在地址栏右侧允许下载后重试", true); }
+      }, i * 450);
     });
     return rpc("resume_download_mark", { p_token: sn.token, p_id: r.id });
   }).then(function(res){
@@ -2504,6 +2530,8 @@ function resumePreview(r, idx){
   var f = files[curIdx] || files[0];
   renderPvFiles(r, curIdx);
   pvImg = null; pvCanvas = null; pvNat = null; pvScale = 1; pvMoved = false;
+  if(pvUrl){ try { URL.revokeObjectURL(pvUrl); } catch(e){} pvUrl = null; }
+  $("pvOpen").style.display = "none";
   $("pvTag").textContent = "在线预览";
   $("pvName").textContent = r.name + " · " + (f.name || "简历");
   $("pvMeta").textContent = "投递于 " + (r.project_id || "") + " · " + fmtTime(r.created_at)
@@ -2519,6 +2547,7 @@ function resumePreview(r, idx){
     if(rext === "pdf" || /pdf/i.test(realType)){
       pvUrl = URL.createObjectURL(b64ToBlob(j.data, "application/pdf"));
       $("pvWrap").innerHTML = '<iframe src="' + pvUrl + '" title="简历预览"></iframe>';
+      $("pvOpen").style.display = "";
       return;
     }
     if(isImgRes({ name: realName, type: realType })){
@@ -2542,9 +2571,14 @@ function resumePreview(r, idx){
     }
     $("pvWrap").innerHTML = '<div class="pv-none"><b>该格式不支持在线预览</b>' +
       esc(realName || "该文件") + '（' + (rext ? rext.toUpperCase() : "未知格式") +
-      '）浏览器无法直接打开，请点下方「下载」按钮查看。</div>';
+      '）浏览器无法直接打开，请点下方「下载简历」查看。</div>';
   }).catch(function(e){
-    $("pvWrap").innerHTML = '<div class="pv-none"><b>预览失败</b>' + esc((e && e.message) || "请稍后重试") + '</div>';
+    /* 取文件失败大多是网络抖动；给个重试按钮，用户不用关掉弹窗再来一遍 */
+    $("pvWrap").innerHTML = '<div class="pv-none"><b>预览失败</b>' +
+      esc((e && e.message) || "网络不稳定，请稍后重试") +
+      '<div style="margin-top:16px"><button type="button" class="pbtn amber" id="pvRetry">重试</button></div></div>';
+    var rb = $("pvRetry");
+    if(rb) rb.addEventListener("click", function(){ if(curRes) resumePreview(curRes, curIdx); });
   });
 }
 function deleteResume(r){
@@ -2566,6 +2600,7 @@ function closeResModals(){
   if(pvUrl){ try { URL.revokeObjectURL(pvUrl); } catch(e){} pvUrl = null; }
   $("pvWrap").innerHTML = "";
   if($("pvFiles")){ $("pvFiles").innerHTML = ""; $("pvFiles").style.display = "none"; }
+  $("pvOpen").style.display = "none";
   pvImg = null; pvCanvas = null; pvNat = null; pvScale = 1; pvMoved = false;
   curRes = null; curIdx = 0;
 }
@@ -2578,6 +2613,10 @@ document.addEventListener("keydown", function(e){
 });
 $("rsSearch").addEventListener("input", function(){ PJ.resQ = this.value.trim(); renderResumeList(); });
 $("pvDl").addEventListener("click", function(){ if(curRes) resumeDownload(curRes, this, curIdx); });
+$("pvOpen").addEventListener("click", function(){
+  if(!pvUrl) return;
+  window.open(pvUrl, "_blank");
+});
 
 /* ---------- 项目编辑弹窗 ---------- */
 function pjBlank(){

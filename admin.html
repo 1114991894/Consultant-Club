@@ -132,6 +132,22 @@ main{flex:1;padding:30px 36px 60px;min-width:0}
 .cons-item .ci-main .tag{display:inline-block;margin-left:8px;font-size:11.5px;background:var(--amber);color:var(--ink);border-radius:99px;padding:2px 9px;font-weight:700}
 .cons-item .ci-main small{display:block;color:var(--muted);font-size:12.5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cons-item .ci-ops{display:flex;gap:6px;flex:none}
+/* 「首页展示」开关：开=绿字绿边，关=灰字；点了直接生效，不影响后台账号与资料 */
+.cons-item .ci-ops .listed-btn{
+  border:1.3px solid var(--line);background:#fff;border-radius:7px;
+  padding:5px 11px;font-size:12px;cursor:pointer;white-space:nowrap;color:var(--muted);
+}
+.cons-item .ci-ops .listed-btn.on{border-color:rgba(35,142,98,.45);background:#eefaf3;color:#1c7d55;font-weight:700}
+.cons-item .ci-ops .listed-btn:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.cons-item .ci-ops .listed-btn.on:hover{border-color:rgba(35,142,98,.8);color:#146843}
+.cons-item .ci-ops .listed-btn:disabled{opacity:.62;cursor:not-allowed}
+/* 手机端：一行的位置放不下 5 个按钮（↑ ↓ 编辑 删除 首页展示）时，
+   操作列整体换到第二行铺满 —— 否则右侧按钮会顶出屏幕，页面能横向拖动 */
+@media (max-width:720px){
+  .cons-item{flex-wrap:wrap;row-gap:10px}
+  .cons-item .ci-ops{width:100%;flex-wrap:wrap}
+  .cons-item .ci-ops .listed-btn{margin-left:auto}
+}
 .cons-item .ci-ops .mv{border:1px solid var(--line);background:#fff;border-radius:7px;width:28px;height:28px;font-size:13px;cursor:pointer;color:var(--muted)}
 .cons-item .ci-ops .mv:hover{border-color:var(--amber-d);color:var(--amber-d)}
 /* 咨询师卡片：项目案例 / 专业观点 逐条录入 */
@@ -550,7 +566,7 @@ tr:hover td{background:#fcfbf7}
     <section id="view-consultants" style="display:none">
       <div class="mhead"><h2>咨询师管理</h2><span class="sub">管理首页「项目咨询师」展示 · 保存后官网自动更新</span><a class="home-btn" href="https://1114991894.github.io/Consultant-Club/" target="_blank" rel="noopener"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2.5 6.5L8 2l5.5 4.5V13a1 1 0 01-1 1h-3v-4h-3v4h-3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>进入首页</a></div>
       <div class="bar">
-        <span style="font-size:13px;color:var(--muted);flex:1">咨询师在自己工作台改的介绍，也会同步到这里和官网，两边显示的是同一张卡片</span>
+        <span style="font-size:13px;color:var(--muted);flex:1">咨询师在自己工作台改的介绍，也会同步到这里和官网，两边显示的是同一张卡片；<b>「首页展示」开关决定这个人是否出现在官网首页</b>（「数据总览 → 咨询师申请」点同意只开通后台账号，不会自动上首页）</span>
         <button class="pbtn amber" id="cNew">＋ 添加咨询师</button>
       </div>
       <div class="conslist" id="consList"></div>
@@ -1142,12 +1158,13 @@ function render(){
     /* 处理人 / 处理时间属于留痕，仅总管理员可见 */
     var handlerTxt = (sess().role === "super" && handler)
       ? ("<br><small style='color:#888'>"+esc(handler)+" · "+esc(fmtTime(s.handled_at))+"</small>") : "";
-    /* 咨询师申请的那一列是「同意」：同意后自动开通登录账号并标记已处理 */
+    /* 咨询师申请的那一列是「同意」：只开通咨询师个人管理后台并标记已处理，
+       不再连带把人插到官网首页（要不要上首页到「咨询师管理」用开关决定） */
     var markBtn;
     if(s.type === "apply"){
       markBtn = statusCls === "handled"
-        ? '<button class="mark-btn sm handled" disabled>已同意</button>'
-        : '<button class="mark-btn sm handled" data-act="approve">同意</button>';
+        ? '<button class="mark-btn sm handled" disabled title="已开通咨询师后台；首页展示请到「咨询师管理」控制">已同意</button>'
+        : '<button class="mark-btn sm handled" data-act="approve" title="开通咨询师个人管理后台（不会自动展示到官网首页）">同意</button>';
     } else {
       markBtn = statusCls === "handled"
         ? '<button class="mark-btn sm pending" data-act="unhandled">未处理</button>'
@@ -1224,7 +1241,7 @@ function toggleStatus(s, target){
   });
 }
 
-/* ---------- 咨询师申请：同意（开通登录账号 + 建立介绍卡片） ---------- */
+/* ---------- 咨询师申请：同意（只开通登录账号，不自动上首页） ---------- */
 function approveApply(s){
   var sn = sess(); if(!sn) return showLogin();
   var d = s.data || {};
@@ -1232,12 +1249,14 @@ function approveApply(s){
   var phone = String(d.phone || "").replace(/\D/g, "");
   if(!/^1\d{10}$/.test(phone))
     return toast("该申请没有有效手机号，无法开通账号", true);
-  if(!confirm("同意「" + name + "」的咨询师申请？\n\n将开通登录账号：\n手机号 " + phone +
-              "\n初始密码 123456\n\n对方登录后可完善自己的介绍、案例与观点。")) return;
+  if(!confirm("同意「" + name + "」的咨询师申请？\n\n将开通咨询师个人管理后台：\n手机号 " + phone +
+              "\n初始密码 123456\n\n注意：同意只开通后台账号，不会展示到官网首页。\n" +
+              "要让 TA 出现在首页「项目咨询师」，请到「咨询师管理」点该行的「首页展示」开关。")) return;
   rpc("consultant_apply_approve", { p_token: sn.token, p_submission_id: s.id }).then(function(r){
     var j = r.body;
     if(j && j.ok){
-      toast("已同意 · 账号 " + j.phone + " / 初始密码 " + (j.password || "123456"));
+      toast("已开通咨询师后台 · 账号 " + j.phone + " / 初始密码 " + (j.password || "123456")
+        + "（未展示到首页，可在「咨询师管理」开启）");
       loadList(); loadBadges();
       if(state.current && state.current.id === s.id){
         state.current.status = "handled";
@@ -1886,14 +1905,27 @@ function consMsg(html){
   consWarn("");
   $("consList").innerHTML = html;
 }
-var CONS_UPGRADE_TIP = "⚠️ <b>数据库还没升级</b>：列表已按旧字段显示，但「案例 / 观点」和咨询师后台还用不了。<br>"
+var CONS_UPGRADE_TIP = "⚠️ <b>数据库还没升级</b>：列表已按旧字段显示，但「案例 / 观点」、咨询师后台和「首页展示」开关还用不了。<br>"
+  + "解决办法：打开 <b>sql-copy.html</b> → 点「<b>② 一键复制本次新增部分</b>」→ 粘贴到 Supabase 的 SQL Editor 执行一次 → 回到本页刷新。"
+  + "（脚本可重复执行，不会改动任何已有数据）";
+/* 第 12 节已执行、只差第 18 节（首页展示开关）时的提示 */
+var HOME_UPGRADE_TIP = "⚠️ <b>「首页展示」开关还没开通</b>（数据库还差一节脚本）：本页其它功能都正常，只差这个开关。<br>"
   + "解决办法：打开 <b>sql-copy.html</b> → 点「<b>② 一键复制本次新增部分</b>」→ 粘贴到 Supabase 的 SQL Editor 执行一次 → 回到本页刷新。"
   + "（脚本可重复执行，不会改动任何已有数据）";
 
+/* 三级取数：字段最全 → 少 home_listed（第 18 节未执行）→ 只有基础字段（第 11 节也没执行），
+   逐级降级，保证任何阶段列表都能显示出来 */
+var CONS_COLS = {
+  full:   "id,name,title,bio,image,cases,views,sort,created_at,admin_id,home_listed",
+  nohome: "id,name,title,bio,image,cases,views,sort,created_at,admin_id",
+  base:   "id,name,title,bio,image,sort,created_at"
+};
+function consFetch(cols){
+  return api("/rest/v1/consultants?select=" + cols + "&order=sort.asc,created_at.asc", {});
+}
 function loadConsultants(){
   /* 明确列出字段：申请资料（profile）含个人信息，已收回公开读权限，这里也不再取 */
-  api("/rest/v1/consultants?select=id,name,title,bio,image,cases,views,sort,created_at,admin_id"
-    + "&order=sort.asc,created_at.asc", {}).then(function(r){
+  consFetch(CONS_COLS.full).then(function(r){
     if(r.status === 200 && Array.isArray(r.body)){
       consWarn(""); C.list = r.body; renderConsultants(); return;
     }
@@ -1902,24 +1934,48 @@ function loadConsultants(){
       return;
     }
     if(consMissingCol(r)){
-      /* 退回基础字段：先把已有咨询师正常列出来 */
-      api("/rest/v1/consultants?select=id,name,title,bio,image,sort,created_at"
-        + "&order=sort.asc,created_at.asc", {}).then(function(r2){
+      consFetch(CONS_COLS.nohome).then(function(r2){
         if(r2.status === 200 && Array.isArray(r2.body)){
-          C.list = r2.body.map(function(c){ c.cases = []; c.views = []; return c; });
-          consWarn(CONS_UPGRADE_TIP);
+          C.list = r2.body.map(function(c){ c.home_listed = null; return c; });
+          consWarn(HOME_UPGRADE_TIP);
           renderConsultants();
-        } else consMsg('加载失败，请刷新重试');
+          return;
+        }
+        if(consMissingCol(r2)){
+          /* 退回基础字段：先把已有咨询师正常列出来 */
+          consFetch(CONS_COLS.base).then(function(r3){
+            if(r3.status === 200 && Array.isArray(r3.body)){
+              C.list = r3.body.map(function(c){
+                c.cases = []; c.views = []; c.home_listed = null; return c;
+              });
+              consWarn(CONS_UPGRADE_TIP);
+              renderConsultants();
+            } else consMsg('加载失败，请刷新重试');
+          }).catch(function(){ consMsg('加载失败，请刷新重试'); });
+          return;
+        }
+        consMsg('加载失败，请刷新重试');
       }).catch(function(){ consMsg('加载失败，请刷新重试'); });
       return;
     }
     consMsg('加载失败，请刷新重试');
   }).catch(function(){ consMsg('加载失败，请刷新重试'); });
 }
+/* 「首页展示」开关按钮：数据库缺列时显示为待开通（禁用） */
+function homeBtnOf(c){
+  var v = c.home_listed;
+  if(v === null || typeof v === "undefined")
+    return '<button class="listed-btn" data-act="home" disabled'
+      + ' title="数据库还差一节脚本，执行 sql-copy.html 的「本次新增」后可用">首页展示 · 待开通</button>';
+  return v
+    ? '<button class="listed-btn on" data-act="home" title="当前在官网首页展示，点击从首页隐藏">首页展示 · 开</button>'
+    : '<button class="listed-btn off" data-act="home" title="当前不在首页展示，点击展示到官网首页">首页展示 · 关</button>';
+}
 function renderConsultants(){
   var wrap = $("consList");
   if(!C.list.length){
-    wrap.innerHTML = '<div class="empty">暂无咨询师 · 点上方的「＋ 添加咨询师」新建，首页「项目咨询师」将展示这里的内容</div>';
+    wrap.innerHTML = '<div class="empty">暂无咨询师 · 点上方的「＋ 添加咨询师」新建，'
+      + '新建后会直接展示在首页「项目咨询师」；这里也能随时用「首页展示」开关控制上/下首页</div>';
     return;
   }
   wrap.innerHTML = C.list.map(function(c, i){
@@ -1937,6 +1993,7 @@ function renderConsultants(){
       '<button class="mv" data-act="down" title="下移">↓</button>' +
       '<button class="note-btn sm" data-act="edit">编辑</button>' +
       '<button class="del-btn" data-act="del">删除</button>' +
+      homeBtnOf(c) +
       '</div></div>';
   }).join("");
   wrap.querySelectorAll(".cons-item").forEach(function(item){
@@ -1953,6 +2010,27 @@ function renderConsultants(){
           });
         } else if(act === "edit"){
           editConsModal(id);
+        } else if(act === "home"){
+          if(c.home_listed === null || typeof c.home_listed === "undefined")
+            return toast("「首页展示」还没开通：打开 sql-copy.html 复制「本次新增」执行一次即可", true);
+          var to = !c.home_listed;
+          btn.disabled = true;
+          rpc("consultant_home_set", { p_token: sn.token, p_id: id, p_on: to }).then(function(r){
+            var j = r.body || {};
+            if(j.ok){
+              c.home_listed = !!j.home_listed;
+              toast(c.home_listed
+                ? "已展示到首页「项目咨询师」"
+                : "已从首页隐藏（后台账号与本人资料不受影响）");
+              renderConsultants();
+            } else if(j.code === "PGRST202" || j.code === "PGRST203" || r.status === 404){
+              btn.disabled = false;
+              toast("「首页展示」还没开通：打开 sql-copy.html 复制「本次新增」执行一次即可", true);
+            } else {
+              btn.disabled = false;
+              toast(j.error || "操作失败", true);
+            }
+          }).catch(function(){ btn.disabled = false; toast("网络异常，请稍后再试", true); });
         } else if(act === "del"){
           if(!confirm("确定删除咨询师「" + c.name + "」？删除后官网不再展示。")) return;
           rpc("consultant_delete", { p_token: sn.token, p_id: id }).then(function(r){

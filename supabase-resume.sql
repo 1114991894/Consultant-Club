@@ -1,83 +1,96 @@
--- ---------- 17. 项目自定义分类 ----------
--- 后台「新建 / 修改项目」的分类下拉，除内置分类外还能自己新增一个。
--- 自定义分类存在这张表里：后台下拉与官网「最近咨询项目」的筛选栏都会同步出现。
--- 表内只有分类名，不含任何个人信息，因此开放匿名只读。
+-- ---------- 18. 首页展示开关（同意只开通账号，上不上首页由开关决定） ----------
+-- 原来「数据总览 → 咨询师申请」点「同意」会连带把人插进首页「项目咨询师」
+-- 模块，等于审批动作 = 对外公开。现在拆成两步：
+--   ① 同意 = 只开通咨询师个人管理后台（登录账号 + 初始密码）；
+--   ② 是否挂到官网首页，由「咨询师管理」每行的「首页展示」开关决定。
+--
+-- 本节只用 add column / create index / create function / grant，
+-- 唯一的 update 只在「新列刚加上、值还是 null」时执行一次（把眼下已经在
+-- 首页展示的那批人标记为展示中，不让任何一位凭空消失）；
+-- 不删除、不覆盖任何已有数据，可重复执行。
+-- 18.1 先加可空列：不加默认值，才能区分「从未设置过」和「管理员手动关掉」
+alter table public.consultants add column if not exists home_listed boolean;
 
--- 17.1 分类表
-create table if not exists public.project_categories (
-  id         bigserial primary key,
-  name       text not null,
-  sort       integer not null default 100,
-  created_at timestamptz not null default now(),
-  created_by text
-);
+-- 18.2 已经在首页展示的人保持展示（只在 null 时跑一次，之后不会再动）
+update public.consultants set home_listed = true where home_listed is null;
 
--- 同名（忽略大小写与首尾空格）只允许一条
-create unique index if not exists project_categories_name_key
-  on public.project_categories (lower(btrim(name)));
+-- 18.3 此后新建的卡片（同意申请、咨询师自己完善资料）默认「不在首页展示」
+alter table public.consultants alter column home_listed set default false;
+alter table public.consultants alter column home_listed set not null;
+create index if not exists consultants_home_listed_idx on public.consultants (home_listed);
 
-create index if not exists project_categories_sort_idx
-  on public.project_categories (sort, created_at);
+-- 18.4 官网首页要按这一列过滤，单独放开这一列的读权限（只是个展示开关，
+--      不含任何个人信息；其余列仍按第 12 节那样逐列授权）
+grant select (home_listed) on public.consultants to anon, authenticated;
 
--- 17.2 RLS：只开放「读」（官网筛选栏要用），写一律走下面的安全函数
-alter table public.project_categories enable row level security;
-
-drop policy if exists project_categories_read on public.project_categories;
-create policy project_categories_read on public.project_categories
-  for select to anon, authenticated using (true);
-
-grant select on public.project_categories to anon, authenticated;
-
--- 17.3 读取全部分类（公开：官网筛选栏与后台下拉共用）
-create or replace function public.project_categories_list()
-returns jsonb
-language sql stable security definer set search_path = public as $$
-  select coalesce(
-    jsonb_agg(jsonb_build_object('name', c.name) order by c.sort, c.created_at, c.name),
-    '[]'::jsonb)
-  from public.project_categories c
-$$;
-
--- 17.4 新增分类（仅后台管理员；重名不报错，直接把已有的那条返回给前端选中）
-create or replace function public.project_category_add(p_token text, p_name text)
-returns jsonb
-language plpgsql security definer set search_path = public as $$
+-- 18.5 后台上 / 下首页展示（需管理员 token）
+create or replace function public.consultant_home_set(p_token text, p_id uuid, p_on boolean)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
 declare
   v_admin public.admins;
-  v_name  text;
-  v_exist text;
+  v_on    boolean;
 begin
   v_admin := admin_from_token(p_token);
   if v_admin.id is null then
-    return jsonb_build_object('ok', false, 'error', '登录已失效，请重新登录');
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  if v_admin.role not in ('super','admin') then
+    return json_build_object('ok', false, 'error', '无权限操作');
   end if;
 
-  v_name := btrim(coalesce(p_name, ''));
-  v_name := regexp_replace(v_name, '[[:space:]]+', ' ', 'g');
-  if v_name = '' then
-    return jsonb_build_object('ok', false, 'error', '请先填写分类名称');
+  v_on := coalesce(p_on, false);
+  update public.consultants set home_listed = v_on where id = p_id;
+  if not found then
+    return json_build_object('ok', false, 'error', '咨询师不存在或已删除');
   end if;
-  if char_length(v_name) > 12 then
-    return jsonb_build_object('ok', false, 'error', '分类名称最多 12 个字');
-  end if;
-
-  select c.name into v_exist
-    from public.project_categories c
-   where lower(btrim(c.name)) = lower(v_name)
-   limit 1;
-  if v_exist is not null then
-    return jsonb_build_object('ok', true, 'name', v_exist, 'dup', true);
-  end if;
-
-  insert into public.project_categories (name, created_by)
-  values (v_name, v_admin.phone);
-
-  return jsonb_build_object('ok', true, 'name', v_name, 'dup', false);
+  return json_build_object('ok', true, 'id', p_id, 'home_listed', v_on);
 end;
 $$;
 
--- 17.5 调用权限
-grant execute on function public.project_categories_list() to anon, authenticated;
-grant execute on function public.project_category_add(text, text) to anon, authenticated;
+-- 18.6 后台「＋ 添加咨询师」本身就是「我要把这个人加到官网」的动作，
+--      保持原来的体验：新建即展示；编辑资料时不动这个开关。
+--      （同意申请走的是 consultant_apply_approve，不经过这里，默认不展示）
+create or replace function public.consultant_save(
+  p_token text, p_id uuid, p_name text, p_title text, p_bio text, p_image text
+)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_admin public.admins;
+  v_row public.consultants;
+begin
+  v_admin := admin_from_token(p_token);
+  if v_admin.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期');
+  end if;
+  p_name := btrim(coalesce(p_name, ''));
+  p_title := btrim(coalesce(p_title, ''));
+  if p_name = '' or p_title = '' then
+    return json_build_object('ok', false, 'error', '姓名与头衔为必填');
+  end if;
+  if p_id is null then
+    if coalesce(p_image, '') = '' then
+      return json_build_object('ok', false, 'error', '请上传人物图像');
+    end if;
+    insert into public.consultants (name, title, bio, image, home_listed)
+    values (p_name, p_title, coalesce(p_bio, ''), p_image, true)
+    returning * into v_row;
+  else
+    update public.consultants set
+      name = p_name, title = p_title, bio = coalesce(p_bio, ''),
+      image = case when coalesce(p_image, '') = '' then image else p_image end
+    where id = p_id
+    returning * into v_row;
+    if v_row.id is null then
+      return json_build_object('ok', false, 'error', '记录不存在');
+    end if;
+  end if;
+  return json_build_object('ok', true, 'id', v_row.id);
+end;
+$$;
+
+-- 18.7 调用权限
+grant execute on function public.consultant_home_set(text, uuid, boolean) to anon, authenticated;
 
 notify pgrst, 'reload schema';

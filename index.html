@@ -1607,21 +1607,30 @@ button.btn{font-family:inherit;cursor:pointer;border:0}
 </div>
 
 <script>
-/* 团队区动态化：后台「咨询师管理」配置了数据则覆盖静态卡片，否则保留静态 */
+/* 团队区动态化：只展示后台「咨询师管理」里把「首页展示」开关打开的人；
+   后台一个人都没配（或全部关掉）时保留静态卡片兜底 */
 (function(){
 "use strict";
 var KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
+var API = "https://kkrokgglorelzwnzlfri.supabase.co/rest/v1/consultants";
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 var ARROW = '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">'
   + '<path d="M3 8h9M8.5 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" '
   + 'stroke-linecap="round" stroke-linejoin="round"/></svg>';
-fetch("https://kkrokgglorelzwnzlfri.supabase.co/rest/v1/consultants?select=id,name,title,bio,image&order=sort.asc,created_at.asc", {
-  headers: { "apikey": KEY }
-}).then(function(r){ return r.ok ? r.json() : Promise.reject(); }).then(function(list){
-  if(!Array.isArray(list) || !list.length) return;
+
+/* homeOnly=true：只取「首页展示」打开的人；false：不过滤（老库降级用） */
+function pull(homeOnly){
+  var u = API + "?select=id,name,title,bio,image"
+    + (homeOnly ? "&home_listed=is.true" : "")
+    + "&order=sort.asc,created_at.asc";
+  return fetch(u, { headers: { "apikey": KEY } })
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error("http " + r.status)); });
+}
+function paint(list){
+  if(!Array.isArray(list) || !list.length) return false;
   var grid = document.querySelector(".team-grid");
-  if(!grid) return;
+  if(!grid) return false;
   grid.innerHTML = list.map(function(c){
     /* 首页卡片每条最多展示 3 行经历（超出的在「查看详情」里看全），保证每张卡片一样高 */
     var lines = String(c.bio||"").split(/\n+/).map(function(l){ return l.trim(); }).filter(Boolean).slice(0, 3);
@@ -1634,7 +1643,16 @@ fetch("https://kkrokgglorelzwnzlfri.supabase.co/rest/v1/consultants?select=id,na
         + '<span>查看详情</span>' + ARROW + '</a>' +
       '</article>';
   }).join("");
-}).catch(function(){ /* 接口不可用时保留静态卡片 */ });
+  return true;
+}
+
+pull(true).then(function(list){
+  /* 开关全关时 list 为空：保持静态卡片兜底，页面不会出现空洞 */
+  paint(list);
+}).catch(function(){
+  /* 数据库还没执行第 18 节（没有 home_listed 列）：退回不过滤的查询，展示照旧 */
+  pull(false).then(paint).catch(function(){ /* 接口不可用时保留静态卡片 */ });
+});
 })();
 </script>
 <!-- ================= 悬浮快捷按钮 ================= -->

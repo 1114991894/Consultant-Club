@@ -1,0 +1,2 @@
+# Windows 上把 ssh 的 UserKnownHostsFile 指向 NUL 时，会被误当成文件名创建出来
+NUL

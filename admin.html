@@ -1009,12 +1009,33 @@ $("lgPhone").addEventListener("keydown", function(e){ if(e.key==="Enter") $("lgP
 
 /* ---------- 数据总览 ---------- */
 function loadList(){
-  api("/rest/v1/submissions?select=*&order=created_at.desc&limit=1000").then(function(r){
-    if(r.status === 401){ saveSess(null); showLogin(); return; }
-    state.list = Array.isArray(r.body) ? r.body : [];
-    loadBadges();
-    render();
-  }).catch(function(){ toast("加载失败：连不上服务器，请检查网络（或代理 / VPN）后重试", true); });
+  /* 走 security definer 函数读取。
+     原来直读 submissions 表靠 RLS 策略放行，而那条策略依赖 PostgREST 注入的
+     request.headers —— 该注入在部分环境下会失效，症状是带着有效 token 也返回
+     200 + 空数组：列表整个空白、四个统计数字全是 0，但「未处理」角标数字正常。 */
+  rpc("admin_submissions", { p_token: sess().token }).then(function(r){
+    var j = r.body;
+    if(j && j.ok && Array.isArray(j.list)){
+      state.list = j.list;
+      loadBadges();
+      render();
+      return;
+    }
+    if(j && j.ok === false){
+      if(String(j.error || "").indexOf("过期") > -1){ saveSess(null); showLogin(); return; }
+      toast(j.error, true);
+      return;
+    }
+    throw new Error("no-rpc");
+  }).catch(function(){
+    /* 数据库还没升级（函数不存在）时退回原来的直读方式，行为与改动前一致 */
+    return api("/rest/v1/submissions?select=*&order=created_at.desc&limit=1000").then(function(r){
+      if(r.status === 401){ saveSess(null); showLogin(); return; }
+      state.list = Array.isArray(r.body) ? r.body : [];
+      loadBadges();
+      render();
+    }).catch(function(){ toast("加载失败：连不上服务器，请检查网络（或代理 / VPN）后重试", true); });
+  });
 }
 function loadBadges(){
   rpc("admin_unread_counts", { p_token: sess().token }).then(function(r){

@@ -2087,3 +2087,70 @@ grant execute on function
 to anon, authenticated;
 
 notify pgrst, 'reload schema';
+
+-- ---------- 14. 后台「数据总览」列表改走函数读取 ----------
+-- 原实现：前端带着 x-admin-token 直接读 submissions 表，靠 RLS 策略
+--   using (admin_from_token(current_setting('request.headers', true)::json->>'x-admin-token') is not null)
+-- 放行。该策略要求 PostgREST 把自定义请求头注入 request.headers 这个 GUC。
+-- 在部分环境里（PostgREST 升级、或项目设置了 db-pre-request）该注入会失效，症状是：
+--   携带有效 token 也返回 200 + 空数组 —— 后台列表整个空白、四个统计数字全是 0，
+--   但「未处理」角标却有正确数字（角标走的是 security definer 函数）。
+-- 这里按项目既有约定（后台读写一律 security definer 函数 + admin_from_token）
+-- 改为函数读取，不再依赖请求头；RLS 策略一并重建，两种读法都保活。
+-- 本节不含任何 insert / update / delete，可重复执行。
+
+create or replace function public.admin_submissions(p_token text)
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_me   public.admins;
+  v_list json;
+begin
+  v_me := admin_from_token(p_token);
+  if v_me.id is null then
+    return json_build_object('ok', false, 'error', '登录已过期，请重新登录');
+  end if;
+  if v_me.role = 'consultant' then
+    return json_build_object('ok', false, 'error', '无权限查看');
+  end if;
+  -- 用 to_jsonb 整行序列化，不写死列名，数据库未升级（缺 status / handler_* 等列）时也不会报错
+  select coalesce(json_agg(to_jsonb(t) order by t.created_at desc), '[]'::json)
+    into v_list
+    from (select * from public.submissions order by created_at desc limit 1000) t;
+  return json_build_object('ok', true, 'list', v_list);
+end;
+$$;
+
+grant execute on function public.admin_submissions(text) to anon, authenticated;
+
+-- 14.2 自检：确认 PostgREST 是否还在注入请求头（只回布尔，不外泄任何内容）
+create or replace function public.admin_self_check()
+returns json
+language plpgsql security definer set search_path = public, extensions as $$
+declare
+  v_raw text;
+  v_val text;
+begin
+  v_raw := current_setting('request.headers', true);
+  if v_raw is null then
+    return json_build_object('headers_available', false, 'token_seen', false);
+  end if;
+  begin
+    v_val := coalesce(v_raw::json->>'x-admin-token', '');
+  exception when others then
+    v_val := '';
+  end;
+  return json_build_object('headers_available', true, 'token_seen', v_val <> '');
+end;
+$$;
+
+grant execute on function public.admin_self_check() to anon, authenticated;
+
+-- 14.3 RLS 策略重建（幂等，写法与第 3 节一致；请求头注入恢复后直读仍可用）
+drop policy if exists submissions_admin_read on public.submissions;
+create policy submissions_admin_read on public.submissions
+  for select to anon, authenticated using (
+    admin_from_token(current_setting('request.headers', true)::json->>'x-admin-token') is not null
+  );
+
+notify pgrst, 'reload schema';

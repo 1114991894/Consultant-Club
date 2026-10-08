@@ -14,8 +14,12 @@
   5. var SQL_INC = "…";                      「本次新增」增量段 · 一键复制
 
 同时另外写出 supabase-resume.sql（只含增量段，方便单独执行）。
-增量段 = 从 "-- ---------- 9." 开始到文件末尾
-         （简历投递 + 管理员密码重置 + 咨询师账号体系 + 数据隔离加固）。
+
+增量段 = 从 INC_MARK 开始到文件末尾。INC_MARK 指向「本次要让用户补跑的第一节」：
+  - 每加一节新的 SQL，把 INC_MARK 往下挪到那一节，用户就只用复制一小段。
+  - 第 9–12 节（简历投递 / 密码重置 / 咨询师账号体系 / 数据隔离）已在线上库执行过，
+    故当前指向第 13 节（多文件投递）+ 第 14 节（后台数据总览改走函数）。
+  - 需要从头重建时用页面上的「① 全量」。
 """
 import html
 import io
@@ -29,7 +33,10 @@ SQL_FILE = os.path.join(HERE, "supabase-setup.sql")
 OUT_FILE = os.path.join(HERE, "sql-copy.html")
 INC_FILE = os.path.join(HERE, "supabase-resume.sql")
 
-INC_MARK = "-- ---------- 9."
+INC_MARK = "-- ---------- 13."
+
+# ② 段标题里的描述（节号自动从增量段里解析）
+INC_TITLE_DESC = "② 本次新增 · 多文件投递 + 数据总览修复"
 
 SUB_HTML = (
     '用途：为 Consultant Club 建表（<b>admins / sessions / submissions / consultants / '
@@ -84,8 +91,19 @@ def main():
     inc_literal = 'var SQL_INC = ' + json.dumps(inc, ensure_ascii=True) + ';'
     page, n5 = re.subn(r'^var SQL_INC = .*$', lambda m: inc_literal, page, count=1, flags=re.M)
 
-    if not (n1 and n2 and n3 and n4 and n5):
-        print("ERROR: 替换失败 sub=%d pre=%d var=%d preInc=%d varInc=%d" % (n1, n2, n3, n4, n5))
+    # 6. ② 段标题里的节号（自动跟随增量段起止，省得每加一节回去手改）
+    nums = re.findall(r'^-- -+ (\d+)\. ', inc, flags=re.M)
+    if nums:
+        title = '<h1 style="margin-top:34px">%s（脚本第 %s–%s 节）</h1>' % (
+            INC_TITLE_DESC, nums[0], nums[-1])
+        page, n6 = re.subn(r'<h1 style="margin-top:34px">② 本次新增[^<]*</h1>',
+                           lambda m: title, page, count=1)
+    else:
+        n6 = 0
+
+    if not (n1 and n2 and n3 and n4 and n5 and n6):
+        print("ERROR: 替换失败 sub=%d pre=%d var=%d preInc=%d varInc=%d title=%d"
+              % (n1, n2, n3, n4, n5, n6))
         return 1
 
     with io.open(OUT_FILE, "w", encoding="utf-8", newline="") as f:

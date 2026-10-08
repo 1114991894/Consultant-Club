@@ -97,8 +97,8 @@ def main():
     # 6. ② 段标题里的节号（自动跟随增量段起止，省得每加一节回去手改）
     nums = re.findall(r'^-- -+ (\d+)\. ', inc, flags=re.M)
     if nums:
-        title = '<h1 style="margin-top:34px">%s（脚本第 %s–%s 节）</h1>' % (
-            INC_TITLE_DESC, nums[0], nums[-1])
+        rng = nums[0] if nums[0] == nums[-1] else ("%s–%s" % (nums[0], nums[-1]))
+        title = '<h1 style="margin-top:34px">%s（脚本第 %s 节）</h1>' % (INC_TITLE_DESC, rng)
         page, n6 = re.subn(r'<h1 style="margin-top:34px">② 本次新增[^<]*</h1>',
                            lambda m: title, page, count=1)
     else:

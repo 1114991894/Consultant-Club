@@ -333,6 +333,7 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
       <button data-filter="legal">法律咨询</button>
       <button data-filter="digital">数字化</button>
       <button data-filter="ai">AI</button>
+      <button data-filter="brand">品牌营销</button>
       <button data-filter="other">其他</button>
     </div>
   </section>
@@ -821,10 +822,12 @@ footer{padding:34px 0 46px;text-align:center;font-family:var(--mono);font-size:1
 "use strict";
 var SB_URL = "https://kkrokgglorelzwnzlfri.supabase.co";
 var SB_KEY = "sb_publishable_Jl4RnoRxZJaYIiI3GZEOJg_bz2lqB5Y";
+/* 内置分类口径与后台 admin.html 的 PJ_CATS 一致，加分类要两边同步；
+   后台新增的「自定义分类」不必改这里 —— 启动时会从库里读回来补进本对象。 */
 var CAT_NAME = { growth:"业绩增长", strategy:"战略规划", perf:"绩效体系",
                  org:"组织变革", talent:"人才发展", training:"专项培训",
                  finance:"财税管理", legal:"法律咨询", digital:"数字化",
-                 ai:"AI", other:"其他" };
+                 ai:"AI", brand:"品牌营销", other:"其他" };
 
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
   return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -928,6 +931,37 @@ function loadCount(id, tries){
   });
 }
 
+/* ---------- 后台自定义分类 → 同步到筛选栏 ---------- */
+function addFilterBtn(key, label){
+  var wrap = document.getElementById("projFilter");
+  if(!wrap) return;
+  var btns = wrap.querySelectorAll("button");
+  for(var i=0;i<btns.length;i++){
+    /* 同键或同名都算已有：自定义分类若与内置显示名撞了（如「品牌营销」），
+       不重复加按钮，避免筛选栏出现两个一模一样的分类 */
+    if(btns[i].getAttribute("data-filter") === key) return;
+    if(String(btns[i].textContent || "").trim() === label) return;
+  }
+  var b = document.createElement("button");
+  b.setAttribute("data-filter", key);
+  b.textContent = label;
+  wrap.appendChild(b);
+}
+/* 后台「新建项目」里自定义的分类，官网筛选栏要同步出现（老库没这个函数时安静跳过） */
+function loadCustomCats(){
+  rpc("project_categories_list", {}).then(function(r){
+    var j = r.body;
+    if(!Array.isArray(j)) return;
+    j.forEach(function(x){
+      var n = String((x && x.name) || "").trim();
+      if(!n) return;
+      if(!CAT_NAME[n]) CAT_NAME[n] = n;   /* 自定义分类的显示名就是它本身 */
+      addFilterBtn(n, n);
+    });
+    initFilter();                          /* 新按钮要重新绑定点击过滤 */
+  }).catch(function(){});
+}
+
 /* ---------- 分类筛选 ---------- */
 function initFilter(){
   var tabs = document.querySelectorAll("#projFilter button");
@@ -939,7 +973,10 @@ function initFilter(){
       var f = t.getAttribute("data-filter");
       var visible = 0;
       document.querySelectorAll(".proj").forEach(function(c){
-        var show = f === "all" || c.getAttribute("data-cat") === f;
+        var cc = c.getAttribute("data-cat");
+        /* 按键匹配，也按显示名匹配：老项目可能存的是分类中文名，
+           而按钮上的键是英文标识（反之亦然），只比键会漏掉它们 */
+        var show = f === "all" || cc === f || (CAT_NAME[cc] || cc) === (CAT_NAME[f] || f);
         c.classList.toggle("hidden", !show);
         if(show) visible++;
       });
@@ -1560,6 +1597,7 @@ function boot(){
   initInterest();
   decorateStatic();
   ensureResumeBtns();
+  loadCustomCats();
   loadCcSubmitted(function(){ ensureResumeBtns(); });
   var url = SB_URL + "/rest/v1/projects?select=*&published=eq.true&order=first_pub_at.desc.nullslast,created_at.desc";
   fetch(url, { headers: { "apikey": SB_KEY } }).then(function(r){

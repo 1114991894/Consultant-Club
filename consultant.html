@@ -365,9 +365,10 @@ var LABELS = {
 var PROF_ORDER = ["name","phone","company","employers","location","age","experience",
   "education","school","industry","field","status","freelance","start","salary","unit"];
 var FULL_FIELDS = { experience:1 };
+/* 内置分类口径与后台 admin.html 的 PJ_CATS 一致；自定义分类直接显示原名（取不到就回退 category 本身） */
 var PJ_CATS = { growth:"业绩增长", strategy:"战略规划", perf:"绩效体系", org:"组织变革",
   talent:"人才发展", training:"专项培训", finance:"财税管理", legal:"法律咨询",
-  digital:"数字化", ai:"AI", other:"其他" };
+  digital:"数字化", ai:"AI", brand:"品牌营销", other:"其他" };
 
 var ME = null, MY_LIKES = {}, MY_RESUMES = {}, ALL_PROJECTS = [];
 

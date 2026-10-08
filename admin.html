@@ -355,11 +355,19 @@ tr:hover td{background:#fcfbf7}
 .res-name b{display:block;font-size:13.4px}
 .res-name small{color:var(--muted);font-size:11.5px;font-family:ui-monospace,Consolas,monospace}
 .res-file{font-size:11.5px;color:var(--muted);font-family:ui-monospace,Consolas,monospace;word-break:break-all}
+.res-file .rf{display:block}
+.res-file .rf + .rf{margin-top:4px;padding-top:4px;border-top:1px dashed var(--line)}
 .dl-cell{display:flex;flex-direction:column;gap:5px;align-items:flex-start}
 .dl-trace{font-size:11px;line-height:1.5}
 .dl-trace.none{color:var(--muted)}
 .dl-trace.warn{color:var(--bad);font-weight:700;cursor:pointer;text-decoration:underline dotted}
 #resPrev .mc{max-width:900px}
+.pv-files{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.pv-files button{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  border:1.3px solid var(--line);background:#fff;border-radius:99px;padding:6px 14px;
+  font-family:inherit;font-size:12.5px;color:var(--ink);cursor:pointer}
+.pv-files button:hover{border-color:var(--amber-d);color:var(--amber-d)}
+.pv-files button.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .pv-wrap{background:#f1f0ea;border-radius:12px;padding:12px;display:flex;justify-content:center;min-height:260px}
 .pv-wrap iframe{width:100%;height:62vh;border:0;border-radius:8px;background:#fff}
 .pv-wrap img{max-width:100%;max-height:62vh;border-radius:8px;background:#fff;object-fit:contain}
@@ -820,7 +828,10 @@ tr:hover td{background:#fcfbf7}
       <h3 id="pvName">简历</h3>
       <span class="meta" id="pvMeta"></span>
     </div>
-    <div class="mb"><div class="pv-wrap" id="pvWrap"></div></div>
+    <div class="mb">
+      <div class="pv-files" id="pvFiles" style="display:none"></div>
+      <div class="pv-wrap" id="pvWrap"></div>
+    </div>
     <div class="mf">
       <button class="pbtn amber" id="pvDl">下载简历</button>
       <button class="pbtn ghost" data-resclose>关闭</button>
@@ -2140,9 +2151,32 @@ function resTypeTag(fileName){
     + c[0] + '</span>';
 }
 function isImgRes(r){
-  var ext = (/\.([a-z0-9]+)$/i.exec(String((r && r.file_name) || "")) || [])[1];
-  return /^image\//i.test((r && r.file_type) || "") ||
+  var nm = String((r && (r.file_name || r.name)) || "");
+  var tp = String((r && (r.file_type || r.type)) || "");
+  var ext = (/\.([a-z0-9]+)$/i.exec(nm) || [])[1];
+  return /^image\//i.test(tp) ||
     /^(jpg|jpeg|png|webp|bmp|gif)$/i.test(ext || "");
+}
+/* 一份投递可带 1~2 个文件（简历文件 + 图片）；老记录没有 files 字段，按单文件处理 */
+function resFilesOf(r){
+  var fs = (r && r.files) || [];
+  if(Object.prototype.toString.call(fs) === "[object Array]" && fs.length){
+    return fs.map(function(f){
+      return { name: (f && f.name) || "", type: (f && f.type) || "", size: +(f && f.size) || 0 };
+    });
+  }
+  return [{ name: (r && r.file_name) || "简历", type: (r && r.file_type) || "",
+            size: +(r && r.file_size) || 0 }];
+}
+function resIcon(f){ return isImgRes(f) ? "🖼" : "📎"; }
+function pvBtnLabel(r){
+  var fs = resFilesOf(r);
+  if(fs.length > 1) return "预览 · " + fs.length + " 份";
+  return (isImgRes(fs[0]) ? "🔍 " : "") + resTypeTag(fs[0].name) + "预览";
+}
+function dlBtnLabel(r){
+  var n = resFilesOf(r).length;
+  return n > 1 ? ("下载 " + n + " 个文件") : "下载简历";
 }
 function fmtResSize(n){
   n = +n || 0;
@@ -2245,9 +2279,11 @@ function renderResumeList(){
         (r.intro ? '<div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.55">'
                    + esc(r.intro) + '</div>' : '') +
       '</td>' +
-      '<td class="res-file">' + esc(r.file_name || "—") + '<br>' + fmtResSize(r.file_size) + '</td>' +
-      '<td><button class="view-btn" data-ract="pv">' + (isImgRes(r) ? "🔍 " : "") + resTypeTag(r.file_name) + '预览</button></td>' +
-      '<td><div class="dl-cell"><button class="view-btn" data-ract="dl">下载简历</button>' + trace + '</div></td>' +
+      '<td class="res-file">' + resFilesOf(r).map(function(f){
+          return '<span class="rf">' + resIcon(f) + ' ' + esc(f.name || "—") + ' · ' + fmtResSize(f.size) + '</span>';
+        }).join("") + '</td>' +
+      '<td><button class="view-btn" data-ract="pv">' + pvBtnLabel(r) + '</button></td>' +
+      '<td><div class="dl-cell"><button class="view-btn" data-ract="dl">' + dlBtnLabel(r) + '</button>' + trace + '</div></td>' +
       (isSuper ? '<td><button class="del-btn" data-ract="del">删除</button></td>' : '') +
     '</tr>';
   }).join("");
@@ -2258,7 +2294,7 @@ function renderResumeList(){
     if(!r) return;
     tr.querySelectorAll("[data-ract]").forEach(function(b){
       var a = b.getAttribute("data-ract");
-      if(a === "pv") b.addEventListener("click", function(){ resumePreview(r); });
+      if(a === "pv") b.addEventListener("click", function(){ resumePreview(r, 0); });
       else if(a === "dl") b.addEventListener("click", function(){ resumeDownload(r, b); });
       else b.addEventListener("click", function(){ deleteResume(r); });
     });
@@ -2267,7 +2303,7 @@ function renderResumeList(){
       tp.addEventListener("click", function(){
         var dls = r.dls || [];
         if(!dls.length) return;
-        alert("下载留痕 · " + r.name + "（" + (r.file_name || "") + "）\n\n" +
+        alert("下载留痕 · " + r.name + "（" + resFilesOf(r).map(function(f){ return f.name || "—"; }).join("、") + "）\n\n" +
           dls.map(function(d, i){ return (i + 1) + ". " + d.who + " · " + fmtTime(d.at); }).join("\n"));
       });
     }
@@ -2292,10 +2328,10 @@ function saveBlob(blob, name){
     URL.revokeObjectURL(url);
   }, 2000);
 }
-function resumeFetch(r, btn){
+function resumeFetch(r, btn, idx){
   var sn = sess(); if(!sn){ showLogin(); return Promise.reject(new Error("登录已过期")); }
   if(btn) btn.disabled = true;
-  return rpc("resume_file", { p_token: sn.token, p_id: r.id }).then(function(res){
+  return rpc("resume_file", { p_token: sn.token, p_id: r.id, p_idx: idx || 0 }).then(function(res){
     if(btn) btn.disabled = false;
     var j = res.body || {};
     if(!j.ok) throw new Error((j && (j.error || j.message)) || "读取文件失败");
@@ -2305,28 +2341,45 @@ function resumeFetch(r, btn){
     throw e;
   });
 }
-/* 下载：取文件 → 存盘 → 写留痕（「该简历已被下载」只有总管理员能看到提示） */
-function resumeDownload(r, btn){
+/* 下载：把这份投递的文件依次取回再保存（多文件时逐个存盘，整次下载只记一条留痕）
+   only 传了文件序号就只下那一份（预览弹窗里的「下载简历」用） */
+function resumeDownload(r, btn, only){
   var sn = sess(); if(!sn) return showLogin();
-  resumeFetch(r, btn).then(function(j){
-    saveBlob(b64ToBlob(j.data, r.file_type || ""), j.file_name || r.file_name || "简历");
+  var files = resFilesOf(r);
+  if(only != null) files = [files[Math.max(0, Math.min(only, files.length - 1))]];
+  if(btn) btn.disabled = true;
+  var got = [], chain = Promise.resolve();
+  files.forEach(function(f, i){
+    chain = chain.then(function(){
+      return resumeFetch(r, null, i).then(function(j){
+        got.push({ data: j.data, name: j.file_name || f.name || "简历", type: j.file_type || f.type || "" });
+      });
+    });
+  });
+  chain.then(function(){
+    got.forEach(function(g, i){
+      setTimeout(function(){ saveBlob(b64ToBlob(g.data, g.type), g.name); }, i * 450);
+    });
     return rpc("resume_download_mark", { p_token: sn.token, p_id: r.id });
   }).then(function(res){
+    if(btn) btn.disabled = false;
     var jj = (res && res.body) || {};
     if(!jj.ok) return;
+    var extra = got.length > 1 ? ("（" + got.length + " 个文件）") : "";
     if(sn.role === "super"){
-      toast(jj.first ? "已开始下载 · 本次下载已记入留痕"
+      toast(jj.first ? "已开始下载" + extra + " · 本次下载已记入留痕"
                      : "⚠️ 该简历已被下载过（本次为第 " + jj.times + " 次），已记入留痕", !jj.first);
     } else {
-      toast("已开始下载");
+      toast("已开始下载" + extra);
     }
     loadResumes();
   }).catch(function(e){
+    if(btn) btn.disabled = false;
     toast((e && e.message) || "下载失败，请重试", true);
   });
 }
 
-var curRes = null, pvUrl = null;
+var curRes = null, curIdx = 0, pvUrl = null;
 /* ---------- 图片简历放大镜：滚轮缩放 / 按住拖动 / 单击放大 ---------- */
 var pvImg = null, pvCanvas = null, pvNat = null, pvScale = 1, pvMoved = false;
 function pvApply(){
@@ -2407,26 +2460,48 @@ function initPvZoom(){
     pvSetScale(pvScale > fit + 0.02 ? fit : Math.min(3, Math.max(2, pvScale * 2)), e.clientX, e.clientY);
   });
 }
-function resumePreview(r){
+/* 多文件时在预览窗顶部显示切换按钮 */
+function renderPvFiles(r, active){
+  var box = $("pvFiles"), files = resFilesOf(r);
+  if(!box) return;
+  if(files.length < 2){ box.style.display = "none"; box.innerHTML = ""; return; }
+  box.style.display = "";
+  box.innerHTML = files.map(function(f, i){
+    return '<button type="button" data-pvidx="' + i + '">' + resIcon(f) + ' ' + esc(f.name) + '</button>';
+  }).join("");
+  box.querySelectorAll("[data-pvidx]").forEach(function(b){
+    var i = parseInt(b.getAttribute("data-pvidx"), 10);
+    if(i === active) b.classList.add("on");
+    b.addEventListener("click", function(){ if(curRes) resumePreview(curRes, i); });
+  });
+}
+function resumePreview(r, idx){
   curRes = r;
+  curIdx = idx || 0;
+  var files = resFilesOf(r);
+  if(curIdx >= files.length) curIdx = 0;
+  var f = files[curIdx] || files[0];
+  renderPvFiles(r, curIdx);
   pvImg = null; pvCanvas = null; pvNat = null; pvScale = 1; pvMoved = false;
-  var ext = (/\.([a-z0-9]+)$/i.exec(String(r.file_name || "")) || [])[1];
-  ext = ext ? ext.toLowerCase() : "";
-  var isImg = /^image\//.test(r.file_type || "") || /^(jpg|jpeg|png|webp|bmp|gif)$/.test(ext);
   $("pvTag").textContent = "在线预览";
-  $("pvName").textContent = r.name + " · " + (r.file_name || "简历");
-  $("pvMeta").textContent = "投递于 " + (r.project_id || "") + " · " + fmtTime(r.created_at);
+  $("pvName").textContent = r.name + " · " + (f.name || "简历");
+  $("pvMeta").textContent = "投递于 " + (r.project_id || "") + " · " + fmtTime(r.created_at)
+    + (files.length > 1 ? " · 第 " + (curIdx + 1) + " / " + files.length + " 份" : "");
   $("pvWrap").innerHTML = '<div class="pv-none">加载中…</div>';
   $("resPrev").classList.add("open");
-  resumeFetch(r).then(function(j){
+  resumeFetch(r, null, curIdx).then(function(j){
     if(pvUrl){ try { URL.revokeObjectURL(pvUrl); } catch(e){} pvUrl = null; }
-    if(ext === "pdf" || /pdf/i.test(r.file_type || "")){
+    /* 类型与文件名以服务端返回的为准（老记录没有文件名时回退到列表里的值） */
+    var realName = j.file_name || f.name || "";
+    var realType = j.file_type || f.type || "";
+    var rext = ((/\.([a-z0-9]+)$/i.exec(String(realName)) || [])[1] || "").toLowerCase();
+    if(rext === "pdf" || /pdf/i.test(realType)){
       pvUrl = URL.createObjectURL(b64ToBlob(j.data, "application/pdf"));
       $("pvWrap").innerHTML = '<iframe src="' + pvUrl + '" title="简历预览"></iframe>';
       return;
     }
-    if(isImg){
-      pvUrl = URL.createObjectURL(b64ToBlob(j.data, r.file_type || "image/jpeg"));
+    if(isImgRes({ name: realName, type: realType })){
+      pvUrl = URL.createObjectURL(b64ToBlob(j.data, realType || "image/jpeg"));
       $("pvWrap").innerHTML =
         '<div class="pv-zoom">' +
           '<div class="pv-zoombar">' +
@@ -2445,8 +2520,8 @@ function resumePreview(r){
       return;
     }
     $("pvWrap").innerHTML = '<div class="pv-none"><b>该格式不支持在线预览</b>' +
-      esc(r.file_name || "该文件") + '（' + (ext ? ext.toUpperCase() : "未知格式") +
-      '）浏览器无法直接打开，请点下方「下载简历」查看。</div>';
+      esc(realName || "该文件") + '（' + (rext ? rext.toUpperCase() : "未知格式") +
+      '）浏览器无法直接打开，请点下方「下载」按钮查看。</div>';
   }).catch(function(e){
     $("pvWrap").innerHTML = '<div class="pv-none"><b>预览失败</b>' + esc((e && e.message) || "请稍后重试") + '</div>';
   });
@@ -2469,8 +2544,9 @@ function closeResModals(){
   $("resPrev").classList.remove("open");
   if(pvUrl){ try { URL.revokeObjectURL(pvUrl); } catch(e){} pvUrl = null; }
   $("pvWrap").innerHTML = "";
+  if($("pvFiles")){ $("pvFiles").innerHTML = ""; $("pvFiles").style.display = "none"; }
   pvImg = null; pvCanvas = null; pvNat = null; pvScale = 1; pvMoved = false;
-  curRes = null;
+  curRes = null; curIdx = 0;
 }
 document.querySelectorAll("[data-resclose]").forEach(function(el){
   el.addEventListener("click", function(){ closeResModals(); });
@@ -2480,7 +2556,7 @@ document.addEventListener("keydown", function(e){
   if($("resModal").classList.contains("open") || $("resPrev").classList.contains("open")) closeResModals();
 });
 $("rsSearch").addEventListener("input", function(){ PJ.resQ = this.value.trim(); renderResumeList(); });
-$("pvDl").addEventListener("click", function(){ if(curRes) resumeDownload(curRes, this); });
+$("pvDl").addEventListener("click", function(){ if(curRes) resumeDownload(curRes, this, curIdx); });
 
 /* ---------- 项目编辑弹窗 ---------- */
 function pjBlank(){

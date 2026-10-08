@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>简历投递 · 效果稿 v2（未部署）</title>
+<title>简历投递 · 效果稿 v3（未部署）</title>
 <style>
 :root{
   --ink:#14153a;--amber:#f0c24b;--amber-d:#b78a22;--white:#fdfdfb;--muted:#6b6d85;
@@ -109,6 +109,16 @@ tbody tr:hover{background:#fcfbf6}
 
 /* ---------- 下载列 / 留痕 ---------- */
 .dl-cell{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+/* 简历文件列：一份投递最多两个文件，各自一行 */
+.rf{display:block;font-size:12px;color:var(--ink);line-height:1.55;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rf + .rf{margin-top:4px}
+/* 预览窗顶部的文件切换条（多文件才有） */
+.pv-files{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.pv-files button{font:inherit;font-size:12px;padding:6px 12px;border-radius:8px;
+  border:1.3px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.pv-files button:hover{border-color:var(--amber-d)}
+.pv-files button.on{border-color:var(--amber-d);background:#fdfbf3;font-weight:800}
 .dl-trace{font-size:11px;color:var(--muted);font-family:ui-monospace,Consolas,monospace;cursor:pointer;
   border-bottom:1px dashed #d5d3c9;line-height:1.5}
 .dl-trace:hover{color:var(--amber-d);border-bottom-color:var(--amber-d)}
@@ -206,11 +216,22 @@ body[data-role="admin"] .dl-trace{display:none}
 .drop .ic{font-size:22px;margin-bottom:6px}
 .drop b{display:block;font-size:13.2px;margin-bottom:3px}
 .drop span{font-size:11.5px;color:var(--muted)}
-.fileone{display:none;align-items:center;gap:10px;border:1.3px solid rgba(46,139,87,.35);background:#f3fbf6;
+/* 已选文件列表：最多 2 份（简历文件 + 图片，任选其一或都传） */
+.rmlist{display:none;flex-direction:column;gap:8px;margin-top:10px}
+.rmlist.on{display:flex}
+.rm-item{display:flex;align-items:center;gap:10px;border:1.3px solid rgba(46,139,87,.35);background:#f3fbf6;
   border-radius:10px;padding:11px 14px;font-size:13px}
-.fileone.on{display:flex}
-.fileone .fn{font-weight:700;color:#1f6b43;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fileone button{border:0;background:none;color:var(--bad);font-size:12px;cursor:pointer;font-family:inherit;flex-shrink:0;margin-left:auto}
+.rm-item .ic{flex-shrink:0}
+.rm-item .fn{font-weight:700;color:#1f6b43;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.rm-item .fs{font-size:11.5px;color:var(--muted);font-family:ui-monospace,Consolas,monospace;flex-shrink:0}
+.rm-item button{border:0;background:none;color:var(--bad);font-size:12px;cursor:pointer;font-family:inherit;flex-shrink:0}
+/* 弹窗头部同步展示该项目的编号 / 分类 / 周期 / 名称 / 简介 */
+.rmp-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}
+.rmp-no{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;font-weight:800;letter-spacing:.06em;color:#2a2b5f}
+.rmp-tag{font-size:11.5px;font-weight:700;padding:3px 11px;border-radius:99px;background:rgba(240,194,75,.18);color:#8a6a10}
+.rmp-period{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:#8a6a10;font-weight:700;letter-spacing:.04em}
+.rmp-title{font-size:14px;font-weight:800;color:var(--ink);line-height:1.5}
+.rmp-sub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.6}
 .alert{background:#fdf3d7;border:1px solid #f0dfae;border-radius:10px;padding:11px 14px;font-size:12.5px;
   color:#8a6a1c;line-height:1.7;margin-top:4px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
@@ -243,7 +264,7 @@ body[data-role="admin"] .dl-trace{display:none}
 <body data-role="super">
 <div class="wrap">
   <div class="topbar">
-    <h1>简历投递 · 效果稿 v2</h1>
+    <h1>简历投递 · 效果稿 v3</h1>
     <span class="tag-draft">未部署 · 不接数据库</span>
     <div class="rolebar">
       <span>登录视角：</span>
@@ -255,6 +276,8 @@ body[data-role="admin"] .dl-trace{display:none}
     前端每个项目加 <b>「投递简历」</b>；后台 <b>项目管理 → 操作列 →「查看简历」</b> 打开的是<b>该项目的简历列表</b>。
     切换右上角<b>「登录视角」</b>可以看到：<b>普通管理员看不到任何「删除」按钮</b>（项目和简历都是），
     <b>所有留痕记录（谁下载过、下过几次、什么时候）也只有总管理员能看到</b>。三个页签都能点。
+    <br>v3 新增：投递弹窗头部<b>同步该项目的编号 / 分类 / 周期 / 名称 / 简介</b>；
+    简历文件可传 <b>PDF、Word 或图片，任选其一或两份一起传</b>（点上传区可依次加入两份，可单独移除）。
   </div>
 
   <div class="tabs">
@@ -408,7 +431,9 @@ body[data-role="admin"] .dl-trace{display:none}
   <!-- ============ ② 简历列表（单项目） ============ -->
   <section class="pane" id="p2">
     <div class="why">
-      这是点 <b>p001「查看简历」</b> 后的窗口，<b>只有这一个项目的投递</b>。重点看第四列 <b>「下载」</b>——
+      这是点 <b>p001「查看简历」</b> 后的窗口，<b>只有这一个项目的投递</b>。第三列是<b>「简历文件」</b>，
+      一份投递最多两个文件就列两行（陈嘉明那份同时传了 PDF 和作品图）；第四列 <b>「预览」</b>，
+      多文件时按钮写「预览 · 2 份」，点开顶部会出现文件切换条；<b>第五列「下载」</b>——
       下载会<b>留痕</b>：没下过显示「未下载」，下过就显示「已下载 N 次 · 最近 谁 什么时候」。
       <b>再点已下载过的简历，会明确提示「该简历已被下载」。</b>
       <br>现在把右上角切到 <b>「普通管理员」</b>：这一列会瘦成只剩一个「⬇ 下载简历」按钮，
@@ -497,6 +522,7 @@ body[data-role="admin"] .dl-trace{display:none}
       <tr><td>④ 下载留痕</td><td class="yes">下载记录谁、什么时候下的；已下载过的再点会提示「该简历已被下载」；下载时弹「另存为」可自选保存位置。</td></tr>
       <tr><td>⑥ 留痕仅总管理员</td><td class="yes">所有留痕（下载次数 / 下载人 / 下载时间 / 处理人与处理时间）只有总管理员看得到。普通管理员既看不到痕迹，也收不到「该简历已被下载」提示；服务端同样只对总管理员返回留痕字段。<b>业务数据（投递份数、投递时间）不受影响。</b></td></tr>
       <tr><td>⑤ 自动压缩</td><td class="yes">静默压缩到 1MB 以内，前端不出现任何大小提示文字。</td></tr>
+      <tr><td>⑦ 两份文件</td><td class="yes">投递时可传 <b>PDF / Word / 图片，任选其一或两份一起传</b>（如简历 + 作品图）。图片自动压成 1MB 以内；PDF / Word 不损画质，按 600KB 分片上传输。列表里逐个列出文件名，预览窗顶部可切换，下载时依次存盘、<b>整次下载只记一条留痕</b>。</td></tr>
       <tr><td>还没定的小事</td><td class="mine">投递表单要不要再加「期望岗位 / 可到岗时间」两个选填项？（默认不加）· 简历列表要不要「已联系 / 未联系」标记？（默认不加）</td></tr>
     </table>
   </div>
@@ -522,7 +548,8 @@ body[data-role="admin"] .dl-trace{display:none}
         <table class="rl-table">
           <thead><tr>
             <th style="width:140px">投递时间</th>
-            <th style="width:198px">投递人</th>
+            <th style="width:180px">投递人</th>
+            <th style="width:206px">简历文件</th>
             <th style="width:152px">简历预览</th>
             <th class="th-dl" style="width:206px">下载</th>
             <th class="th-op" style="width:74px">操作</th>
@@ -552,6 +579,7 @@ body[data-role="admin"] .dl-trace{display:none}
       </div>
     </div>
     <div class="mb">
+      <div class="pv-files" id="pvFiles" style="display:none"></div>
       <div class="pv-zoombar">
         <button type="button" data-pvzoom="in">🔍 放大</button>
         <button type="button" data-pvzoom="out">🔍 缩小</button>
@@ -592,7 +620,13 @@ body[data-role="admin"] .dl-trace{display:none}
       <span class="pid">p001</span>
       <div class="who">
         <h3>投递简历</h3>
-        <div class="meta">NO.01 · 滚针轴承制造企业：打通生产数据链路，重建质量追溯体系</div>
+        <div class="rmp-top">
+          <span class="rmp-no">NO.01</span>
+          <span class="rmp-tag">业绩增长</span>
+          <span class="rmp-period">询单中 · 2026.09-2026.12</span>
+        </div>
+        <div class="rmp-title">滚针轴承制造企业：打通生产数据链路，重建质量追溯体系</div>
+        <div class="rmp-sub">为一家主机配套 + 出口双轮驱动的轴承制造企业，破解「系统孤岛、追溯断链」的生产数字化困局</div>
       </div>
     </div>
     <div class="mb">
@@ -607,13 +641,10 @@ body[data-role="admin"] .dl-trace{display:none}
       </div>
       <div class="frow">
         <label>简历文件<em>*</em></label>
-        <div class="drop" id="drop"><div class="ic">📄</div><b>点击选择简历文件</b><span>PDF / Word（doc、docx）</span></div>
-        <div class="fileone" id="fileone">
-          <span>📎</span><span class="fn" id="fname">陈嘉明-生产数字化-8年.pdf</span>
-          <button id="fdel">移除</button>
-        </div>
+        <div class="drop" id="drop"><div class="ic">📄</div><b id="dropTitle">点击选择文件</b><span>PDF / Word（doc、docx）或图片，任选其一即可，也可以一起上传</span></div>
+        <div class="rmlist" id="rmlist"></div>
       </div>
-      <div class="alert">你的简历仅用于本项目人员筛选，不会外传。</div>
+      <div class="alert">你的简历仅用于本项目人员筛选，不会外传。<br>同一项目同一姓名 + 手机号只能投递一次。</div>
     </div>
     <div class="mf">
       <button class="pbtn" id="subBtn" style="flex:1">提交投递</button>
@@ -671,6 +702,8 @@ body[data-role="admin"] .dl-trace{display:none}
   var DATA = [
     { t:"09-28 11:24", name:"陈嘉明", phone:"186****2043", mail:"chenjm@example.com",
       pid:"p001", file:"陈嘉明-生产数字化-8年.pdf", type:"pdf", fresh:true,
+      files:[ { name:"陈嘉明-生产数字化-8年.pdf", type:"pdf", size:"521 KB" },
+              { name:"陈嘉明-项目作品.png", type:"png", size:"896 KB" } ],
       dls:[ { who:"刘总（总管理员）", at:"09-28 11:40" } ] },
     { t:"09-27 15:33", name:"周昱",   phone:"159****6601", mail:"zhouyu@example.com",
       pid:"p001", file:"周昱-生产管理.pdf", type:"pdf", fresh:false, dls:[] },
@@ -691,6 +724,8 @@ body[data-role="admin"] .dl-trace{display:none}
       pid:"p004", file:"林思远-绩效咨询顾问.docx", type:"docx", fresh:true, dls:[] },
     { t:"09-26 20:47", name:"何雨珊", phone:"150****2255", mail:"heys@example.com",
       pid:"p004", file:"何雨珊-绩效体系.pdf", type:"pdf", fresh:false,
+      files:[ { name:"何雨珊-绩效体系.pdf", type:"pdf", size:"1.2 MB" },
+              { name:"何雨珊-绩效方案.docx", type:"docx", size:"318 KB" } ],
       dls:[ { who:"刘总（总管理员）", at:"09-27 14:05" } ] },
 
     { t:"09-25 14:20", name:"李承霖", phone:"188****4477", mail:"lidl@example.com",
@@ -711,6 +746,19 @@ body[data-role="admin"] .dl-trace{display:none}
   }
   /* 图片简历（jpg/png）标上放大镜 */
   function isImgType(t){ return /^(jpg|jpeg|png)$/.test(t || ""); }
+  /* 一条投递可带 1~2 个文件（简历文件 + 图片）；老记录没有 files，按单文件处理 */
+  function filesOf(r){
+    return (r.files && r.files.length) ? r.files : [{ name:r.file, type:r.type, size:"" }];
+  }
+  function resIcon(f){ return isImgType(f.type) ? "🖼" : "📎"; }
+  function pvLabel(r){
+    var n = filesOf(r).length;
+    return n > 1 ? "预览 · " + n + " 份" : (isImgType(r.type) ? "🔍 " : "") + typeBadge(r.type) + "在线预览";
+  }
+  function dlLabel(r){
+    var n = filesOf(r).length;
+    return n > 1 ? "⬇ 下载 " + n + " 个文件" : "⬇ 下载简历";
+  }
   function ofProject(pid){
     return DATA.filter(function(r){ return r.pid === pid; });
   }
@@ -731,9 +779,12 @@ body[data-role="admin"] .dl-trace{display:none}
         '<td><b style="display:block;font-size:13.2px">' + esc(r.name) + '</b>' +
           '<small style="color:var(--muted);font-size:11.5px;font-family:ui-monospace,Consolas,monospace">' +
           esc(r.phone) + (r.mail ? ' · ' + esc(r.mail) : '') + '</small></td>' +
-        '<td><button class="view-btn pv" data-i="' + i + '">' + (isImgType(r.type) ? "🔍 " : "")
-          + typeBadge(r.type) + '在线预览</button></td>' +
-        '<td><div class="dl-cell"><button class="view-btn dl" data-i="' + i + '">⬇ 下载简历</button>'
+        '<td>' + filesOf(r).map(function(f){
+            return '<span class="rf">' + resIcon(f) + ' ' + esc(f.name)
+              + (f.size ? ' · ' + esc(f.size) : '') + '</span>';
+          }).join("") + '</td>' +
+        '<td><button class="view-btn pv" data-i="' + i + '">' + pvLabel(r) + '</button></td>' +
+        '<td><div class="dl-cell"><button class="view-btn dl" data-i="' + i + '">' + dlLabel(r) + '</button>'
           + traceHtml(r, i) + '</div></td>' +
         /* 「操作」整列只给总管理员看（列里只有删除） */
         (role === "super" ? '<td><button class="del-btn dlt" data-i="' + i + '">删除</button></td>' : '') +
@@ -762,13 +813,16 @@ body[data-role="admin"] .dl-trace{display:none}
   /* ---------- 下载：留痕 + 已下载提醒 ---------- */
   var nowTag = "09-28 14:32";
   function doDownload(r){
+    var fs = filesOf(r);
+    var names = fs.map(function(f){ return esc(f.name); }).join("、");
     /* 「该简历已被下载」本身也是留痕信息 → 只有总管理员看得到 */
     if(role === "super" && r.dls.length){
       var last = r.dls[r.dls.length - 1];
       toast("⚠️ <b>该简历已被下载</b><br>最近一次：" + esc(last.who) + " · " + esc(last.at)
         + "<br>本次下载同样会记入留痕");
     } else {
-      toast("下载中：「" + esc(r.file) + "」<br>浏览器弹出「另存为」，保存位置由你选择");
+      toast("下载中：" + names + (fs.length > 1 ? "（共 " + fs.length + " 个文件，依次弹出另存为）" : "")
+        + "<br>浏览器弹出「另存为」，保存位置由你选择");
     }
     /* 无论谁下载都照常记入留痕，切回总管理员视角即可看到 */
     r.dls.push({ who: ROLE_USERS[role], at: nowTag });
@@ -857,20 +911,49 @@ body[data-role="admin"] .dl-trace{display:none}
       if(m) close(m);
     });
   });
+  /* 带 data-open 的按钮负责打开对应弹窗（「投递简历」走这里） */
+  document.querySelectorAll("[data-open]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var id = b.getAttribute("data-open");
+      if(id && $(id)) open(id);
+    });
+  });
   document.addEventListener("keydown", function(e){
     if(e.key === "Escape"){
       document.querySelectorAll(".modal.open").forEach(function(m){ close(m); });
     }
   });
 
-  var curResume = null;
-  function openPreview(r){
+  var curResume = null, curIdx = 0;
+  function openPreview(r, idx){
     if(!r) return;
     curResume = r;
-    $("pvName").textContent = r.name + " · " + r.file;
-    $("pvMeta").textContent = "投递于 " + r.pid + " · " + r.t;
+    var fs = filesOf(r);
+    curIdx = idx || 0;
+    if(curIdx >= fs.length) curIdx = 0;
+    var f = fs[curIdx];
+    /* 多文件时在顶部列出切换按钮，标题与份数随之变化 */
+    var box = $("pvFiles");
+    if(fs.length < 2){
+      box.style.display = "none"; box.innerHTML = "";
+      $("pvName").textContent = r.name + " · " + f.name;
+      $("pvMeta").textContent = "投递于 " + r.pid + " · " + r.t;
+      $("pvDl").textContent = "⬇ 下载简历";
+    } else {
+      box.style.display = "flex";
+      box.innerHTML = fs.map(function(x, i){
+        return '<button type="button" data-pvidx="' + i + '"' + (i === curIdx ? ' class="on"' : '') + '>'
+          + resIcon(x) + ' ' + esc(x.name) + '</button>';
+      }).join("");
+      box.querySelectorAll("[data-pvidx]").forEach(function(b){
+        b.addEventListener("click", function(){ openPreview(curResume, +b.getAttribute("data-pvidx")); });
+      });
+      $("pvName").textContent = r.name + " · " + f.name;
+      $("pvMeta").textContent = "投递于 " + r.pid + " · " + r.t + " · 第 " + (curIdx + 1) + " / " + fs.length + " 份";
+      $("pvDl").textContent = "⬇ 下载这一份（第 " + (curIdx + 1) + " 份）";
+    }
     /* 效果稿：图片简历默认放大到 140% 打开，体现「文字看得清」 */
-    pvSet(isImgType(r.type) ? 1.4 : 1);
+    pvSet(isImgType(f.type) ? 1.4 : 1);
     open("mPreview");
   }
   $("pvDl").addEventListener("click", function(){
@@ -947,6 +1030,7 @@ body[data-role="admin"] .dl-trace{display:none}
   restore();
   $("rReset").addEventListener("click", function(){
     try { localStorage.removeItem(KEY); localStorage.removeItem(KEYLIST); } catch(e){}
+    files = []; renderFiles();
     var btn = $("rBtn");
     btn.className = "r-btn";
     btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7z"/><polyline points="14 2 14 7 19 7"/><line x1="12" y1="12" x2="12" y2="17"/><polyline points="9.5 14.5 12 12 14.5 14.5"/></svg>投递简历';
@@ -959,24 +1043,42 @@ body[data-role="admin"] .dl-trace{display:none}
     }
   }, true);
 
-  var hasFile = false;
+  /* 演示用：点一次上传区依次把「简历文件 → 作品图片」加进来；最多 2 份，可任一移除 */
+  var DEMO_FILES = [
+    { ic:"📎", name:"陈嘉明-生产数字化-8年.pdf", size:"521 KB" },
+    { ic:"🖼", name:"陈嘉明-项目作品.png", size:"896 KB" }
+  ];
+  var files = [];
+  function renderFiles(){
+    var box = $("rmlist");
+    box.innerHTML = files.map(function(f, i){
+      return '<div class="rm-item"><span class="ic">' + f.ic + '</span>'
+        + '<span class="fn">' + esc(f.name) + '</span>'
+        + '<span class="fs">' + f.size + '</span>'
+        + '<button type="button" data-del="' + i + '">移除</button></div>';
+    }).join("");
+    box.classList.toggle("on", files.length > 0);
+    $("drop").style.display = files.length < 2 ? "" : "none";
+    $("dropTitle").textContent = files.length ? "再选一份（可选）" : "点击选择文件";
+  }
   $("drop").addEventListener("click", function(){
-    hasFile = true;
-    $("drop").style.display = "none";
-    $("fileone").classList.add("on");
+    if(files.length >= 2){ toast("最多上传 2 份文件"); return; }
+    files.push(DEMO_FILES[files.length]);
+    renderFiles();
   });
-  $("fdel").addEventListener("click", function(e){
+  $("rmlist").addEventListener("click", function(e){
+    var b = e.target.closest("[data-del]");
+    if(!b) return;
     e.stopPropagation();
-    hasFile = false;
-    $("fileone").classList.remove("on");
-    $("drop").style.display = "";
+    files.splice(parseInt(b.getAttribute("data-del"), 10), 1);
+    renderFiles();
   });
   $("subBtn").addEventListener("click", function(){
     var name = ($("fName").value || "").trim();
     var phone = ($("fPhone").value || "").trim();
     if(!name){ toast("请填写姓名"); return; }
     if(!/^1\d{10}$/.test(phone)){ toast("请填写 11 位手机号"); return; }
-    if(!hasFile){ toast("请选择简历文件"); return; }
+    if(!files.length){ toast("请选择简历文件"); return; }
     var list = readList();
     for(var i = 0; i < list.length; i++){
       if(list[i].name === name && list[i].phone === phone){
@@ -988,6 +1090,7 @@ body[data-role="admin"] .dl-trace{display:none}
     try { localStorage.setItem(KEYLIST, JSON.stringify(list)); localStorage.setItem(KEY, "1"); } catch(e){}
     close($("mSubmit"));
     markDone();
+    files = []; renderFiles();
     toast("投递成功");
   });
 })();

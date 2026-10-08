@@ -715,12 +715,15 @@ function cvUpload(list){
 function renderCv(){
   var box = $("cvBox"); if(!box) return;
   if(!CV || !CV.has){
-    box.innerHTML = '<div class="empty">' +
-      (CV && CV.off
-        ? "上传简历功能正在开通中，稍后再试"
-        : "还没有上传简历。上传后可在「最新项目」或官网上直接一键投递。") +
-      '</div>' +
-      '<div class="cv-btns"><button class="pbtn" type="button" id="cvUpBtn">上传简历</button></div>';
+    /* 数据库还没执行第 16 节脚本时，不给一个点了必然失败的按钮，直接说明情况 */
+    if(CV && CV.off){
+      box.innerHTML = '<div class="empty">上传简历功能正在开通中，稍后再试</div>';
+    } else {
+      box.innerHTML = '<div class="empty">' +
+        "还没有上传简历。上传后可在「最新项目」或官网上直接一键投递。" +
+        '</div>' +
+        '<div class="cv-btns"><button class="pbtn" type="button" id="cvUpBtn">上传简历</button></div>';
+    }
   } else {
     var files = CV.files || [];
     box.innerHTML = '<div class="cv-files">' + files.map(function(f){
@@ -745,7 +748,8 @@ function loadCv(){
     var j = r.body || {};
     if(j.ok){
       CV = { has: !!j.has, files: j.files || [], size: j.size || 0, updated_at: j.updated_at || "" };
-    } else if(/Could not find the function|does not exist|schema cache/i.test(String(j.error || ""))){
+    } else if(/Could not find the function|does not exist|schema cache|PGRST20/i.test(
+                String(j.error || j.message || "") + " " + String(j.code || ""))){
       CV = { has: false, files: [], size: 0, off: true };
     } else {
       CV = { has: false, files: [], size: 0 };
